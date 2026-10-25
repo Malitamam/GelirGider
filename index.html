@@ -1,0 +1,1956 @@
+<!doctype html>
+<html lang="tr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#FFF7F0">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Cüzdan">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="icon-192.png">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<title>Cüzdan</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap">
+<style>
+/* Layout: tek sütunlu telefon uygulaması; beyaz kartlar, renk anlam taşır (yeşil gelir, kırmızı gider, mavi yatırım), canlılık mercan vurgu ve kategori renklerinden gelir */
+:root {
+  /* Bilerek tek, açık tema: cihaz koyu modda olsa da açık görünür */
+  color-scheme: light;
+  --bg: #f6f7fb;
+  --surface: #ffffff;
+  --surface-2: #f1f3f9;
+  --ink: #14213d;
+  --ink-2: #4b5574;
+  --muted: #8a93a8;
+  --line: #e6eaf2;
+  --primary: #ff7a45;
+  --primary-ink: #e85d24;
+  --primary-soft: #fff0ea;
+  --in: #12b76a;
+  --in-ink: #0a8a4f;
+  --in-soft: #e7f8ef;
+  --out: #f04438;
+  --out-ink: #d92d20;
+  --out-soft: #feeceb;
+  --inv: #3b6fe0;
+  --inv-soft: #e9f0ff;
+  --warn: #b76e00;
+  --warn-soft: #fff5dd;
+  --shadow: 0 1px 2px rgba(20, 33, 61, .04), 0 6px 20px rgba(20, 33, 61, .06);
+  --font: "Plus Jakarta Sans", system-ui, -apple-system, "Segoe UI", sans-serif;
+}
+* { box-sizing: border-box; }
+html { background: var(--bg); }
+body { background:
+  radial-gradient(620px 460px at -10% -5%, #ffd2bd 0%, transparent 70%),
+  radial-gradient(600px 480px at 110% 10%, #d8cfff 0%, transparent 70%),
+  radial-gradient(560px 460px at -10% 70%, #cdeeff 0%, transparent 70%),
+  radial-gradient(640px 520px at 100% 100%, #c8f1dd 0%, transparent 70%),
+  #f4f1fb; background-attachment: fixed; }
+body { color: var(--ink); font-family: var(--font); font-size: 15px; line-height: 1.45; -webkit-font-smoothing: antialiased; }
+button, input { font: inherit; color: inherit; }
+button { cursor: pointer; }
+:focus-visible { outline: 2px solid var(--primary); outline-offset: 2px; border-radius: 8px; }
+.num { font-variant-numeric: tabular-nums; }
+svg.i { width: 20px; height: 20px; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; flex: none; }
+
+.app {
+  max-width: 460px; margin: 0 auto; min-height: 100vh;
+  padding-left: max(16px, env(safe-area-inset-left, 0px));
+  padding-right: max(16px, env(safe-area-inset-right, 0px));
+  padding-block: 14px calc(112px + env(safe-area-inset-bottom, 0px));
+  display: flex; flex-direction: column; gap: 16px;
+}
+header.top { display: flex; align-items: center; justify-content: space-between; gap: 10px; }
+.hello { min-width: 0; }
+.hello small { display: block; font-size: 13px; color: var(--muted); font-weight: 500; }
+.hello b { display: block; font-size: 22px; font-weight: 800; letter-spacing: -.02em; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.hdr-r { display: flex; align-items: center; gap: 8px; flex: none; }
+.month { display: flex; align-items: center; background: var(--surface); border-radius: 999px; padding: 3px; box-shadow: var(--shadow); }
+.month button { width: 32px; height: 32px; border: 0; background: none; border-radius: 50%; display: grid; place-items: center; color: var(--ink-2); }
+.month button:disabled { opacity: .25; cursor: default; }
+.month span { min-width: 76px; text-align: center; font-weight: 700; font-size: 13.5px; }
+.icon-btn { width: 38px; height: 38px; border-radius: 50%; border: 0; background: var(--surface); box-shadow: var(--shadow); display: grid; place-items: center; color: var(--ink-2); flex: none; }
+.icon-btn[aria-current="page"] { background: var(--primary-soft); color: var(--primary-ink); }
+
+.chip-note { display: flex; align-items: center; gap: 8px; background: var(--primary-soft); color: var(--primary-ink); border-radius: 12px; padding: 8px 8px 8px 12px; font-size: 13px; font-weight: 600; }
+.chip-note span { flex: 1; min-width: 0; }
+.chip-note button { border: 0; background: var(--surface); color: var(--primary-ink); font-weight: 700; font-size: 12.5px; border-radius: 8px; padding: 6px 10px; white-space: nowrap; }
+
+.card { background: var(--surface); border-radius: 20px; padding: 18px; box-shadow: var(--shadow); display: flex; flex-direction: column; gap: 14px; }
+.card-h { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+.card-h h2 { margin: 0; font-size: 17px; font-weight: 800; letter-spacing: -.01em; }
+.card-h small { color: var(--muted); font-size: 12.5px; font-weight: 500; }
+.link { border: 0; background: none; color: var(--primary-ink); font-weight: 700; font-size: 13px; padding: 4px 0; white-space: nowrap; }
+
+/* Bakiye */
+.hero { position: relative; overflow: hidden; }
+.hero::after { content: ""; position: absolute; width: 200px; height: 200px; right: -70px; top: -80px; border-radius: 50%; background: radial-gradient(circle, var(--primary-soft) 0%, transparent 70%); pointer-events: none; }
+.hero > * { position: relative; z-index: 1; }
+.hero .lbl { font-size: 13px; color: var(--muted); font-weight: 600; }
+.hero .big { font-size: 42px; font-weight: 800; letter-spacing: -.035em; line-height: 1.05; margin-top: 2px; }
+.hero .big.neg { color: var(--out); }
+.hero .pending { font-size: 13px; color: var(--ink-2); margin-top: 6px; display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
+.hero .pending i { width: 6px; height: 6px; border-radius: 50%; background: #f5a524; flex: none; }
+.bar { height: 8px; border-radius: 99px; background: var(--surface-2); display: flex; gap: 2px; overflow: hidden; }
+.bar i { display: block; height: 100%; border-radius: 99px; }
+.bar-cap { display: flex; gap: 14px; font-size: 12.5px; color: var(--muted); font-weight: 600; flex-wrap: wrap; }
+.bar-cap span { display: flex; align-items: center; gap: 6px; }
+.dot { width: 8px; height: 8px; border-radius: 50%; display: inline-block; flex: none; }
+.qa { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
+.qa button { border: 0; border-radius: 14px; padding: 11px 4px; font-weight: 700; font-size: 13.5px; display: flex; align-items: center; justify-content: center; gap: 6px; }
+.qa svg.i { width: 18px; height: 18px; stroke-width: 2.5; }
+.qa .in { background: var(--in-soft); color: var(--in-ink); }
+.qa .out { background: var(--out-soft); color: var(--out-ink); }
+.qa .inv { background: var(--inv-soft); color: var(--inv); }
+
+.tiles { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px; }
+.tile { background: var(--surface); border-radius: 18px; padding: 12px; box-shadow: var(--shadow); display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+.tile .ti { width: 30px; height: 30px; border-radius: 10px; display: grid; place-items: center; margin-bottom: 6px; }
+.tile .ti svg.i { width: 17px; height: 17px; stroke-width: 2.4; }
+.tile .lbl { font-size: 12px; color: var(--muted); font-weight: 600; }
+.tile .v { font-size: 17px; font-weight: 800; letter-spacing: -.02em; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.tile small { font-size: 11.5px; color: var(--ink-2); font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.tile small b { color: var(--muted); font-weight: 700; }
+.tile.in .ti { background: var(--in-soft); color: var(--in); } .tile.in .v { color: var(--in-ink); }
+.tile.out .ti { background: var(--out-soft); color: var(--out); } .tile.out .v { color: var(--out-ink); }
+.tile.inv .ti { background: var(--inv-soft); color: var(--inv); } .tile.inv .v { color: var(--inv); }
+
+.budget-row { display: flex; align-items: baseline; justify-content: space-between; gap: 8px; }
+.budget-row b { font-size: 20px; font-weight: 800; letter-spacing: -.02em; }
+.budget-row span { color: var(--muted); font-size: 13px; font-weight: 600; }
+.inline-form { display: flex; gap: 8px; }
+.inline-form input { flex: 1; min-width: 0; border: 1px solid var(--line); background: var(--surface-2); border-radius: 12px; padding: 10px 12px; }
+.btn { border: 0; border-radius: 12px; padding: 10px 16px; font-weight: 700; background: var(--primary); color: #fff; }
+.btn.ghost { background: var(--surface); color: var(--ink); box-shadow: inset 0 0 0 1px var(--line); }
+.btn.danger { background: none; color: var(--out-ink); }
+
+/* Pasta */
+.donut-row { display: grid; grid-template-columns: 136px minmax(0, 1fr); gap: 16px; align-items: center; }
+.donut-row svg { width: 136px; height: 136px; }
+.legend { display: flex; flex-direction: column; gap: 9px; min-width: 0; }
+.legend div { display: grid; grid-template-columns: 8px minmax(0, 1fr) auto; gap: 8px; align-items: center; font-size: 13px; }
+.legend .n { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; color: var(--ink-2); font-weight: 600; }
+.legend em { font-style: normal; font-weight: 800; }
+.legend em small { color: var(--muted); font-weight: 600; margin-left: 5px; }
+@media (max-width: 370px) { .donut-row { grid-template-columns: 1fr; justify-items: center; } .legend { width: 100%; } }
+
+/* Sabit giderler */
+.fx-list { display: flex; flex-direction: column; }
+.fx-row { display: grid; grid-template-columns: 30px minmax(0, 1fr) auto; gap: 10px; align-items: center; padding: 7px 0; border-top: 1px solid var(--line); }
+.fx-row:first-child { border-top: 0; }
+.chk { width: 30px; height: 30px; border-radius: 9px; border: 2px solid var(--line); background: var(--surface); display: grid; place-items: center; color: transparent; padding: 0; position: relative; }
+.chk::before { content: ""; position: absolute; inset: -7px; }
+.chk svg.i { width: 16px; height: 16px; stroke-width: 3; }
+.chk:hover { border-color: var(--in); }
+.chk[aria-pressed="true"] { background: var(--in); border-color: var(--in); color: #fff; }
+.chk.auto { border-style: dashed; border-color: var(--muted); }
+.fx-main { border: 0; background: none; padding: 0; text-align: left; min-width: 0; display: flex; flex-direction: column; }
+.fx-main .l1 { display: flex; align-items: center; gap: 6px; min-width: 0; }
+.fx-main b { font-weight: 700; font-size: 14.5px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.fx-main .l2 { font-size: 12px; color: var(--muted); font-weight: 500; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.fx-main .l2 .paid { color: var(--in-ink); font-weight: 700; }
+.fx-main .l2 .auto { color: var(--ink-2); font-weight: 700; }
+.badge { font-size: 10.5px; font-weight: 800; padding: 2px 7px; border-radius: 99px; background: var(--inv-soft); color: var(--inv); flex: none; }
+.badge.soon { background: var(--warn-soft); color: var(--warn); }
+.fx-amt { color: var(--out-ink); font-weight: 800; font-size: 14.5px; }
+.fx-form { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; background: var(--surface-2); border-radius: 16px; padding: 12px; margin: 4px 0 8px; }
+.fld { display: flex; flex-direction: column; gap: 5px; font-size: 12px; font-weight: 700; color: var(--muted); min-width: 0; }
+.fld input { border: 1px solid var(--line); background: var(--surface); border-radius: 12px; padding: 10px 12px; font-size: 15px; color: var(--ink); width: 100%; min-width: 0; font-weight: 500; }
+.fld.full { grid-column: 1 / -1; }
+.endrow { display: flex; gap: 10px; align-items: center; }
+.endrow input[type="month"] { flex: 1; min-width: 0; border: 1px solid var(--line); background: var(--surface); border-radius: 12px; padding: 9px 10px; font-size: 15px; color: var(--ink); }
+.endrow input:disabled { opacity: .4; }
+.chkl { display: flex; align-items: center; gap: 6px; font-size: 14px; color: var(--ink); font-weight: 600; white-space: nowrap; }
+.chkl input { width: 18px; height: 18px; accent-color: var(--primary); }
+.fx-form .btns { grid-column: 1 / -1; display: flex; gap: 8px; }
+.fx-form .btns .danger { margin-left: auto; }
+.hint { margin: 0; font-size: 12.5px; color: var(--muted); }
+
+/* Liste satırları */
+.list { display: flex; flex-direction: column; }
+.row { display: grid; grid-template-columns: 42px minmax(0, 1fr) auto; gap: 12px; align-items: center; padding: 9px 0; border: 0; background: none; text-align: left; width: 100%; }
+.list .row + .row { border-top: 1px solid var(--line); }
+.ico { width: 42px; height: 42px; border-radius: 13px; display: grid; place-items: center; font-size: 19px; }
+.row .t { min-width: 0; }
+.row .t b { display: block; font-weight: 700; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.row .t small { color: var(--muted); font-size: 12.5px; display: block; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.amt { font-weight: 800; text-align: right; white-space: nowrap; }
+.amt.in { color: var(--in-ink); } .amt.out { color: var(--out-ink); } .amt.inv { color: var(--inv); }
+.day-h { position: sticky; top: env(safe-area-inset-top, 0px); z-index: 2; background: rgba(246, 247, 251, .88); backdrop-filter: blur(8px); border-radius: 10px; display: flex; justify-content: space-between; font-size: 12px; font-weight: 700; letter-spacing: .04em; text-transform: uppercase; color: var(--muted); padding: 12px 4px 6px; }
+.day-card { background: var(--surface); border-radius: 18px; padding: 2px 14px; box-shadow: var(--shadow); }
+.day-card .row + .row { border-top: 1px solid var(--line); }
+.empty { text-align: center; color: var(--muted); padding: 22px 8px; font-size: 14px; }
+.search { display: flex; align-items: center; gap: 8px; background: var(--surface); border-radius: 14px; padding: 0 12px; box-shadow: var(--shadow); color: var(--muted); }
+.search input { flex: 1; border: 0; background: none; padding: 12px 0; outline: none; min-width: 0; color: var(--ink); }
+
+.seg { display: grid; grid-template-columns: repeat(var(--n, 3), 1fr); background: var(--surface-2); border-radius: 14px; padding: 4px; gap: 4px; }
+.seg button { border: 0; background: none; border-radius: 10px; padding: 8px 4px; font-weight: 700; color: var(--muted); font-size: 13.5px; }
+.seg button[aria-pressed="true"] { background: var(--surface); color: var(--ink); box-shadow: 0 1px 3px rgba(20,33,61,.1); }
+.seg.type button[data-v="out"][aria-pressed="true"] { background: var(--out); color: #fff; }
+.seg.type button[data-v="in"][aria-pressed="true"] { background: var(--in); color: #fff; }
+.seg.type button[data-v="inv"][aria-pressed="true"] { background: var(--inv); color: #fff; }
+
+/* Takvim */
+.cal { display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); gap: 4px; }
+.cal .wd { font-size: 11px; font-weight: 700; color: var(--muted); text-align: center; padding-bottom: 4px; }
+.cal .d { position: relative; min-height: 50px; border: 0; background: none; border-radius: 12px; padding: 5px 1px; display: flex; flex-direction: column; align-items: center; gap: 2px; min-width: 0; overflow: hidden; }
+.cal .d.has { background: var(--surface-2); }
+.cal .d .n { width: 24px; height: 24px; border-radius: 50%; display: grid; place-items: center; font-weight: 700; font-size: 13px; }
+.cal .d.today .n { background: var(--primary); color: #fff; }
+.cal .d small { font-size: 10px; font-weight: 800; font-variant-numeric: tabular-nums; max-width: 100%; overflow: hidden; }
+.cal .d small.p { color: var(--in-ink); } .cal .d small.m { color: var(--out-ink); }
+.cal .d.future .n { color: var(--muted); }
+.cal .d[aria-pressed="true"] { box-shadow: inset 0 0 0 2px var(--primary); }
+.cal .d .pin { position: absolute; top: 5px; right: 5px; width: 7px; height: 7px; border-radius: 50%; background: var(--out); }
+.keys { display: flex; flex-wrap: wrap; gap: 6px 14px; font-size: 12px; color: var(--muted); font-weight: 600; }
+.keys span { display: flex; align-items: center; gap: 6px; }
+
+/* Analiz */
+.bars svg { width: 100%; height: auto; display: block; }
+.bars text { fill: var(--muted); font-size: 10px; font-family: var(--font); font-weight: 600; }
+.insights { display: flex; flex-direction: column; gap: 12px; margin: 0; padding: 0; list-style: none; }
+.insights li { display: grid; grid-template-columns: 36px 1fr; gap: 12px; align-items: center; font-size: 14px; color: var(--ink-2); }
+.insights li i { width: 36px; height: 36px; border-radius: 11px; display: grid; place-items: center; }
+.insights b { color: var(--ink); }
+.chg { font-weight: 700; }
+
+/* Alt menü */
+nav.tabs { position: fixed; left: 0; right: 0; bottom: 0; z-index: 20; background: var(--surface); border-top: 1px solid var(--line);
+  padding-bottom: env(safe-area-inset-bottom, 0px); padding-left: env(safe-area-inset-left, 0px); padding-right: env(safe-area-inset-right, 0px); }
+nav.tabs .in { max-width: 460px; margin: 0 auto; display: grid; grid-template-columns: 1fr 1fr 72px 1fr 1fr; align-items: center; height: 68px; padding: 0 8px; }
+nav.tabs .tab { border: 0; background: none; display: flex; flex-direction: column; align-items: center; gap: 3px; font-size: 11px; font-weight: 700; color: var(--muted); padding: 4px 0; }
+nav.tabs .tab span.pi { width: 52px; height: 30px; border-radius: 99px; display: grid; place-items: center; }
+nav.tabs .tab[aria-current="page"] { color: var(--primary-ink); }
+nav.tabs .tab[aria-current="page"] span.pi { background: var(--primary-soft); }
+.fab { justify-self: center; width: 58px; height: 58px; border-radius: 50%; border: 0; background: var(--primary); color: #fff; display: grid; place-items: center; transform: translateY(-16px); box-shadow: 0 10px 24px rgba(255, 122, 69, .45); }
+.fab svg.i { width: 26px; height: 26px; stroke-width: 2.6; }
+.fab:active { transform: translateY(-14px) scale(.96); }
+
+/* Ekleme paneli */
+.scrim { position: fixed; inset: 0; background: rgba(20, 33, 61, .4); z-index: 30; }
+.sheet { position: fixed; left: 0; right: 0; bottom: 0; z-index: 31; margin: 0 auto; max-width: 460px; background: var(--surface); border-radius: 26px 26px 0 0;
+  padding: 10px max(18px, env(safe-area-inset-right, 0px)) calc(18px + env(safe-area-inset-bottom, 0px)) max(18px, env(safe-area-inset-left, 0px));
+  display: flex; flex-direction: column; gap: 14px; max-height: 94vh; overflow-y: auto; }
+.sheet.anim { animation: up .22s ease-out; }
+@keyframes up { from { transform: translateY(30px); opacity: .6; } to { transform: none; opacity: 1; } }
+@media (prefers-reduced-motion: reduce) { .sheet.anim { animation: none; } }
+.grab { width: 40px; height: 5px; border-radius: 9px; background: var(--line); align-self: center; }
+.sheet-h { display: flex; align-items: center; justify-content: space-between; }
+.sheet-h h3 { margin: 0; font-size: 19px; font-weight: 800; }
+.sheet-h .icon-btn { box-shadow: none; background: var(--surface-2); }
+.amount { display: flex; align-items: baseline; gap: 6px; padding: 4px 0 8px; border-bottom: 2px solid var(--line); }
+.amount:focus-within { border-color: var(--primary); }
+.amount span { font-size: 30px; font-weight: 700; color: var(--muted); }
+.amount input { border: 0; background: none; outline: none; font-weight: 800; font-size: 46px; width: 100%; min-width: 0; letter-spacing: -.03em; font-variant-numeric: tabular-nums; }
+.cats { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 8px; }
+.cat { border: 2px solid transparent; background: var(--surface-2); border-radius: 16px; padding: 10px 4px 8px; display: flex; flex-direction: column; align-items: center; gap: 5px; font-size: 11.5px; font-weight: 700; color: var(--ink-2); min-width: 0; }
+.cat .ci { width: 34px; height: 34px; border-radius: 11px; display: grid; place-items: center; font-size: 18px; }
+.cat .nm { width: 100%; text-align: center; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.cat[aria-pressed="true"] { border-color: var(--c); background: var(--surface); color: var(--ink); }
+.cat.add { border: 2px dashed var(--line); background: none; color: var(--muted); }
+.dates { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+.dates button, .dates label { border: 0; background: var(--surface-2); border-radius: 99px; padding: 8px 14px; font-weight: 700; font-size: 13px; color: var(--ink-2); }
+.dates button[aria-pressed="true"], .dates label.on { background: var(--primary); color: #fff; }
+.dates label { position: relative; display: flex; align-items: center; gap: 6px; cursor: pointer; }
+.dates label svg.i { width: 16px; height: 16px; }
+.dates label input { position: absolute; inset: 0; opacity: 0; width: 100%; cursor: pointer; }
+.note-in { border: 1px solid var(--line); background: var(--surface-2); border-radius: 12px; padding: 11px 12px; width: 100%; }
+.newcat { display: flex; gap: 8px; }
+.newcat input { flex: 1; min-width: 0; border: 1px solid var(--line); background: var(--surface-2); border-radius: 12px; padding: 10px 12px; }
+.newcat input.emo { flex: 0 0 58px; text-align: center; }
+.err { color: var(--out-ink); font-size: 13px; font-weight: 700; margin: -4px 0 0; }
+.save { border: 0; border-radius: 16px; padding: 16px; font-weight: 800; font-size: 16px; color: #fff; }
+.save.out { background: var(--out); } .save.in { background: var(--in); } .save.inv { background: var(--inv); }
+/* Sola kaydırıp silme */
+.sw { position: relative; overflow: hidden; }
+.sw + .sw { border-top: 1px solid var(--line); }
+.sw-bg { position: absolute; inset: 0 -14px; background: var(--out); color: #fff; display: flex; align-items: center; justify-content: flex-end; padding-right: 22px; font-weight: 800; font-size: 13.5px; gap: 6px; }
+.sw .row { position: relative; background: var(--surface); touch-action: pan-y; transition: transform .18s ease; }
+.sw .row.drag { transition: none; }
+/* Kısayollar ve analiz */
+.hscroll { display: flex; gap: 8px; overflow-x: auto; padding-bottom: 2px; scrollbar-width: none; }
+.hscroll::-webkit-scrollbar { display: none; }
+.pick { flex: none; border: 0; background: var(--surface-2); border-radius: 99px; padding: 8px 12px; font-weight: 700; font-size: 13px; color: var(--ink-2); display: flex; align-items: center; gap: 6px; white-space: nowrap; }
+.pick[aria-pressed="true"] { background: var(--ink-2); color: #fff; }
+.pick.fav { background: var(--primary-soft); color: var(--primary-ink); }
+.pick.fav b { color: var(--ink); font-weight: 800; }
+.stats { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; }
+.stats div { background: var(--surface-2); border-radius: 14px; padding: 10px; min-width: 0; }
+.stats span { display: block; font-size: 11.5px; color: var(--muted); font-weight: 600; }
+.stats b { display: block; font-size: 16px; font-weight: 800; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.rule { display: flex; flex-direction: column; gap: 12px; }
+.rule .r-h { display: flex; justify-content: space-between; font-size: 13.5px; font-weight: 700; }
+.rule .r-h small { color: var(--muted); font-weight: 600; }
+.rule .track { position: relative; height: 8px; border-radius: 99px; background: var(--surface-2); margin-top: 6px; }
+.rule .track i { position: absolute; left: 0; top: 0; bottom: 0; border-radius: 99px; }
+.rule .track em { position: absolute; top: -4px; bottom: -4px; width: 2px; background: var(--ink-2); border-radius: 2px; }
+.freq { display: flex; flex-direction: column; gap: 5px; }
+.freq .seg button { padding: 7px 4px; font-size: 13px; }
+/* Kim ödüyor: Mali / Nisa */
+.who { width: 20px; height: 20px; border-radius: 50%; display: grid; place-items: center; font-size: 10.5px; font-weight: 800; flex: none; }
+.who.mali { background: var(--inv-soft); color: var(--inv); }
+.who.nisa { background: #fde4f1; color: #c0267a; }
+.payers { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+.payers > div { border-radius: 14px; padding: 10px 12px; display: flex; align-items: center; gap: 10px; min-width: 0; }
+.payers > div > div { min-width: 0; }
+.payers > .mali { background: var(--inv-soft); } .payers > .nisa { background: #fdeef6; }
+.payers .who { width: 30px; height: 30px; font-size: 13px; background: var(--surface); flex: none; }
+.payers > div > div > span { display: block; font-size: 11.5px; color: var(--ink-2); font-weight: 600; }
+.payers b { display: block; font-size: 16px; font-weight: 800; }
+.who.sm { width: 16px; height: 16px; font-size: 9px; display: inline-grid; vertical-align: 1px; margin-right: 6px; }
+.dates .pw { display: flex; align-items: center; gap: 6px; }
+.dates .pw[aria-pressed="true"] .who { background: var(--surface); }
+/* ===== Gündüz Alevi teması: sıcak krem zemin, kenarsız beyaz kartlar, turuncu vurgu, alev degradeli bakiye kartı ===== */
+:root { --bg: #FFF7F0; --surface: #ffffff; --surface-2: #fff1e6; --ink: #1C0F08; --ink-2: #5a463d; --muted: #86716A; --line: #F6E4D8;
+  --primary: #FF5A00; --primary-ink: #e04f00; --primary-soft: #fff0e5;
+  --in: #0E9F6E; --in-ink: #0b7f58; --in-soft: #e3f6ee; --out: #E0334A; --out-ink: #c42539; --out-soft: #fde8eb; --inv: #2F6FDE; --inv-soft: #e8f0fd;
+  --shadow: 0 1px 2px rgba(28, 15, 8, .04), 0 4px 14px rgba(28, 15, 8, .05); }
+html { background: var(--bg); }
+body { background: var(--bg); }
+.card { border: 0; border-radius: 22px; box-shadow: var(--shadow); padding: 18px; }
+.card-h h2 { font-size: 17px; font-weight: 800; }
+.month, .icon-btn, .search, .day-card { border: 0; box-shadow: var(--shadow); }
+.chip-note { background: var(--surface); box-shadow: var(--shadow); }
+.chip-note button { background: var(--primary-soft); color: var(--primary-ink); }
+.hero { padding: 20px; }
+.hero::after { display: none; }
+.hero .lbl { font-weight: 600; }
+.hero .big { font-size: 40px; font-weight: 800; color: var(--ink); }
+.hero .big.neg { color: var(--out-ink); }
+.hero .pending { color: var(--muted); }
+.hero .pending i { background: #f5a524; }
+.qa button { background: var(--surface-2); color: var(--ink); border: 0; border-radius: 99px; font-weight: 700; }
+.qa svg.i { width: 20px; height: 20px; border-radius: 50%; padding: 3px; color: #fff; stroke-width: 3; }
+.qa .in, .qa .out, .qa .inv { background: var(--surface-2); color: var(--ink); }
+.qa .in svg.i { background: var(--in); } .qa .out svg.i { background: var(--out); } .qa .inv svg.i { background: var(--inv); }
+.tile { border: 0; border-radius: 20px; box-shadow: var(--shadow); padding: 13px 12px; gap: 3px; }
+.tile .lbl { display: flex; align-items: center; gap: 6px; font-weight: 600; }
+.tile .lbl::before { content: ""; width: 8px; height: 8px; border-radius: 50%; }
+.tile.in .lbl::before { background: var(--in); } .tile.out .lbl::before { background: var(--out); } .tile.inv .lbl::before { background: var(--inv); }
+.tile .v { font-size: 18px; }
+.chk[aria-pressed="true"] { background: var(--in); border-color: var(--in); }
+nav.tabs { border-top: 1px solid var(--line); box-shadow: none; }
+nav.tabs .tab[aria-current="page"] { color: var(--primary); }
+.fab { background: var(--primary); box-shadow: 0 6px 16px rgba(255, 90, 0, .28); }
+@keyframes pulse { 0%, 100% { box-shadow: 0 8px 20px rgba(255, 90, 0, .35), 0 0 0 0 rgba(255, 90, 0, .35); } 50% { box-shadow: 0 8px 20px rgba(255, 90, 0, .35), 0 0 0 12px rgba(255, 90, 0, 0); } }
+.day-h { background: rgba(255, 247, 240, .92); }
+@media (prefers-reduced-motion: reduce) { .hero, .hero::after, .fab { animation: none; } }
+.sig { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+.sig-t { display: flex; align-items: center; gap: 10px; border: 0; background: none; padding: 2px 0; font-weight: 700; font-size: 14px; color: var(--ink-2); }
+.sig-t .chk { width: 24px; height: 24px; border-radius: 7px; }
+.sig-t[aria-pressed="true"] .chk { background: #c026d3; border-color: #c026d3; color: #fff; }
+.sig-a { display: flex; align-items: center; gap: 4px; margin-left: auto; background: var(--surface-2); border-radius: 12px; padding: 0 12px; }
+.sig-a span { font-weight: 700; color: var(--muted); }
+.sig-a input { border: 0; background: none; outline: none; width: 80px; padding: 9px 0; font-weight: 800; font-size: 16px; font-variant-numeric: tabular-nums; }
+.toast { position: fixed; left: 50%; bottom: calc(84px + env(safe-area-inset-bottom, 0px)); transform: translateX(-50%); background: var(--ink); color: #fff; padding: 10px 16px; border-radius: 14px; font-weight: 600; font-size: 14px; z-index: 40; box-shadow: var(--shadow); display: flex; align-items: center; gap: 12px; max-width: calc(100% - 32px); }
+.toast.undo { padding: 8px 8px 8px 16px; }
+.toast span { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.toast button { border: 0; background: rgba(255,255,255,.14); color: #ffb08f; font-weight: 800; border-radius: 10px; padding: 6px 10px; white-space: nowrap; }
+/* ===== Koyu tema: üstteki ay/güneş butonuyla açılır, seçim bu tarayıcıda hatırlanır ===== */
+:root[data-theme="dark"] { color-scheme: dark; --bg: #14110f; --surface: #1f1a17; --surface-2: #2b2521; --ink: #f5ede7; --ink-2: #cdbfb5; --muted: #9c8c82; --line: #362e29;
+  --primary: #ff7a2e; --primary-ink: #ff9152; --primary-soft: #3b2516; --in: #2fbf85; --in-ink: #52d49d; --in-soft: #173328; --out: #f0566a; --out-ink: #ff7a8b; --out-soft: #3b1d22;
+  --inv: #5b8ff0; --inv-soft: #1c2942; --warn: #f0b54a; --warn-soft: #3a2e12; --shadow: 0 1px 2px rgba(0, 0, 0, .35); }
+:root[data-theme="dark"] .day-h { background: rgba(20, 17, 15, .92); }
+:root[data-theme="dark"] .toast { background: #2f2722; color: var(--ink); }
+:root[data-theme="dark"] .pick[aria-pressed="true"] { color: var(--bg); }
+:root[data-theme="dark"] .who.nisa { background: #3d1b2f; color: #f283bd; }
+:root[data-theme="dark"] .scrim { background: rgba(0, 0, 0, .6); }
+:root[data-theme="dark"] .fab { box-shadow: 0 6px 16px rgba(0, 0, 0, .5); }
+@media (max-width: 400px) { .hdr-r { gap: 6px; } .icon-btn { width: 34px; height: 34px; } .month button { width: 28px; height: 28px; } .month span { min-width: 64px; font-size: 13px; } .hello b { font-size: 18px; } }
+</style>
+      const s = `<circle r="${R}" cx="68" cy="68" fill="none" stroke="${x.color}" stroke-width="18" stroke-dasharray="${Math.max(len - 2, 0.5)} ${C}" stroke-dashoffset="${-off}" transform="rotate(-90 68 68)"><title>${esc(x.name)}: ${money(x.v)}</title></circle>`;
+      off += len; return s;
+    }).join('');
+    return `<svg viewBox="0 0 136 136" role="img" aria-label="${esc(label)} dağılımı">
+      <circle r="${R}" cx="68" cy="68" fill="none" stroke="var(--surface-2)" stroke-width="18"/>${segs}
+      <text x="68" y="63" text-anchor="middle" style="fill:var(--muted);font-size:10.5px;font-weight:600;font-family:var(--font)">${esc(label)}</text>
+      <text x="68" y="82" text-anchor="middle" style="fill:${color};font-size:16px;font-weight:800;font-family:var(--font)">${eur(total)}</text>
+    </svg>`;
+  }
+  // En fazla 5 dilim + "Diğer"
+  function foldItems(items) {
+    items.sort((a, b) => b.v - a.v);
+    if (items.length > 6) {
+      const rest = items.slice(5);
+      items = items.slice(0, 5).concat([{ name: 'Diğer', color: GRAY, v: rest.reduce((a, x) => a + x.v, 0) }]);
+    }
+    return items;
+  }
+
+  /* ---------- Özet ---------- */
+  function renderOzet() {
+    const mt = monthTx(ui.ym);
+    const gi = sum(mt, 'in'), gd = sum(mt, 'out'), gv = sum(mt, 'inv'), net = gi - gd - gv;
+    const fk = sum(mt.filter(t => t.fx), 'out'), vk = gd - fk;
+    const fx = fixedItems();
+    const waitSum = fx.filter(x => x.st.status === 'wait').reduce((a, x) => a + x.st.amount, 0);
+    const invAll = invTotal(ui.ym);
+    const pd = gi ? Math.min(100, gd / gi * 100) : 0, pv = gi ? Math.min(100 - pd, gv / gi * 100) : 0;
+    const mName = AYLAR[+ui.ym.slice(5) - 1];
+
+    let html = '';
+    if (db.sample) html += `<div class="chip-note">${ui.confirmClear
+      ? `<span>Örnek kayıtlar silinsin mi? Sabit gider listen kalır.</span><button data-clear="yes">Evet, sil</button><button data-clear="no">Vazgeç</button>`
+      : `<span>Örnek verilerle açıldı</span><button data-clear="ask">Temizle</button>`}</div>`;
+
+    html += `<section class="card hero">
+      <div>
+        <div class="lbl">${mName} ayında kalan</div>
+        <div class="big num ${net < 0 ? 'neg' : ''}">${net < 0 ? '−' : ''}${eur(Math.abs(net))}</div>
+        ${waitSum ? `<div class="pending"><i></i>${money(waitSum)} sabit ödeme bekliyor · sonra <b class="num">${net - waitSum < 0 ? '−' : ''}${eur(Math.abs(net - waitSum))}</b></div>` : ''}
+      </div>
+      <div class="qa">
+        <button class="in" data-add="in">${svg('plus')}Gelir</button>
+        <button class="out" data-add="out">${svg('minus')}Gider</button>
+        <button class="inv" data-add="inv">${svg('trend')}Yatırım</button>
+      </div>
+    </section>`;
+
+    html += `<div class="tiles">
+      <div class="tile in"><div class="lbl">Gelir</div><div class="v num">${eur(gi)}</div></div>
+      <div class="tile out"><div class="lbl">Gider</div><div class="v num">${eur(gd)}</div>
+        <small class="num" title="Sabit giderler (fixed cost)"><b>FK</b> ${eur(fk)}</small><small class="num" title="Değişken giderler"><b>V</b> ${eur(vk)}</small></div>
+      <div class="tile inv"><div class="lbl">Yatırım</div><div class="v num">${eur(gv)}</div><small><b>Toplam</b></small><small class="num">${eur(invAll)}</small></div>
+    </div>`;
+
+    html += topCatsCard(mt, gd);
+    html += fixedCard(fx);
+    return html;
+  }
+
+  function topCatsCard(mt, total) {
+    const out = mt.filter(t => t.type === 'out');
+    if (!out.length) return '';
+    const by = {};
+    out.forEach(t => { const c = catOf('out', t.cat); by[t.cat] = by[t.cat] || { name: c.name, color: c.color, v: 0 }; by[t.cat].v += t.amount; });
+    const items = foldItems(Object.values(by));
+    return `<section class="card">
+      <div class="card-h"><h2>En çok harcanan</h2><button class="link" data-go="analiz">Analiz</button></div>
+      <div class="donut-row">${donutSvg(items, total, 'Toplam gider', 'var(--out-ink)')}
+        <div class="legend">${items.map(x => `<div><span class="dot" style="background:${x.color}"></span><span class="n">${esc(x.name)}</span><em class="num">%${Math.round(x.v / total * 100)}<small>${eur(x.v)}</small></em></div>`).join('')}</div>
+      </div>
+    </section>`;
+  }
+
+  const monthsLeft = end => ymDiff(end, ui.ym) + 1;
+  function fixedRow({ f, st }) {
+    let stat;
+    if (st.status === 'paid') stat = `<span class="paid">Ödendi ${dm(st.date)}</span>`;
+    else if (st.status === 'auto') stat = `<span class="auto">Otomatik eklendi</span>`;
+    else { const left = Math.round((new Date(st.due) - new Date(todayIso)) / 864e5); stat = left <= 0 ? 'Bugün' : left > 31 ? dm(st.due) : left + ' gün kaldı'; }
+    let badge = '';
+    if ((f.every || 1) > 1) badge += `<span class="badge" style="background:var(--primary-soft);color:var(--primary-ink)">${f.every === 12 ? 'yıllık' : f.every + ' ayda bir'}</span>`;
+    if (f.end) { const n = monthsLeft(f.end); badge += `<span class="badge ${n <= 3 ? 'soon' : ''}" title="Son taksit ${AYLAR[+f.end.slice(5) - 1]} ${f.end.slice(0, 4)}${n <= 3 ? '. Sözleşmeyi iptal etmeyi ya da yenilemeyi unutma.' : ''}">${n <= 1 ? 'son taksit' : n + ' ay'}</span>`; }
+    return `<div class="fx-row">
+      <button class="chk ${st.status === 'auto' ? 'auto' : ''}" data-tick="${f.id}" aria-pressed="${st.status === 'paid'}" aria-label="${esc(f.name)} ödendi">${svg('check')}</button>
+      <button class="fx-main" data-editfx="${f.id}" aria-label="${esc(f.name)} düzenle">
+        <span class="l1"><span class="who ${payerOf(f)}" title="${PAYER[payerOf(f)]} ödüyor">${PAYER[payerOf(f)][0]}</span><b>${esc(f.name)}</b>${badge}</span>
+        <span class="l2">Ayın ${f.day}. günü · ${stat}</span>
+      </button>
+      <b class="fx-amt num">${money(st.amount)}</b>
+    </div>${ui.editFx === f.id ? fxForm(f) : ''}`;
+  }
+  function fixedCard(items) {
+    const done = items.filter(x => x.st.status !== 'wait');
+    const tot = items.reduce((a, x) => a + x.st.amount, 0);
+    const doneSum = done.reduce((a, x) => a + x.st.amount, 0);
+    const paidN = items.filter(x => x.st.status === 'paid').length;
+    return `<section class="card" id="fixedCard">
+      <div class="card-h"><div><h2>Sabit giderler</h2><small class="num">${eur(doneSum)} / ${eur(tot)} düştü · ${paidN}/${items.length} ödendi</small></div>${ui.editFx === 'new' ? '' : `<button class="link" data-editfx="new">+ Ekle</button>`}</div>
+      ${ui.editFx === 'new' ? fxForm(null) : ''}
+      <div class="fx-list">${items.length ? items.map(fixedRow).join('') : `<div class="empty">Kira, fatura gibi her ay ödediğin giderleri ekle.</div>`}</div>
+      ${periodicHint()}
+    </section>`;
+  }
+  // Yıllık ve 3 aylık giderler için her ay kenara ayrılması gereken pay
+  function periodicHint() {
+    const per = db.fixed.filter(f => (f.every || 1) > 1 && !(f.end && f.end < ui.ym));
+    if (!per.length) return '';
+    const nextOf = f => { let ym = ui.ym; for (let k = 0; k < 13; k++, ym = ymAdd(ym, 1)) if (fixedState(f, ym)) return ym; return null; };
+    const off = per.filter(f => !fixedState(f, ui.ym));
+    const ed = off.find(f => f.id === ui.editFx);
+    return `${off.length ? `<div class="hscroll" aria-label="Bu ay ödemesi olmayan dönemsel giderler">${off.map(f => { const n = nextOf(f); return `<button class="pick" data-editfx="${f.id}" aria-pressed="${ui.editFx === f.id}">${esc(f.name)} · ${n ? AY_K[+n.slice(5) - 1] : '–'} <b class="num" style="color:var(--out-ink)">${money(f.amount)}</b></button>`; }).join('')}</div>` : ''}
+      ${ed ? fxForm(ed) : ''}`;
+  }
+  function fxForm(f) {
+    const n = !f;
+    f = f || { name: '', amount: '', day: '' };
+    return `<form class="fx-form" id="fxForm" data-id="${n ? '' : f.id}">
+      <label class="fld full">Ad<input id="fxName" maxlength="32" required placeholder="ör. Spor salonu" value="${esc(f.name)}"></label>
+      <div class="fld full freq">Sıklık
+        <div class="seg" style="--n:3" role="group" aria-label="Sıklık">${[[1, 'Her ay'], [3, '3 ayda bir'], [12, 'Yılda bir']].map(([v, l]) => `<button type="button" data-every="${v}" aria-pressed="${(f.every || 1) === v}">${l}</button>`).join('')}</div>
+        <input type="hidden" id="fxEvery" value="${f.every || 1}">
+        <label class="fld" id="fxFirstWrap" ${(f.every || 1) > 1 ? '' : 'hidden'}>Ödeme yapılan bir ay<input type="month" id="fxFirst" value="${f.anchor || ui.ym}"></label>
+      </div>
+      <div class="fld full freq">Kim ödüyor
+        <div class="seg" style="--n:2" role="group" aria-label="Kim ödüyor">${['mali', 'nisa'].map(p => `<button type="button" data-payer="${p}" aria-pressed="${payerOf(f) === p}">${PAYER[p]}</button>`).join('')}</div>
+        <input type="hidden" id="fxPayer" value="${payerOf(f)}">
+      </div>
+      <label class="fld">Tutar (€)<input id="fxAmt" inputmode="decimal" required placeholder="ör. 39,99" value="${f.amount === '' ? '' : String(f.amount).replace('.', ',')}"></label>
+      <label class="fld">Ödeme günü<input id="fxDay" type="number" min="1" max="31" required placeholder="1–31" value="${f.day}"></label>
+      <div class="fld full">Son ödeme
+        <div class="endrow"><label class="chkl"><input type="checkbox" id="fxNoEnd" ${f.end ? '' : 'checked'}> Süresiz</label><input type="month" id="fxEnd" value="${f.end || ''}" min="${curYm}" ${f.end ? '' : 'disabled'} aria-label="Son taksit ayı"></div>
+      </div>
+      <div class="btns"><button type="submit" class="btn">${n ? 'Ekle' : 'Kaydet'}</button><button type="button" class="btn ghost" data-fxcancel>Vazgeç</button>${n ? '' : `<button type="button" class="btn danger" data-fxdel="${f.id}">Sil</button>`}</div>
+    </form>`;
+  }
+
+  /* ---------- Hareketler ---------- */
+  function renderHareket() {
+    let mt = monthTx(ui.ym);
+    if (ui.filter !== 'all') mt = mt.filter(t => t.type === ui.filter);
+    const q = ui.q.trim().toLocaleLowerCase('tr-TR');
+    if (q) mt = mt.filter(t => (t.note + ' ' + catOf(t.type, t.cat).name).toLocaleLowerCase('tr-TR').includes(q));
+    const groups = {};
+    sorted(mt).forEach(t => (groups[t.date] = groups[t.date] || []).push(t));
+    const days = Object.keys(groups).sort().reverse();
+    return `<label class="search">${svg('search')}<input id="qIn" type="search" placeholder="Ara: Rewe, kira, telefon…" value="${esc(ui.q)}" aria-label="Kayıtlarda ara"></label>
+      <div class="seg" style="--n:4">${[['all', 'Tümü'], ['in', 'Gelir'], ['out', 'Gider'], ['inv', 'Yatırım']].map(([v, l]) => `<button data-f="${v}" aria-pressed="${ui.filter === v}">${l}</button>`).join('')}</div>
+      <div>${days.length ? days.map(d => {
+        const g = groups[d]; const net = sum(g, 'in') - sum(g, 'out') - sum(g, 'inv');
+        return `<div class="day-h"><span>${dayLabel(d)}</span>${g.length > 1 ? `<span class="num" style="color:var(${net >= 0 ? '--in-ink' : '--out-ink'})">${net >= 0 ? '+' : '−'}${money(Math.abs(net))}</span>` : ''}</div>
+          <div class="day-card">${g.map(t => t.fx ? rowHtml(t) : `<div class="sw"><div class="sw-bg">${svg('x')}Sil</div>${rowHtml(t)}</div>`).join('')}</div>`;
+      }).join('') : `<div class="empty">${q ? 'Aramana uyan kayıt yok.' : 'Bu ay için kayıt yok.'}</div>`}</div>
+      <p class="hint" style="text-align:center">Düzenlemek için kayda dokun, silmek için sola kaydır.</p>`;
+  }
+
+  /* ---------- Takvim ---------- */
+  function renderTakvim() {
+    if (ymOf(ui.selDay) !== ui.ym) ui.selDay = ui.ym === curYm ? todayIso : ui.ym + '-01';
+    const [Y, M] = ui.ym.split('-').map(Number);
+    const dim = new Date(Y, M, 0).getDate();
+    const lead = (new Date(Y, M - 1, 1).getDay() + 6) % 7;
+    const mt = monthTx(ui.ym);
+    const fx = fixedItems();
+    let cells = ['Pzt', 'Sal', 'Çar', 'Per', 'Cum', 'Cmt', 'Paz'].map(w => `<div class="wd">${w}</div>`).join('');
+    for (let k = 0; k < lead; k++) cells += '<div></div>';
+    for (let d = 1; d <= dim; d++) {
+      const ds = ui.ym + '-' + pad(d);
+      const dt = mt.filter(t => t.date === ds);
+      const net = sum(dt, 'in') - sum(dt, 'out') - sum(dt, 'inv');
+      const due = fx.filter(x => x.st.due === ds);
+      const pin = due.length ? `<i class="pin ${due.every(x => x.st.status === 'paid') ? 'paid' : ''}"></i>` : '';
+      cells += `<button class="d ${dt.length ? 'has' : ''} ${ds === todayIso ? 'today' : ''} ${ds > todayIso ? 'future' : ''}" data-day="${ds}" aria-pressed="${ds === ui.selDay}" aria-label="${dm(ds)}">${pin}<span class="n">${d}</span>${dt.length ? `<small class="${net >= 0 ? 'p' : 'm'}">${net >= 0 ? '+' : '−'}${short(Math.abs(net))}</small>` : ''}</button>`;
+    }
+    const sel = sorted(mt.filter(t => t.date === ui.selDay && !t.fx));
+    const selFx = fx.filter(x => x.st.due === ui.selDay);
+    const dt = mt.filter(t => t.date === ui.selDay);
+    return `<section class="card">
+        <div class="cal">${cells}</div>
+      </section>
+      <section class="card">
+        <div class="card-h"><h2>${dayLabel(ui.selDay)}</h2>${dt.length ? `<small class="num">Gelir ${eur(sum(dt, 'in'))} · Gider ${eur(sum(dt, 'out'))}</small>` : ''}</div>
+        ${selFx.length ? `<div class="fx-list">${selFx.map(fixedRow).join('')}</div>` : ''}
+        ${sel.length ? `<div class="list">${sel.map(rowHtml).join('')}</div>` : (selFx.length ? '' : '<div class="empty">Bu gün kayıt yok.</div>')}
+      </section>`;
+  }
+
+  /* ---------- Analiz ---------- */
+  function niceMax(v) {
+    if (v <= 0) return 1000;
+    const p = Math.pow(10, Math.floor(Math.log10(v)));
+    for (const m of [1, 2, 2.5, 5, 10]) if (m * p >= v) return m * p;
+    return 10 * p;
+  }
+  function bars() {
+    const months = []; for (let k = 5; k >= 0; k--) months.push(ymAdd(ui.ym, -k));
+    const data = months.map(ym => { const mt = monthTx(ym); return { ym, i: sum(mt, 'in'), o: sum(mt, 'out') }; });
+    const max = niceMax(Math.max(...data.map(d => Math.max(d.i, d.o))));
+    const W = 340, H = 170, L = 40, B = 22, T = 8, ch = H - B - T, slot = (W - L) / 6, bw = 14;
+    const y = v => T + ch - v / max * ch;
+    let g = '';
+    [0, .5, 1].forEach(f => { const yy = y(max * f); g += `<line x1="${L}" x2="${W}" y1="${yy}" y2="${yy}" stroke="var(--line)" stroke-width="1"/><text x="${L - 6}" y="${yy + 3}" text-anchor="end">${short(max * f)}</text>`; });
+    const bar = (x, v, col, op, tip) => {
+      if (!(v > 0)) return '';
+      const top = y(v), rr = Math.min(5, (T + ch - top) / 2);
+      return `<path d="M${x},${T + ch} V${top + rr} q0,-${rr} ${rr},-${rr} h${bw - 2 * rr} q${rr},0 ${rr},${rr} V${T + ch} Z" fill="${col}" opacity="${op}"><title>${tip}</title></path>`;
+    };
+    data.forEach((d, k) => {
+      const cx = L + slot * k + slot / 2, cur = d.ym === ui.ym, op = cur ? 1 : .35, mn = AYLAR[+d.ym.slice(5) - 1];
+      g += bar(cx - bw - 1, d.i, 'var(--in)', op, `${mn} gelir: ${money(d.i)}`);
+      g += bar(cx + 1, d.o, 'var(--out)', op, `${mn} gider: ${money(d.o)}`);
+      g += `<text x="${cx}" y="${H - 6}" text-anchor="middle" style="${cur ? 'fill:var(--ink);font-weight:800' : ''}">${AY_K[+d.ym.slice(5) - 1]}</text>`;
+    });
+    return { svg: `<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="Son 6 ay gelir ve gider">${g}</svg>`, data };
+  }
+
+  function renderAnaliz() {
+    const mt = monthTx(ui.ym), prev = monthTx(ymAdd(ui.ym, -1));
+    const list = mt.filter(t => t.type === ui.aType);
+    const total = list.reduce((a, t) => a + t.amount, 0);
+    const by = {}, pby = {};
+    list.forEach(t => by[t.cat] = (by[t.cat] || 0) + t.amount);
+    prev.filter(t => t.type === ui.aType).forEach(t => pby[t.cat] = (pby[t.cat] || 0) + t.amount);
+    const rows = Object.entries(by).sort((a, b) => b[1] - a[1]);
+    const items = foldItems(rows.map(([id, v]) => { const c = catOf(ui.aType, id); return { name: c.name, color: c.color, v }; }));
+    const b = bars();
+    const gi = sum(mt, 'in'), gd = sum(mt, 'out'), gv = sum(mt, 'inv');
+    const [Y, M] = ui.ym.split('-').map(Number);
+    const daysIn = ui.ym === curYm ? today.getDate() : new Date(Y, M, 0).getDate();
+    const vk = gd - sum(mt.filter(t => t.fx), 'out');
+    const ins = [];
+    const outV = Object.entries(mt.filter(t => t.type === 'out' && !t.fx).reduce((a, t) => (a[t.cat] = (a[t.cat] || 0) + t.amount, a), {})).sort((a, b) => b[1] - a[1]);
+    if (outV.length) ins.push(['cart', '#2a78d6', `Sabit giderler dışında en çok <b>${esc(catOf('out', outV[0][0]).name)}</b> için harcadın: ${money(outV[0][1])}`]);
+    if (vk && ui.ym <= curYm) ins.push(['clock', '#eb6834', `Günlük ortalama değişken harcaman <b class="num">${money(Math.round(vk / daysIn))}</b>`]);
+    const pO = b.data[4].o;
+    if (pO && ui.ym <= curYm) { const ch = Math.round((gd - pO) / pO * 100); ins.push([ch > 0 ? 'up' : 'down', ch > 0 ? 'var(--out)' : 'var(--in)', `Gider geçen aya göre <b>%${Math.abs(ch)} ${ch > 0 ? 'arttı' : 'azaldı'}</b>${ui.ym === curYm ? ' (ay henüz bitmedi)' : ''}`]); }
+    if (gi) ins.push(['wallet', 'var(--inv)', gi >= gd + gv ? `Gelirinin <b>%${Math.round((gi - gd - gv) / gi * 100)}</b> kadarı elinde kaldı, <b>%${Math.round(gv / gi * 100)}</b> kadarını yatırdın` : `Bu ay gelirinden <b class="num">${money(gd + gv - gi)}</b> fazla çıktı`]);
+    if (ui.ym === curYm && vk && daysIn > 3) { const dim = new Date(Y, M, 0).getDate(); const proj = vk / daysIn * dim; ins.push(['trend', '#6250d6', `Bu hızla ay sonunda değişken harcaman <b class="num">${eur(proj)}</b> olur${db.budget ? (proj > db.budget ? `, bütçeyi <b>${eur(proj - db.budget)}</b> aşar` : `, bütçenin içinde kalır`) : ''}`]); }
+    const last3 = db.tx.filter(t => t.type === 'out' && t.date > ymAdd(ui.ym, -3) + '-31' && ymOf(t.date) <= ui.ym);
+    const byNote = {}; last3.filter(t => t.note).forEach(t => { const k = t.note; byNote[k] = byNote[k] || { n: 0, v: 0 }; byNote[k].n++; byNote[k].v += t.amount; });
+    const topNote = Object.entries(byNote).sort((a, b) => b[1].n - a[1].n || b[1].v - a[1].v)[0];
+    if (topNote && topNote[1].n > 2) ins.push(['cart', '#e87ba4', `Son 3 ayda en sık <b>${esc(topNote[0])}</b>: ${topNote[1].n} kez, toplam ${eur(topNote[1].v)}`]);
+    const wd = [0, 0, 0, 0, 0, 0, 0]; last3.forEach(t => { const [a, b, c] = t.date.split('-').map(Number); wd[new Date(a, b - 1, c).getDay()] += t.amount; });
+    const wmax = wd.indexOf(Math.max(...wd)); if (last3.length > 5) ins.push(['calendar', '#0891b2', `En çok <b>${GUN[wmax]}</b> günleri harcıyorsun (son 3 ay)`]);
+    db.fixed.filter(f => f.end && ymDiff(f.end, curYm) >= 0 && ymDiff(f.end, curYm) < 3)
+      .forEach(f => ins.push(['alert', '#b76e00', `<b>${esc(f.name)}</b> ${AYLAR[+f.end.slice(5) - 1]} ${f.end.slice(0, 4)} sonunda bitiyor. İptal ya da yenileme kararını şimdiden ver.`]));
+
+    let share = '';
+    if (ui.who === 'all') {
+      const all = db.tx.filter(t => t.type === 'in' && ymOf(t.date) === ui.ym), tot = all.reduce((a, t) => a + t.amount, 0);
+      const ni = all.filter(t => t.payer === 'nisa').reduce((a, t) => a + t.amount, 0);
+      if (tot && ni) share = `<p class="hint">Hane geliri ${eur(tot)}: Mali <b>%${Math.round((tot - ni) / tot * 100)}</b>, Nisa <b>%${Math.round(ni / tot * 100)}</b>.</p>`;
+    }
+    return `<div class="seg" style="--n:3" role="group" aria-label="Kimin analizi">${[['all', 'Hane'], ['mali', 'Mali'], ['nisa', 'Nisa']].map(([v, l]) => `<button data-who="${v}" aria-pressed="${ui.who === v}">${v === 'all' ? '' : `<span class="who sm ${v}">${l[0]}</span>`}${l}</button>`).join('')}</div>
+      ${share}
+      <section class="card">
+        <div class="card-h"><h2>Kategori dağılımı</h2></div>
+        <div class="seg type">
+          <button data-at="out" data-v="out" aria-pressed="${ui.aType === 'out'}">Gider</button>
+          <button data-at="in" data-v="in" aria-pressed="${ui.aType === 'in'}">Gelir</button>
+          <button data-at="inv" data-v="inv" aria-pressed="${ui.aType === 'inv'}">Yatırım</button>
+        </div>
+        ${ui.aType === 'inv' ? `<div class="budget-row"><span>Bugüne kadar toplam yatırım</span><b class="num" style="color:var(--inv)">${eur(invTotal(ui.ym))}</b></div>` : ''}
+        ${rows.length ? `<div class="donut-row">${donutSvg(items, total, 'Toplam ' + TN[ui.aType].toLocaleLowerCase('tr-TR'), `var(--${ui.aType === 'inv' ? 'inv' : ui.aType + '-ink'})`)}
+          <div class="legend">${items.map(x => `<div><span class="dot" style="background:${x.color}"></span><span class="n">${esc(x.name)}</span><em class="num">%${Math.round(x.v / total * 100)}</em></div>`).join('')}</div>
+        </div>
+        <div class="list">${rows.map(([id, v]) => {
+          const c = catOf(ui.aType, id), p = pby[id] || 0;
+          const chg = p ? Math.round((v - p) / p * 100) : null;
+          const good = ui.aType === 'out' ? chg < 0 : chg > 0;
+          return `<div class="row">${icoBox(c)}<div class="t"><b>${esc(c.name)}</b><small>${list.filter(t => t.cat === id).length} kayıt${chg ? ` · <span class="chg" style="color:var(${good ? '--in-ink' : '--out-ink'})">${chg > 0 ? '↑' : '↓'} %${Math.abs(chg)}</span> geçen aya göre` : ''}</small></div><div class="amt num ${ui.aType}">${money(v)}</div></div>`;
+        }).join('')}</div>`
+        : `<div class="empty">Bu ay ${TN[ui.aType].toLocaleLowerCase('tr-TR')} kaydı yok.</div>`}
+      </section>
+      <section class="card bars">
+        <div class="card-h"><h2>Son 6 ay</h2><div class="keys"><span><i class="dot" style="background:var(--in)"></i>Gelir</span><span><i class="dot" style="background:var(--out)"></i>Gider</span></div></div>
+        ${b.svg}
+      </section>
+      ${catAnalysis()}
+      ${ins.length ? `<section class="card"><div class="card-h"><h2>Bu ay kısaca</h2></div><ul class="insights">${ins.slice(0, 3).map(([i, col, t]) => `<li><i style="background:color-mix(in srgb, ${col} 14%, transparent);color:${col}">${svg(i)}</i><span>${t}</span></li>`).join('')}</ul></section>` : ''}`;
+  }
+
+  // Kategori analizi: dönem + kategori seçimi, aylık çubuk grafik ve toplamlar
+  function catAnalysis() {
+    const endYm = ui.ym > curYm ? curYm : ui.ym;
+    let startYm = ui.per === '6' ? ymAdd(endYm, -5) : ui.per === '12' ? ymAdd(endYm, -11) : (ui.from <= endYm ? ui.from : endYm);
+    if (ymDiff(endYm, startYm) > 35) startYm = ymAdd(endYm, -35);
+    const months = []; for (let ym = startYm; ym <= endYm; ym = ymAdd(ym, 1)) months.push(ym);
+    const cats = db.cats.out;
+    const c = ui.acat === 'all' ? { name: 'Tüm giderler', color: 'var(--out)' } : catOf('out', ui.acat);
+    const vals = months.map(ym => monthTx(ym).filter(t => t.type === 'out' && (ui.acat === 'all' || t.cat === ui.acat)).reduce((a, t) => a + t.amount, 0));
+    const allOut = months.reduce((a, ym) => a + sum(monthTx(ym), 'out'), 0);
+    const tot = vals.reduce((a, v) => a + v, 0), avg = tot / months.length;
+    const mx = Math.max(...vals), mi = vals.indexOf(mx);
+    const max = niceMax(mx || 1);
+    const W = 340, H = 160, L = 40, T = 14, B = 22, ch = H - T - B, slot = (W - L) / months.length, bw = Math.max(4, Math.min(22, slot - 6));
+    const y = v => T + ch - v / max * ch;
+    let g = '';
+    [0, .5, 1].forEach(f => { const yy = y(max * f); g += `<line x1="${L}" x2="${W}" y1="${yy}" y2="${yy}" stroke="var(--line)"/><text x="${L - 6}" y="${yy + 3}" text-anchor="end">${short(max * f)}</text>`; });
+    const ay = y(avg); g += `<line x1="${L}" x2="${W}" y1="${ay}" y2="${ay}" stroke="var(--ink-2)" stroke-dasharray="3 3" opacity=".5"/>`;
+    const step = Math.ceil(months.length / 12);
+    months.forEach((ym, k) => {
+      const v = vals[k], x = L + slot * k + (slot - bw) / 2, top = y(v), rr = Math.min(4, (T + ch - top) / 2, bw / 2);
+      if (v > 0) g += `<path d="M${x},${T + ch} V${top + rr} q0,-${rr} ${rr},-${rr} h${bw - 2 * rr} q${rr},0 ${rr},${rr} V${T + ch} Z" fill="${c.color}" opacity="${k === mi ? 1 : .7}"><title>${AYLAR[+ym.slice(5) - 1]} ${ym.slice(0, 4)}: ${money(v)}</title></path>`;
+      if (k === mi && v > 0) g += `<text x="${x + bw / 2}" y="${top - 4}" text-anchor="middle" style="fill:var(--ink);font-weight:800">${short(v)}</text>`;
+      if (k % step === 0) g += `<text x="${L + slot * k + slot / 2}" y="${H - 6}" text-anchor="middle">${AY_K[+ym.slice(5) - 1]}</text>`;
+    });
+    const years = {}; months.forEach((ym, k) => years[ym.slice(0, 4)] = (years[ym.slice(0, 4)] || 0) + vals[k]);
+    return `<section class="card bars">
+      <div class="card-h"><h2>Kategori analizi</h2><small>${AY_K[+startYm.slice(5) - 1]} ${startYm.slice(0, 4)} – ${AY_K[+endYm.slice(5) - 1]} ${endYm.slice(0, 4)}</small></div>
+      <div class="seg" style="--n:3">${[['6', 'Son 6 ay'], ['12', 'Son 1 yıl'], ['from', 'Tarihten']].map(([v, l]) => `<button data-per="${v}" aria-pressed="${ui.per === v}">${l}</button>`).join('')}</div>
+      ${ui.per === 'from' ? `<label class="fld">Başlangıç ayı<input type="month" id="fromIn" value="${ui.from}" max="${curYm}"></label>` : ''}
+      <div class="hscroll" role="group" aria-label="Kategori seç">
+        <button class="pick" data-acat="all" aria-pressed="${ui.acat === 'all'}"><i class="dot" style="background:var(--out)"></i>Tüm giderler</button>
+        ${cats.map(k => `<button class="pick" data-acat="${k.id}" aria-pressed="${ui.acat === k.id}"><i class="dot" style="background:${k.color}"></i>${esc(k.name)}</button>`).join('')}
+      </div>
+      <svg viewBox="0 0 ${W} ${H}" role="img" aria-label="${esc(c.name)} aylık harcama">${g}</svg>
+      <div class="stats">
+        <div><span>Toplam</span><b class="num" style="color:var(--out-ink)">${eur(tot)}</b></div>
+        <div><span>Aylık ortalama</span><b class="num">${eur(avg)}</b></div>
+        <div><span>En yüksek ay</span><b class="num">${mx ? AY_K[+months[mi].slice(5) - 1] + ' · ' + eur(mx) : '–'}</b></div>
+      </div>
+      <p class="hint">${ui.acat !== 'all' && allOut ? `${esc(c.name)} bu dönemdeki giderlerinin <b>%${Math.round(tot / allOut * 100)}</b>'i. ` : ''}${Object.keys(years).length > 1 || ui.per === '12' ? 'Yıllara göre: ' + Object.entries(years).map(([yy, v]) => `${yy} <b class="num">${eur(v)}</b>`).join(' · ') + '. ' : ''}Kesikli çizgi aylık ortalama.</p>
+    </section>`;
+  }
+
+  // 50/30/20 kuralı: gelirin %50'si ihtiyaç (sabit), %30'u istek (değişken), %20'si birikim
+  function ruleCard(gi, fk, vk, gv) {
+    if (!gi) return '';
+    const left = Math.max(0, gi - fk - vk);
+    const rows = [['İhtiyaçlar', 'sabit giderler', fk / gi * 100, 50, '#6250d6', true], ['İstekler', 'değişken harcama', vk / gi * 100, 30, '#eb6834', true], ['Birikim', 'yatırım ve kalan', left / gi * 100, 20, 'var(--in)', false]];
+    return `<section class="card">
+      <div class="card-h"><h2>50/30/20 kontrolü</h2><small>bu ay</small></div>
+      <div class="rule">${rows.map(([n, d, p, tgt, col, lower]) => {
+        const ok = lower ? p <= tgt : p >= tgt;
+        return `<div><div class="r-h"><span>${n} <small>${d}</small></span><span class="num" style="color:var(${ok ? '--in-ink' : '--out-ink'})">%${Math.round(p)} <small>/ hedef %${tgt}</small></span></div>
+          <div class="track"><i style="width:${Math.min(100, p)}%;background:${col}"></i><em style="left:${tgt}%"></em></div></div>`;
+      }).join('')}</div>
+      <p class="hint">Yaygın bir bütçe kuralı: gelirin en fazla %50'si ihtiyaçlara, %30'u isteklere gitsin, en az %20'si birikime kalsın. Dikey çizgi hedefi gösterir.</p>
+    </section>`;
+  }
+
+  /* ---------- Kategoriler ---------- */
+  function renderKategori() {
+    const cats = db.cats[ui.kType];
+    const count = id => db.tx.filter(t => t.type === ui.kType && t.cat === id).length;
+    return `<div class="seg type">
+        <button data-kt="out" data-v="out" aria-pressed="${ui.kType === 'out'}">Gider</button>
+        <button data-kt="in" data-v="in" aria-pressed="${ui.kType === 'in'}">Gelir</button>
+        <button data-kt="inv" data-v="inv" aria-pressed="${ui.kType === 'inv'}">Yatırım</button>
+      </div>
+      <section class="card"><div class="list">${cats.map(c => `<div class="row">${icoBox(c)}
+          <div class="t"><b>${esc(c.name)}</b><small>${c.id === 'sabit' ? 'Özet ekranındaki listeden yönetilir' : count(c.id) ? count(c.id) + ' kayıt' : 'Henüz kullanılmadı'}</small></div>
+          <div>${count(c.id) || c.id === 'sabit' || cats.length <= 1 ? '' : `<button class="link" style="color:var(--out-ink)" data-rmcat="${c.id}">Kaldır</button>`}</div></div>`).join('')}</div>
+      </section>
+      ${ui.kType === 'inv' ? `<section class="card">
+        <div class="card-h"><h2>Mevcut yatırım bakiyesi</h2></div>
+        <p class="hint">Uygulamayı kullanmaya başlamadan önceki toplam yatırımın. Bundan sonra girdiğin yatırımlar bunun üstüne eklenir.</p>
+        <form class="inline-form" id="invForm"><input id="invIn" inputmode="decimal" value="${db.invBase ? String(db.invBase.amount).replace('.', ',') : ''}" placeholder="ör. 21000" aria-label="Mevcut yatırım bakiyesi"><button class="btn" type="submit">Kaydet</button></form>
+      </section>` : ''}
+      <section class="card">
+        <div class="card-h"><h2>Yeni ${TN[ui.kType].toLocaleLowerCase('tr-TR')} kategorisi</h2></div>
+        <form class="newcat" id="catForm">
+          <input class="emo" id="ncIcon" maxlength="4" placeholder="🏷️" aria-label="Simge (emoji)">
+          <input id="ncName" maxlength="18" placeholder="ör. Spor salonu" aria-label="Kategori adı">
+          <button class="btn" type="submit">Ekle</button>
+        </form>
+      </section>
+      <section class="card">
+        <div class="card-h"><h2>Yedek</h2></div>
+        <p class="hint">Bütün kayıtların, sabit giderlerin ve kategorilerin tek bir dosyaya kaydedilir. Başka bir telefonda bu dosyayı yükleyip kaldığın yerden devam edersin.</p>
+        ${ui.restore ? `<div class="chip-note"><span>${ui.restore.tx.length} kayıt ve ${ui.restore.fixed.length} sabit gider içeren yedek yüklensin mi? Şimdiki kayıtların yerine geçer.</span><button data-restore="yes">Yükle</button><button data-restore="no">Vazgeç</button></div>` : ''}
+        <div style="display:flex;gap:8px;flex-wrap:wrap">
+          <button class="btn" data-backup>Yedeği indir</button>
+          <label class="btn ghost" style="position:relative;cursor:pointer">Yedeği yükle<input type="file" id="restoreIn" accept=".json,application/json" style="position:absolute;inset:0;opacity:0;width:100%;cursor:pointer" aria-label="Yedek dosyası seç"></label>
+        </div>
+      </section>`;
+  }
+
+  /* ---------- Çizim ---------- */
+  const TITLES = { ozet: 'Özet', hareket: 'Hareketler', takvim: 'Takvim', analiz: 'Analiz', kategori: 'Kategoriler ve yedek' };
+  function render() {
+    $('#mLbl').textContent = AY_K[+ui.ym.slice(5) - 1] + ' ' + ui.ym.slice(0, 4);
+    $('#mNext').disabled = ui.ym >= maxYm;
+    $('.month').style.visibility = ui.tab === 'kategori' ? 'hidden' : 'visible';
+    $('#hSub').textContent = ui.tab === 'ozet' ? 'Merhaba' : 'Cüzdan';
+    $('#hTitle').textContent = ui.tab === 'ozet' ? AYLAR[+ui.ym.slice(5) - 1] + ' özeti' : TITLES[ui.tab];
+    ui.tab === 'kategori' ? $('#setBtn').setAttribute('aria-current', 'page') : $('#setBtn').removeAttribute('aria-current');
+    document.querySelectorAll('.tab').forEach(b => b.dataset.tab === ui.tab ? b.setAttribute('aria-current', 'page') : b.removeAttribute('aria-current'));
+    const focusQ = document.activeElement && document.activeElement.id === 'qIn';
+    view.innerHTML = ({ ozet: renderOzet, hareket: renderHareket, takvim: renderTakvim, analiz: renderAnaliz, kategori: renderKategori }[ui.tab] || renderOzet)();
+    if (focusQ) { const q = $('#qIn'); q.focus(); q.setSelectionRange(q.value.length, q.value.length); }
+  }
+  function setTab(t) { ui.tab = t; ui.editFx = null; ui.editBudget = false; ui.confirmClear = false; try { localStorage.setItem(KEY + '-tab', t); } catch (e) {} render(); window.scrollTo(0, 0); }
+
+  let toastT;
+  function toast(msg, undo) {
+    document.querySelectorAll('.toast').forEach(t => t.remove());
+    clearTimeout(toastT);
+    const el = document.createElement('div'); el.className = 'toast' + (undo ? ' undo' : ''); el.setAttribute('role', 'status');
+    el.innerHTML = `<span></span>${undo ? '<button>Geri al</button>' : ''}`;
+    el.querySelector('span').textContent = msg;
+    if (undo) el.querySelector('button').onclick = () => { undo(); el.remove(); };
+    document.body.appendChild(el); toastT = setTimeout(() => el.remove(), undo ? 5000 : 2000);
+  }
+  // Silmeler ve sıfırlama geri alınabilir
+  function withUndo(msg, fn) {
+    const snap = JSON.stringify(db);
+    fn(); save(); render();
+    toast(msg, () => { db = JSON.parse(snap); save(); render(); });
+  }
+
+  /* ---------- Olaylar ---------- */
+  document.querySelectorAll('.tab').forEach(b => b.addEventListener('click', () => setTab(b.dataset.tab)));
+  $('#mPrev').addEventListener('click', () => { ui.ym = ymAdd(ui.ym, -1); ui.editFx = null; render(); });
+  $('#mNext').addEventListener('click', () => { if (ui.ym < maxYm) { ui.ym = ymAdd(ui.ym, 1); ui.editFx = null; render(); } });
+  $('#fab').addEventListener('click', () => openSheet());
+  $('#setBtn').addEventListener('click', () => setTab(ui.tab === 'kategori' ? 'ozet' : 'kategori'));
+
+  view.addEventListener('click', e => {
+    const T = s => e.target.closest(s);
+    let el;
+    if ((el = T('[data-go]'))) return setTab(el.dataset.go);
+    if ((el = T('[data-add]'))) return openSheet({ type: el.dataset.add });
+    if ((el = T('[data-clear]'))) {
+      const v = el.dataset.clear;
+      if (v === 'ask') { ui.confirmClear = true; return render(); }
+      ui.confirmClear = false;
+      if (v === 'no') return render();
+      return withUndo('Örnek kayıtlar silindi', () => { db = { cats: JSON.parse(JSON.stringify(DEFAULT_CATS)), tx: [], paid: {}, fixed: db.fixed.map(f => ({ ...f, start: curYm })), budget: db.budget, invBase: db.invBase, sample: false }; });
+    }
+    if ((el = T('[data-tick]'))) {
+      const f = db.fixed.find(x => x.id === el.dataset.tick), key = ui.ym + '|' + f.id;
+      if (db.paid[key]) { delete db.paid[key]; save(); render(); return toast(f.name + ': işaret kaldırıldı'); }
+      const st = fixedState(f, ui.ym);
+      db.paid[key] = { date: ui.ym === curYm ? todayIso : st.due, amount: f.amount };
+      save(); render(); return toast(f.name + ' ödendi: ' + money(f.amount));
+    }
+    if ((el = T('[data-editfx]'))) { ui.editFx = ui.editFx === el.dataset.editfx ? null : el.dataset.editfx; render(); const n = $('#fxName'); if (n) n.focus(); return; }
+    if (T('[data-fxcancel]')) { ui.editFx = null; return render(); }
+    if ((el = T('[data-payer]'))) { el.parentNode.querySelectorAll('button').forEach(b => b.setAttribute('aria-pressed', b === el)); $('#fxPayer').value = el.dataset.payer; return; }
+    if ((el = T('[data-every]'))) {
+      el.parentNode.querySelectorAll('button').forEach(b => b.setAttribute('aria-pressed', b === el));
+      $('#fxEvery').value = el.dataset.every; $('#fxFirstWrap').hidden = el.dataset.every === '1'; return;
+    }
+    if ((el = T('[data-fxdel]'))) { const id = el.dataset.fxdel; ui.editFx = null; return withUndo('Sabit gider silindi', () => { db.fixed = db.fixed.filter(x => x.id !== id); }); }
+    if (T('[data-budget]')) { ui.editBudget = !ui.editBudget; render(); const b = $('#budgetIn'); if (b) b.focus(); return; }
+    if ((el = T('[data-f]'))) { ui.filter = el.dataset.f; return render(); }
+    if ((el = T('[data-at]'))) { ui.aType = el.dataset.at; return render(); }
+    if ((el = T('[data-who]'))) { ui.who = el.dataset.who; return render(); }
+    if ((el = T('[data-per]'))) { ui.per = el.dataset.per; return render(); }
+    if ((el = T('[data-acat]'))) { const sx = el.parentNode.scrollLeft; ui.acat = el.dataset.acat; render(); const h = $('.hscroll'); if (h) h.scrollLeft = sx; return; }
+    if ((el = T('[data-kt]'))) { ui.kType = el.dataset.kt; return render(); }
+    if ((el = T('[data-rmcat]'))) { const id = el.dataset.rmcat; return withUndo('Kategori kaldırıldı', () => { db.cats[ui.kType] = db.cats[ui.kType].filter(c => c.id !== id); }); }
+    if (T('[data-backup]')) return backup();
+    if ((el = T('[data-restore]'))) {
+      const obj = ui.restore; ui.restore = null;
+      if (el.dataset.restore === 'no' || !obj) return render();
+      return withUndo('Yedek yüklendi', () => { db = obj; });
+    }
+    if ((el = T('[data-day]'))) { ui.selDay = el.dataset.day; return render(); }
+    if ((el = T('[data-edit]'))) { const t = db.tx.find(x => x.id === el.dataset.edit); if (t) openSheet({ tx: t }); return; }
+    if ((el = T('[data-fxrow]'))) { const id = el.dataset.fxrow; setTab('ozet'); ui.editFx = id; render(); const fc = $('#fixedCard'); if (fc) fc.scrollIntoView({ block: 'center' }); return; }
+  });
+  // Sola kaydırınca sil (geri alınabilir)
+  let sw = null, swMoved = false;
+  view.addEventListener('pointerdown', e => {
+    const row = e.target.closest('.sw .row'); if (!row) return;
+    sw = { row, x: e.clientX, y: e.clientY, dx: 0, on: false }; swMoved = false;
+  });
+  view.addEventListener('pointermove', e => {
+    if (!sw) return;
+    const dx = e.clientX - sw.x, dy = e.clientY - sw.y;
+    if (!sw.on) { if (Math.abs(dy) > 10 && Math.abs(dy) > Math.abs(dx)) { sw = null; return; } if (dx < -8) { sw.on = true; sw.row.classList.add('drag'); } else return; }
+    sw.dx = Math.min(0, dx); swMoved = true;
+    sw.row.style.transform = `translateX(${sw.dx}px)`;
+  });
+  const swEnd = () => {
+    if (!sw) return;
+    const { row, dx, on } = sw; sw = null;
+    if (!on) return;
+    row.classList.remove('drag');
+    if (dx < -row.offsetWidth * 0.35) {
+      row.style.transform = 'translateX(-110%)';
+      const id = row.dataset.edit;
+      setTimeout(() => withUndo('Kayıt silindi', () => { db.tx = db.tx.filter(t => t.id !== id); }), 160);
+    } else row.style.transform = '';
+  };
+  view.addEventListener('pointerup', swEnd);
+  view.addEventListener('pointercancel', swEnd);
+  view.addEventListener('click', e => { if (swMoved) { swMoved = false; e.stopImmediatePropagation(); e.preventDefault(); } }, true);
+
+  view.addEventListener('input', e => { if (e.target.id === 'qIn') { ui.q = e.target.value; render(); } });
+  view.addEventListener('change', e => {
+    if (e.target.id === 'fromIn' && e.target.value) { ui.from = e.target.value; return render(); }
+    if (e.target.id === 'restoreIn' && e.target.files[0]) {
+      const fr = new FileReader();
+      fr.onload = () => {
+        try {
+          const o = JSON.parse(fr.result);
+          if (!(o && o.cats && o.cats.out && Array.isArray(o.tx) && Array.isArray(o.fixed) && o.paid)) throw 0;
+          o.cats.inv = o.cats.inv || JSON.parse(JSON.stringify(DEFAULT_CATS.inv));
+          ui.restore = o; render();
+        } catch (err) { toast('Bu dosya bir Cüzdan yedeği değil'); }
+      };
+      fr.readAsText(e.target.files[0]);
+      return;
+    }
+    if (e.target.id !== 'fxNoEnd') return;
+    const m = $('#fxEnd'); m.disabled = e.target.checked;
+    if (!e.target.checked) m.focus();
+  });
+  view.addEventListener('submit', e => {
+    e.preventDefault();
+    if (e.target.id === 'fxForm') {
+      const name = $('#fxName').value.trim();
+      const amt = parseAmt($('#fxAmt').value), day = Math.round(+$('#fxDay').value);
+      if (!name || !(amt > 0) || !(day >= 1 && day <= 31)) return toast('Ad, tutar ve 1–31 arası bir gün gir');
+      const end = $('#fxNoEnd').checked ? null : ($('#fxEnd').value || null);
+      if (!$('#fxNoEnd').checked && !end) return toast('Son taksit ayını seç ya da Süresiz işaretle');
+      const id = e.target.dataset.id;
+      const every = +$('#fxEvery').value || 1, anchor = every > 1 ? ($('#fxFirst').value || ui.ym) : null;
+      if (id) { const f = db.fixed.find(x => x.id === id); Object.assign(f, { name, amount: amt, day, end, every, anchor, payer: $('#fxPayer').value }); if (anchor && anchor < f.start) f.start = anchor; }
+      else { const st0 = ui.ym < curYm ? ui.ym : curYm; db.fixed.push({ id: 'f' + Date.now(), name, amount: amt, day, end, every, anchor, payer: $('#fxPayer').value, start: anchor && anchor < st0 ? anchor : st0 }); }
+      ui.editFx = null; save(); render(); return toast(id ? 'Kaydedildi' : 'Sabit gider eklendi');
+    }
+    if (e.target.id === 'budgetForm') {
+      const v = parseAmt($('#budgetIn').value);
+      db.budget = v > 0 ? v : 0; ui.editBudget = false; save(); render(); return toast(v > 0 ? 'Bütçe ' + eur(v) + ' oldu' : 'Bütçe kaldırıldı');
+    }
+    if (e.target.id === 'invForm') {
+      const v = parseAmt($('#invIn').value);
+      db.invBase = { amount: v > 0 ? v : 0, date: todayIso }; save(); render(); return toast('Yatırım bakiyesi ' + eur(db.invBase.amount) + ' oldu');
+    }
+    if (e.target.id === 'catForm') {
+      const name = $('#ncName').value.trim(); if (!name) return $('#ncName').focus();
+      addCat(ui.kType, name, $('#ncIcon').value.trim());
+      render(); toast('Kategori eklendi');
+    }
+  });
+
+  // Yedek dosyası: önce sayfanın indirme izniyle, olmazsa panoya kopyalayarak
+  async function backup() {
+    const data = JSON.stringify(Object.assign({}, db, { sample: false }), null, 1);
+    const filename = 'cuzdan-yedek-' + todayIso + '.json';
+    let dl = null;
+    try { dl = window.claude && window.claude.use ? await window.claude.use('downloads') : null; } catch (e) {}
+    if (dl) {
+      try { await dl.save({ filename, data }); return toast('Yedek kaydedildi'); }
+      catch (e) { if (e && e.code === 'declined') return; }
+    } else {
+      // Claude dışında (ör. GitHub Pages) normal dosya indirme
+      try { const a = document.createElement('a'); a.href = URL.createObjectURL(new Blob([data], { type: 'application/json' })); a.download = filename; document.body.appendChild(a); a.click(); a.remove(); setTimeout(() => URL.revokeObjectURL(a.href), 2000); return toast('Yedek indirildi'); } catch (e) {}
+    }
+    try { await navigator.clipboard.writeText(data); toast('İndirilemedi, yedek panoya kopyalandı'); }
+    catch (e) { toast('Yedek bu görünümde indirilemiyor'); }
+  }
+
+  function parseAmt(s) { s = String(s).replace(/\s|€/g, ''); if (s.includes(',')) s = s.replace(/\./g, '').replace(',', '.'); const v = parseFloat(s); return isFinite(v) ? Math.round(v * 100) / 100 : NaN; }
+  function addCat(type, name, icon) {
+    const c = { id: 'c' + Date.now(), name, icon: icon || name.charAt(0).toLocaleUpperCase('tr-TR'), color: PALET.find(h => !db.cats[type].some(x => x.color === h)) || GRAY };
+    const list = db.cats[type]; const di = list.findIndex(x => x.id.startsWith('diger'));
+    di >= 0 ? list.splice(di, 0, c) : list.push(c);
+    save(); return c;
+  }
+
+  /* ---------- Ekleme / düzenleme paneli ---------- */
+  function openSheet(opt) {
+    opt = opt || {};
+    const ed = opt.tx;
+    const type0 = ed ? ed.type : (opt.type || 'out');
+    const st = ed
+      ? { payer: ed.payer || 'mali', type: ed.type, cat: ed.cat, amount: String(ed.amount).replace('.', ','), date: ed.date, note: ed.note, adding: false, err: '' }
+      : { payer: ui.lastPayer, type: type0, cat: ui.last[type0] || null, amount: '', date: ui.ym < curYm ? ui.ym + '-01' : todayIso, note: '', adding: false, err: '', sig: false, sigAmt: '' };
+    const root = $('#sheetRoot');
+    // Kısayollar: son 3 ayda en sık girilen kayıtlar tek dokunuşla doldurulur
+    const favMap = {};
+    db.tx.filter(t => t.note && t.date > ymAdd(curYm, -3)).forEach(t => { const k = t.type + '|' + t.cat + '|' + t.note; const m = favMap[k] = favMap[k] || { type: t.type, cat: t.cat, note: t.note, n: 0, amount: t.amount, date: '' }; m.n++; if (t.date >= m.date) { m.date = t.date; m.amount = t.amount; m.payer = t.payer; } });
+    const favs = Object.values(favMap).filter(f => f.n > 1).sort((a, b) => b.n - a.n).slice(0, 8);
+    const prevFocus = document.activeElement;
+    let drawn = false;
+    function draw(focusAmount) {
+      const a = root.querySelector('#amt'); if (a) st.amount = a.value;
+      const n = root.querySelector('#nt'); if (n) st.note = n.value;
+      const sa = root.querySelector('#sigAmt'); if (sa) st.sigAmt = sa.value;
+      const cats = db.cats[st.type].filter(c => c.id !== 'sabit');
+      const custom = st.date !== todayIso && st.date !== yestIso;
+      root.innerHTML = `<div class="scrim" id="scrim"></div>
+        <div class="sheet${drawn ? '' : ' anim'}" role="dialog" aria-modal="true" aria-labelledby="shT">
+          <div class="grab"></div>
+          <div class="sheet-h"><h3 id="shT">${ed ? 'Kaydı düzenle' : 'Yeni kayıt'}</h3><button class="icon-btn" id="shClose" aria-label="Kapat">${svg('x')}</button></div>
+          <div class="seg type" id="tSeg">
+            <button data-v="out" aria-pressed="${st.type === 'out'}">Gider</button>
+            <button data-v="in" aria-pressed="${st.type === 'in'}">Gelir</button>
+            <button data-v="inv" aria-pressed="${st.type === 'inv'}">Yatırım</button>
+          </div>
+          <label class="amount"><span>€</span><input id="amt" inputmode="decimal" autocomplete="off" placeholder="0" value="${esc(st.amount)}" aria-label="Tutar"></label>
+          <div class="cats" role="group" aria-label="Kategori">
+            ${cats.map(c => `<button class="cat" style="--c:${c.color}" data-c="${c.id}" aria-pressed="${st.cat === c.id}">${icoBox(c, 'ci')}<span class="nm">${esc(c.name)}</span></button>`).join('')}
+            <button class="cat add" id="addCat"><span class="ci">${svg('plus')}</span><span class="nm">Yeni</span></button>
+          </div>
+          ${st.adding ? `<div class="newcat"><input class="emo" id="sIcon" maxlength="4" placeholder="🏷️" aria-label="Simge"><input id="sName" maxlength="18" placeholder="Kategori adı" aria-label="Kategori adı"><button class="btn" id="sAdd">Ekle</button></div>` : ''}
+          ${!ed && st.type === 'out' && st.cat && st.cat !== 'sigara' ? `<div class="sig${st.sig ? ' on' : ''}"><button class="sig-t" id="sigT" aria-pressed="${st.sig}"><span class="chk" aria-hidden="true">${svg('check')}</span>İçinde sigara var</button>${st.sig ? `<label class="sig-a"><span>€</span><input id="sigAmt" inputmode="decimal" autocomplete="off" placeholder="12" value="${esc(st.sigAmt)}" aria-label="Sigara tutarı"></label>` : ''}</div>` : ''}
+          <div class="dates" role="group" aria-label="Tarih">
+            <button data-d="${todayIso}" aria-pressed="${st.date === todayIso}">Bugün</button>
+            <button data-d="${yestIso}" aria-pressed="${st.date === yestIso}">Dün</button>
+            <label class="${custom ? 'on' : ''}">${svg('calendar')}${custom ? dm(st.date) + ' ' + st.date.slice(0, 4) : 'Başka gün'}<input type="date" id="dt" value="${st.date}" aria-label="Tarih seç"></label>
+          </div>
+          <div class="dates" role="group" aria-label="Kim">
+            ${['mali', 'nisa'].map(p => `<button class="pw" data-pw="${p}" aria-pressed="${st.payer === p}"><span class="who sm ${p}" style="margin:0">${PAYER[p][0]}</span>${PAYER[p]}</button>`).join('')}
+          </div>
+          <input class="note-in" id="nt" maxlength="40" placeholder="Not ekle (ör. Rewe)" value="${esc(st.note)}" aria-label="Not">
+          ${st.err ? `<p class="err">${st.err}</p>` : ''}
+          <button class="save ${st.type}" id="saveBtn">${{ out: 'Gideri kaydet', in: 'Geliri kaydet', inv: 'Yatırımı kaydet' }[st.type]}</button>
+          ${ed ? `<button class="btn danger" id="delBtn" style="align-self:center">Bu kaydı sil</button>` : ''}
+        </div>`;
+      drawn = true;
+      if (focusAmount) setTimeout(() => { const i = root.querySelector('#amt'); if (i) { i.focus(); i.setSelectionRange(i.value.length, i.value.length); } }, 30);
+      if (st.adding) setTimeout(() => { const i = root.querySelector('#sName'); if (i) i.focus(); }, 30);
+    }
+    function close() { root.innerHTML = ''; root.onclick = root.onchange = null; document.removeEventListener('keydown', onKey); if (prevFocus && prevFocus.focus && document.contains(prevFocus)) prevFocus.focus(); }
+    function onKey(e) { if (e.key === 'Escape') close(); }
+    root.onchange = e => { if (e.target.id === 'dt' && e.target.value) { st.date = e.target.value; draw(); } };
+    root.onclick = e => {
+      const T = s => e.target.closest(s);
+      let el;
+      if (e.target.id === 'scrim' || T('#shClose')) return close();
+      if ((el = T('#tSeg [data-v]'))) { st.type = el.dataset.v; st.cat = ui.last[st.type] || null; st.adding = false; st.err = ''; return draw(); }
+      if ((el = T('[data-c]'))) { st.cat = el.dataset.c; st.err = ''; return draw(); }
+      if ((el = T('[data-fav]'))) { const f = favs[+el.dataset.fav]; Object.assign(st, { type: f.type, cat: f.cat, note: f.note, payer: f.payer || st.payer, err: '' }); const a = root.querySelector('#amt'); if (a) a.value = String(f.amount).replace('.', ','); const n = root.querySelector('#nt'); if (n) n.value = f.note; draw(); return; }
+      if ((el = T('[data-d]'))) { st.date = el.dataset.d; return draw(); }
+      if ((el = T('[data-pw]'))) { st.payer = el.dataset.pw; return draw(); }
+      if (T('#sigT')) { st.sig = !st.sig; draw(); if (st.sig) setTimeout(() => { const i = root.querySelector('#sigAmt'); if (i) i.focus(); }, 30); return; }
+      if (T('#addCat')) { st.adding = !st.adding; return draw(); }
+      if (T('#sAdd')) { const n = root.querySelector('#sName').value.trim(); if (!n) return; const nc = addCat(st.type, n, root.querySelector('#sIcon').value.trim()); st.cat = nc.id; st.adding = false; return draw(); }
+      if (T('#delBtn')) { close(); return withUndo('Kayıt silindi', () => { db.tx = db.tx.filter(t => t.id !== ed.id); }); }
+      if (T('#saveBtn')) {
+        const v = parseAmt(root.querySelector('#amt').value);
+        if (!(v > 0)) { st.err = 'Tutarı yaz, örneğin 25 ya da 12,50.'; draw(true); return; }
+        if (!st.cat) { st.err = 'Bir kategori seç.'; draw(); return; }
+        const note = root.querySelector('#nt').value.trim();
+        // Sigara payı ayrı bir Sigara kaydı olur, kalan tutar seçilen kategoriye yazılır
+        const useSig = !ed && st.type === 'out' && st.sig && st.cat !== 'sigara';
+        const sv = useSig ? parseAmt(root.querySelector('#sigAmt').value) : 0;
+        if (useSig && !(sv > 0 && sv < v)) { st.err = 'Sigara tutarını yaz; toplam tutardan küçük olmalı.'; draw(); return; }
+        if (useSig) {
+          const ts = Date.now();
+          db.tx.push({ id: 't' + ts, ts, type: 'out', cat: st.cat, amount: Math.round((v - sv) * 100) / 100, date: st.date, note, payer: st.payer });
+          db.tx.push({ id: 't' + ts + 's', ts: ts + 1, type: 'out', cat: 'sigara', amount: sv, date: st.date, note, payer: st.payer });
+          ui.last.out = st.cat; ui.lastPayer = st.payer;
+          save(); ui.ym = ymOf(st.date); close(); render();
+          return toast(`${catOf('out', st.cat).name} ${money(v - sv)} · Sigara ${money(sv)} kaydedildi`);
+        }
+        if (ed) Object.assign(ed, { type: st.type, cat: st.cat, amount: v, date: st.date, note, payer: st.payer });
+        else db.tx.push({ id: 't' + Date.now(), ts: Date.now(), type: st.type, cat: st.cat, amount: v, date: st.date, note, payer: st.payer });
+        ui.last[st.type] = st.cat; ui.lastPayer = st.payer;
+        save(); ui.ym = ymOf(st.date); close(); render();
+        toast(ed ? 'Kayıt güncellendi' : TN[st.type] + ' kaydedildi: ' + money(v));
+      }
+    };
+    document.addEventListener('keydown', onKey);
+    draw(!ed);
+  }
+
+  render();
+})();
+</script>
+</head>
+<body>
+
+<div class="app" lang="tr">
+  <header class="top">
+    <div class="hello"><small id="hSub">Merhaba</small><b id="hTitle">Cüzdan</b></div>
+    <div class="hdr-r">
+      <div class="month">
+        <button id="mPrev" aria-label="Önceki ay"></button>
+        <span id="mLbl" class="num"></span>
+        <button id="mNext" aria-label="Sonraki ay"></button>
+      </div>
+      <button class="icon-btn" id="thBtn" aria-label="Koyu temaya geç" title="Tema"></button>
+      <button class="icon-btn" id="setBtn" aria-label="Kategoriler ve yedek" title="Kategoriler ve yedek"></button>
+    </div>
+  </header>
+  <main id="view" style="display:flex;flex-direction:column;gap:16px"></main>
+</div>
+
+<nav class="tabs" lang="tr" aria-label="Ana menü">
+  <div class="in">
+    <button class="tab" data-tab="ozet"><span class="pi" data-ic="home"></span>Özet</button>
+    <button class="tab" data-tab="hareket"><span class="pi" data-ic="list"></span>Hareketler</button>
+    <button class="fab" id="fab" aria-label="Yeni kayıt ekle" data-ic="plus"></button>
+    <button class="tab" data-tab="takvim"><span class="pi" data-ic="calendar"></span>Takvim</button>
+    <button class="tab" data-tab="analiz"><span class="pi" data-ic="pie"></span>Analiz</button>
+  </div>
+</nav>
+<div id="sheetRoot" lang="tr"></div>
+
+<script>
+(function () {
+  // Simgeler: Lucide tarzı çizgi simgeler, sayfaya gömülü
+  const IC = {
+    home: '<path d="M3 10l9-7 9 7v10a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><path d="M9 22V12h6v10"/>',
+    list: '<path d="M8 6h13M8 12h13M8 18h13M3 6h.01M3 12h.01M3 18h.01"/>',
+    calendar: '<rect x="3" y="4" width="18" height="18" rx="3"/><path d="M16 2v4M8 2v4M3 10h18"/>',
+    pie: '<path d="M21.2 15.9A10 10 0 1 1 8 2.8"/><path d="M22 12A10 10 0 0 0 12 2v10z"/>',
+    plus: '<path d="M12 5v14M5 12h14"/>',
+    minus: '<path d="M5 12h14"/>',
+    left: '<path d="m15 18-6-6 6-6"/>',
+    right: '<path d="m9 18 6-6-6-6"/>',
+    grid: '<rect x="3" y="3" width="7" height="7" rx="2"/><rect x="14" y="3" width="7" height="7" rx="2"/><rect x="3" y="14" width="7" height="7" rx="2"/><rect x="14" y="14" width="7" height="7" rx="2"/>',
+    check: '<path d="M20 6 9 17l-5-5"/>',
+    moon: '<path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9z"/>',
+    sun: '<circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/>',
+    x: '<path d="M18 6 6 18M6 6l12 12"/>',
+    search: '<circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/>',
+    down: '<path d="M17 7 7 17M17 17H7V7"/>',
+    up: '<path d="M7 17 17 7M7 7h10v10"/>',
+    trend: '<path d="M22 7 13.5 15.5 8.5 10.5 2 17"/><path d="M16 7h6v6"/>',
+    repeat: '<path d="m17 2 4 4-4 4"/><path d="M3 11v-1a4 4 0 0 1 4-4h14"/><path d="m7 22-4-4 4-4"/><path d="M21 13v1a4 4 0 0 1-4 4H3"/>',
+    cart: '<circle cx="8" cy="21" r="1"/><circle cx="19" cy="21" r="1"/><path d="M2 2h2l2.7 12.4a2 2 0 0 0 2 1.6h9.7a2 2 0 0 0 2-1.6L22 7H5.1"/>',
+    food: '<path d="M3 2v7a2 2 0 0 0 2 2h4a2 2 0 0 0 2-2V2M7 2v20"/><path d="M21 15V2a5 5 0 0 0-5 5v6a2 2 0 0 0 2 2h3zm0 0v7"/>',
+    bus: '<path d="M8 6v6M15 6v6M2 12h19.6"/><path d="M18 18h3s.5-1.7.8-2.8c.1-.4.2-.8.2-1.2s-.1-.8-.2-1.2l-1.4-5C20.1 6.8 19.1 6 18 6H4a2 2 0 0 0-2 2v10h3"/><circle cx="7" cy="18" r="2"/><path d="M9 18h5"/><circle cx="16" cy="18" r="2"/>',
+    bag: '<path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"/><path d="M3 6h18M16 10a4 4 0 0 1-8 0"/>',
+    health: '<path d="M19 14c1.5-1.5 3-3.2 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.8 0-3 .5-4.5 2-1.5-1.5-2.7-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4 3 5.5l7 7z"/><path d="M3.2 12h6.3l.5-1 2 4.5 2-7 1.5 3.5h5.3"/>',
+    film: '<rect x="2" y="2" width="20" height="20" rx="2.5"/><path d="M7 2v20M17 2v20M2 12h20M2 7h5M2 17h5M17 17h5M17 7h5"/>',
+    plane: '<path d="M17.8 19.2 16 11l3.5-3.5C21 6 21.5 4 21 3c-1-.5-3 0-4.5 1.5L13 8 4.8 6.2c-.5-.1-.9.1-1.1.5l-.3.5c-.2.5-.1 1 .3 1.3L9 12l-2 3H4l-1 1 3 2 2 3 1-1v-3l3-2 3.5 5.3c.3.4.8.5 1.3.3l.5-.2c.4-.3.6-.7.5-1.2z"/>',
+    users: '<path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.9M16 3.1a4 4 0 0 1 0 7.8"/>',
+    dots: '<circle cx="5" cy="12" r="1.2"/><circle cx="12" cy="12" r="1.2"/><circle cx="19" cy="12" r="1.2"/>',
+    briefcase: '<rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/>',
+    gift: '<rect x="3" y="8" width="18" height="4" rx="1"/><path d="M12 8v13M19 12v7a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2v-7"/><path d="M7.5 8a2.5 2.5 0 0 1 0-5C10 3 12 8 12 8s2-5 4.5-5a2.5 2.5 0 0 1 0 5"/>',
+    wrench: '<path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.8-3.8a6 6 0 0 1-7.9 7.9l-6.9 6.9a2.1 2.1 0 0 1-3-3l6.9-6.9a6 6 0 0 1 7.9-7.9z"/>',
+    bank: '<path d="M3 22h18M6 18v-7M10 18v-7M14 18v-7M18 18v-7M12 2l8 5H4z"/>',
+    coins: '<circle cx="8" cy="8" r="6"/><path d="M18.1 10.4A6 6 0 1 1 10.3 18M7 6h1v4"/>',
+    safe: '<rect x="3" y="4" width="18" height="16" rx="3"/><circle cx="12" cy="12" r="3.5"/><path d="M3 9h2M3 15h2"/>',
+    wallet: '<path d="M19 7V5a2 2 0 0 0-2-2H5a2 2 0 0 0 0 4h15a1 1 0 0 1 1 1v4h-3a2 2 0 0 0 0 4h3a1 1 0 0 0 1-1v-2a1 1 0 0 0-1-1"/><path d="M3 5v14a2 2 0 0 0 2 2h15a1 1 0 0 0 1-1v-4"/>',
+    alert: '<path d="m21.7 18-8-14a2 2 0 0 0-3.4 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.7-3"/><path d="M12 9v4M12 17h.01"/>',
+    cig: '<path d="M17 12H3a1 1 0 0 0-1 1v2a1 1 0 0 0 1 1h14"/><path d="M18 8c0-2.5-2-2.5-2-5M22 8c0-2.5-2-2.5-2-5M21 16a1 1 0 0 0 1-1v-2a1 1 0 0 0-1-1M7 12v4"/>',
+    fuel: '<path d="M3 22h12M4 9h10"/><path d="M14 22V4a2 2 0 0 0-2-2H6a2 2 0 0 0-2 2v18"/><path d="M14 13h2a2 2 0 0 1 2 2v2a2 2 0 0 0 4 0V9.8a2 2 0 0 0-.6-1.4L18 5"/>',
+    spark: '<path d="M12 3l1.9 5.8L20 11l-6.1 2.2L12 19l-1.9-5.8L4 11l6.1-2.2z"/><path d="M19 3v4M17 5h4"/>',
+    smile: '<circle cx="12" cy="12" r="10"/><path d="M8 14s1.5 2 4 2 4-2 4-2M9 9h.01M15 9h.01"/>',
+    clock: '<circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/>'
+  };
+  const svg = n => `<svg class="i" viewBox="0 0 24 24" aria-hidden="true">${IC[n] || ''}</svg>`;
+  document.querySelectorAll('[data-ic]').forEach(el => el.insertAdjacentHTML('afterbegin', svg(el.dataset.ic)));
+  document.getElementById('mPrev').innerHTML = svg('left');
+  document.getElementById('mNext').innerHTML = svg('right');
+  document.getElementById('setBtn').innerHTML = svg('grid');
+  // Açık / koyu tema geçişi
+  function applyTheme(t) {
+    const dark = t === 'dark';
+    document.documentElement.dataset.theme = dark ? 'dark' : 'light';
+    const b = document.getElementById('thBtn'); b.innerHTML = svg(dark ? 'sun' : 'moon'); b.setAttribute('aria-label', dark ? 'Açık temaya geç' : 'Koyu temaya geç');
+  }
+  let theme = 'light'; try { theme = localStorage.getItem('cuzdan-theme') || 'light'; } catch (e) {}
+  applyTheme(theme);
+  document.getElementById('thBtn').addEventListener('click', () => { theme = theme === 'dark' ? 'light' : 'dark'; applyTheme(theme); try { localStorage.setItem('cuzdan-theme', theme); } catch (e) {} });
+
+  const KEY = 'cuzdan-v8';
+  const AYLAR = ['Ocak','Şubat','Mart','Nisan','Mayıs','Haziran','Temmuz','Ağustos','Eylül','Ekim','Kasım','Aralık'];
+  const AY_K = ['Oca','Şub','Mar','Nis','May','Haz','Tem','Ağu','Eyl','Eki','Kas','Ara'];
+  const GUN = ['Pazar','Pazartesi','Salı','Çarşamba','Perşembe','Cuma','Cumartesi'];
+  const GRAY = '#98a2b3';
+  // Kategori renkleri sabit sırayla verilir; yeşil ve kırmızı gelir/gidere ayrıldığı için kategori rengi olarak kullanılmaz
+  const PALET = ['#6250d6', '#2a78d6', '#e87ba4', '#eda100', '#eb6834', '#1baf7a', '#0891b2', '#c026d3'];
+
+  const DEFAULT_CATS = {
+    out: [
+      { id: 'sabit', name: 'Sabit giderler', ic: 'repeat', color: '#6250d6' },
+      { id: 'market', name: 'Market', ic: 'cart', color: '#2a78d6' },
+      { id: 'benzin', name: 'Benzin', ic: 'fuel', color: '#eda100' },
+      { id: 'tatil', name: 'Tatil', ic: 'plane', color: '#0891b2' },
+      { id: 'ekstra', name: 'Ekstra', ic: 'spark', color: '#e87ba4' },
+      { id: 'ev', name: 'Ev', ic: 'home', color: '#eb6834' },
+      { id: 'sigara', name: 'Sigara', ic: 'cig', color: '#c026d3' }
+    ],
+    in: [
+      { id: 'maas', name: 'Maaş', ic: 'briefcase', color: '#2a78d6' },
+      { id: 'cocuk', name: 'Çocuk parası', ic: 'smile', color: '#eb6834' }
+    ],
+    inv: [
+      { id: 'tr', name: 'Trade Republic', ic: 'trend', color: '#2a78d6' }
+    ]
+  };
+  const TN = { in: 'Gelir', out: 'Gider', inv: 'Yatırım' };
+  const SIGN = { in: '+', out: '−', inv: '' };
+
+  const pad = n => String(n).padStart(2, '0');
+  const iso = d => d.getFullYear() + '-' + pad(d.getMonth() + 1) + '-' + pad(d.getDate());
+  const today = new Date();
+  const todayIso = iso(today);
+  const yestIso = iso(new Date(today.getFullYear(), today.getMonth(), today.getDate() - 1));
+  const ymOf = s => s.slice(0, 7);
+  const curYm = ymOf(todayIso);
+  const ymAdd = (ym, k) => { const [y, m] = ym.split('-').map(Number); const d = new Date(y, m - 1 + k, 1); return d.getFullYear() + '-' + pad(d.getMonth() + 1); };
+  const ymDiff = (a, b) => { const [y1, m1] = a.split('-').map(Number), [y2, m2] = b.split('-').map(Number); return (y1 * 12 + m1) - (y2 * 12 + m2); };
+  const maxYm = ymAdd(curYm, 12);
+  const fmt = new Intl.NumberFormat('tr-TR', { style: 'currency', currency: 'EUR', maximumFractionDigits: 0 });
+  const fmt2 = new Intl.NumberFormat('tr-TR', { style: 'currency', currency: 'EUR', minimumFractionDigits: 2, maximumFractionDigits: 2 });
+  const money = v => (Math.abs(v - Math.round(v)) > 0.001 ? fmt2 : fmt).format(v);
+  const eur = v => fmt.format(Math.round(v));
+  const short = v => Math.round(v).toLocaleString('tr-TR');
+  const esc = s => String(s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+  const dm = s => { const [, M, D] = s.split('-').map(Number); return D + ' ' + AY_K[M - 1]; };
+  const dayLabel = s => {
+    if (s === todayIso) return 'Bugün';
+    if (s === yestIso) return 'Dün';
+    const [Y, M, D] = s.split('-').map(Number);
+    return D + ' ' + AYLAR[M - 1] + ', ' + GUN[new Date(Y, M - 1, D).getDay()];
+  };
+
+  const DEFAULT_FIXED = [
+    { id: 'f-kira', name: 'Kira', amount: 1950, day: 1, payer: 'nisa' },
+    { id: 'f-igm', name: 'IG Metall aidatı', amount: 40, day: 1 },
+    { id: 'f-net', name: 'İnternet', amount: 39.99, day: 9 },
+    { id: 'f-strom', name: 'Elektrik faturası', amount: 69, day: 15 },
+    { id: 'f-tel', name: 'Telefon sözleşmesi', amount: 39, day: 15, end: '2027-03' },
+    { id: 'f-rs', name: 'Rechtsschutzversicherung', amount: 29, day: 27 },
+    { id: 'f-rb', name: 'Rundfunkbeitrag', amount: 55.08, day: 15, every: 3, anchor: ymAdd(curYm, -1) },
+    { id: 'f-hp', name: 'Haftpflichtversicherung', amount: 65, day: 1, every: 12, anchor: ymAdd(curYm, 3) }
+  ];
+
+  function seed() {
+    let r = 11;
+    const rnd = () => (r = (r * 9301 + 49297) % 233280) / 233280;
+    const tx = [], paid = {};
+    const add = (type, cat, amount, y, m, d, note, payer) => {
+      const dt = new Date(y, m, d);
+      if (iso(dt) > todayIso) return;
+      tx.push({ id: 'e' + tx.length, type, cat, amount, date: iso(dt), note: note || '', payer: payer || 'mali' });
+    };
+    const start = ymAdd(curYm, -5);
+    const shops = ['Rewe', 'Lidl', 'Aldi', 'Edeka'], eats = ['Döner', 'Kafe', 'Restoran'];
+    for (let k = 5; k >= 0; k--) {
+      const base = new Date(today.getFullYear(), today.getMonth() - k, 1);
+      const y = base.getFullYear(), m = base.getMonth(), ym = y + '-' + pad(m + 1);
+      add('in', 'maas', 3450, y, m, 1, 'Mali maaşı');
+      add('in', 'maas', 2650, y, m, 1, 'Nisa maaşı', 'nisa');
+      add('in', 'cocuk', 255, y, m, 10, 'Kindergeld', 'nisa');
+      [4, 11, 18, 25].forEach((d, n) => add('out', 'market', 55 + Math.round(rnd() * 85), y, m, d, shops[n], n % 2 ? 'nisa' : 'mali'));
+      [7, 21].forEach(d => add('out', 'benzin', 60 + Math.round(rnd() * 25), y, m, d, 'Tankstelle'));
+      [8, 16, 22].forEach((d, n) => add('out', 'ekstra', 12 + Math.round(rnd() * 45), y, m, d, eats[n], n === 1 ? 'nisa' : 'mali'));
+      if (rnd() > .45) add('out', 'ev', 30 + Math.round(rnd() * 90), y, m, 12, 'Ikea', 'nisa');
+      if (k === 3) add('out', 'tatil', 1450, y, m, 10, 'Türkiye tatili');
+      add('inv', 'tr', 250, y, m, 3, 'Sparplan');
+      // Örnek: geçmiş aylarda sabit giderlerin çoğu işaretli, bu ay elektrik işaretlenmemiş (otomatik düşer)
+      DEFAULT_FIXED.forEach(f => {
+        if (k === 0 && f.id === 'f-strom') return;
+        if (k === 3 && f.id === 'f-rs') return;
+        const due = ym + '-' + pad(f.day);
+        if (f.every && ymDiff(ym, f.anchor) % f.every) return;
+        if (due <= todayIso) paid[ym + '|' + f.id] = { date: due, amount: f.amount };
+      });
+    }
+    return { invBase: { amount: 21000, date: todayIso }, cats: JSON.parse(JSON.stringify(DEFAULT_CATS)), tx, paid, fixed: DEFAULT_FIXED.map(f => ({ ...f, start: f.anchor && f.anchor < start ? f.anchor : start })), budget: 900, sample: true };
+  }
+
+  function load() {
+    try { const s = JSON.parse(localStorage.getItem(KEY)); if (s && s.cats && s.cats.inv && Array.isArray(s.tx) && Array.isArray(s.fixed) && s.paid) return s; } catch (e) {}
+    return seed();
+  }
+  let db = load();
+  // Sigara kategorisi sonradan eklendi: mevcut verilere de eklenir
+  if (!db.cats.out.some(c => c.id === 'sigara')) db.cats.out.push({ id: 'sigara', name: 'Sigara', ic: 'cig', color: '#c026d3' });
+  if (db.sample) db.fixed.forEach(f => { if (!f.payer && f.id === 'f-kira') f.payer = 'nisa'; });
+  const PAYER = { mali: 'Mali', nisa: 'Nisa' };
+  const payerOf = f => f.payer === 'nisa' ? 'nisa' : 'mali';
+  const save = () => { try { localStorage.setItem(KEY, JSON.stringify(db)); } catch (e) {} };
+
+  const ui = { who: 'all', lastPayer: 'mali', per: '6', from: ymAdd(curYm, -11), acat: 'all', restore: null, tab: 'ozet', ym: curYm, filter: 'all', q: '', aType: 'out', kType: 'out', editFx: null, editBudget: false, selDay: todayIso, confirmClear: false, last: {} };
+  try { const t = localStorage.getItem(KEY + '-tab'); if (t && t !== 'kategori') ui.tab = t; } catch (e) {}
+
+  const catOf = (type, id) => db.cats[type].find(c => c.id === id) || { name: 'Silinmiş kategori', ic: 'dots', color: GRAY };
+  const catIcon = c => c.ic ? svg(c.ic) : esc(c.icon || c.name.charAt(0));
+  const icoBox = (c, cls) => `<div class="${cls || 'ico'}" style="background:color-mix(in srgb, ${c.color} 15%, transparent);color:${c.color}">${catIcon(c)}</div>`;
+
+  // Sabit gider durumu: işaretlendiyse "paid", ödeme günü geçtiyse "auto" (otomatik gider), yoksa "wait"
+  function fixedState(f, ym) {
+    if (ym < f.start || (f.end && ym > f.end)) return null;
+    if ((f.every || 1) > 1) { const d = ymDiff(ym, f.anchor || f.start); if (d < 0 || d % f.every) return null; }
+    const [Y, M] = ym.split('-').map(Number);
+    const due = ym + '-' + pad(Math.min(f.day, new Date(Y, M, 0).getDate()));
+    const p = db.paid[ym + '|' + f.id];
+    if (p) return { status: 'paid', due, date: p.date, amount: p.amount };
+    if (due <= todayIso) return { status: 'auto', due, date: due, amount: f.amount };
+    return { status: 'wait', due, amount: f.amount };
+  }
+  const fixedTx = ym => db.fixed.map(f => {
+    const st = fixedState(f, ym);
+    if (!st || st.status === 'wait') return null;
+    return { id: 'fx|' + ym + '|' + f.id, fx: f.id, type: 'out', cat: 'sabit', amount: st.amount, date: st.date, note: f.name, auto: st.status === 'auto', payer: payerOf(f) };
+  }).filter(Boolean);
+  // Analiz sekmesinde kişi filtresi (Mali / Nisa) bütün hesaplara uygulanır
+  const monthTx = ym => db.tx.filter(t => ymOf(t.date) === ym).concat(fixedTx(ym))
+    .filter(t => ui.tab !== 'analiz' || ui.who === 'all' || (t.payer || 'mali') === ui.who);
+  const whoBadge = t => { const p = t.payer === 'nisa' ? 'nisa' : 'mali'; return `<span class="who sm ${p}" title="${PAYER[p]}">${PAYER[p][0]}</span>`; };
+  const sum = (arr, type) => arr.filter(t => t.type === type).reduce((a, t) => a + t.amount, 0);
+  const sorted = arr => arr.slice().sort((a, b) => b.date.localeCompare(a.date) || (b.ts || 0) - (a.ts || 0));
+  const fixedItems = () => db.fixed.map(f => ({ f, st: fixedState(f, ui.ym) })).filter(x => x.st).sort((a, b) => a.st.due.localeCompare(b.st.due) || a.f.name.localeCompare(b.f.name, 'tr'));
+
+  // Toplam yatırım: girilen başlangıç bakiyesi + o tarihten sonraki yatırım kayıtları
+  const invTotal = ym => { const b = db.invBase || { amount: 0, date: '0000' }; return b.amount + db.tx.filter(t => t.type === 'inv' && t.date > b.date && ymOf(t.date) <= ym).reduce((a, t) => a + t.amount, 0); };
+  const $ = s => document.querySelector(s);
+  const view = $('#view');
+
+  function rowHtml(t) {
+    const c = catOf(t.type, t.cat);
+    const title = t.note || c.name;
+    const sub = t.fx ? 'Sabit gider · ' + (t.auto ? 'otomatik eklendi' : 'ödendi') : (t.note ? c.name : TN[t.type]);
+    return `<button class="row" data-${t.fx ? 'fxrow' : 'edit'}="${t.fx ? t.fx : t.id}">
+      ${icoBox(c)}
+      <div class="t"><b>${whoBadge(t)}${esc(title)}</b><small>${esc(sub)}</small></div>
+      <div class="amt num ${t.type}">${SIGN[t.type]}${money(t.amount)}</div>
+    </button>`;
+  }
+
+  function donutSvg(items, total, label, color) {
+    const R = 52, C = 2 * Math.PI * R;
+    let off = 0;
+    const segs = items.map(x => {
+      const len = x.v / total * C;
+      const s = `<circle r="${R}" cx="68" cy="68" fill="none" stroke="${x.color}" stroke-width="18" stroke-dasharray="${Math.max(len - 2, 0.5)} ${C}" stroke-dashoffset="${-off}" transform="rotate(-90 68 68)"><title>${esc(x.name)}: ${money(x.v)}</title></circle>`;
+      off += len; return s;
+    }).join('');
+    return `<svg viewBox="0 0 136 136" role="img" aria-label="${esc(label)} dağılımı">
+      <circle r="${R}" cx="68" cy="68" fill="none" stroke="var(--surface-2)" stroke-width="18"/>${segs}
+      <text x="68" y="63" text-anchor="middle" style="fill:var(--muted);font-size:10.5px;font-weight:600;font-family:var(--font)">${esc(label)}</text>
+      <text x="68" y="82" text-anchor="middle" style="fill:${color};font-size:16px;font-weight:800;font-family:var(--font)">${eur(total)}</text>
+    </svg>`;
+  }
+  // En fazla 5 dilim + "Diğer"
+  function foldItems(items) {
+    items.sort((a, b) => b.v - a.v);
+    if (items.length > 6) {
+      const rest = items.slice(5);
+      items = items.slice(0, 5).concat([{ name: 'Diğer', color: GRAY, v: rest.reduce((a, x) => a + x.v, 0) }]);
+    }
+    return items;
+  }
+
+  /* ---------- Özet ---------- */
+  function renderOzet() {
+    const mt = monthTx(ui.ym);
+    const gi = sum(mt, 'in'), gd = sum(mt, 'out'), gv = sum(mt, 'inv'), net = gi - gd - gv;
+    const fk = sum(mt.filter(t => t.fx), 'out'), vk = gd - fk;
+    const fx = fixedItems();
+    const waitSum = fx.filter(x => x.st.status === 'wait').reduce((a, x) => a + x.st.amount, 0);
+    const invAll = invTotal(ui.ym);
+    const pd = gi ? Math.min(100, gd / gi * 100) : 0, pv = gi ? Math.min(100 - pd, gv / gi * 100) : 0;
+    const mName = AYLAR[+ui.ym.slice(5) - 1];
+
+    let html = '';
+    if (db.sample) html += `<div class="chip-note">${ui.confirmClear
+      ? `<span>Örnek kayıtlar silinsin mi? Sabit gider listen kalır.</span><button data-clear="yes">Evet, sil</button><button data-clear="no">Vazgeç</button>`
+      : `<span>Örnek verilerle açıldı</span><button data-clear="ask">Temizle</button>`}</div>`;
+
+    html += `<section class="card hero">
+      <div>
+        <div class="lbl">${mName} ayında kalan</div>
+        <div class="big num ${net < 0 ? 'neg' : ''}">${net < 0 ? '−' : ''}${eur(Math.abs(net))}</div>
+        ${waitSum ? `<div class="pending"><i></i>${money(waitSum)} sabit ödeme bekliyor · sonra <b class="num">${net - waitSum < 0 ? '−' : ''}${eur(Math.abs(net - waitSum))}</b></div>` : ''}
+      </div>
+      <div class="qa">
+        <button class="in" data-add="in">${svg('plus')}Gelir</button>
+        <button class="out" data-add="out">${svg('minus')}Gider</button>
+        <button class="inv" data-add="inv">${svg('trend')}Yatırım</button>
+      </div>
+    </section>`;
+
+    html += `<div class="tiles">
+      <div class="tile in"><div class="lbl">Gelir</div><div class="v num">${eur(gi)}</div></div>
+      <div class="tile out"><div class="lbl">Gider</div><div class="v num">${eur(gd)}</div>
+        <small class="num" title="Sabit giderler (fixed cost)"><b>FK</b> ${eur(fk)}</small><small class="num" title="Değişken giderler"><b>V</b> ${eur(vk)}</small></div>
+      <div class="tile inv"><div class="lbl">Yatırım</div><div class="v num">${eur(gv)}</div><small><b>Toplam</b></small><small class="num">${eur(invAll)}</small></div>
+    </div>`;
+
+    html += topCatsCard(mt, gd);
+    html += fixedCard(fx);
+    return html;
+  }
+
+  function topCatsCard(mt, total) {
+    const out = mt.filter(t => t.type === 'out');
+    if (!out.length) return '';
+    const by = {};
+    out.forEach(t => { const c = catOf('out', t.cat); by[t.cat] = by[t.cat] || { name: c.name, color: c.color, v: 0 }; by[t.cat].v += t.amount; });
+    const items = foldItems(Object.values(by));
+    return `<section class="card">
+      <div class="card-h"><h2>En çok harcanan</h2><button class="link" data-go="analiz">Analiz</button></div>
+      <div class="donut-row">${donutSvg(items, total, 'Toplam gider', 'var(--out-ink)')}
+        <div class="legend">${items.map(x => `<div><span class="dot" style="background:${x.color}"></span><span class="n">${esc(x.name)}</span><em class="num">%${Math.round(x.v / total * 100)}<small>${eur(x.v)}</small></em></div>`).join('')}</div>
+      </div>
+    </section>`;
+  }
+
+  const monthsLeft = end => ymDiff(end, ui.ym) + 1;
+  function fixedRow({ f, st }) {
+    let stat;
+    if (st.status === 'paid') stat = `<span class="paid">Ödendi ${dm(st.date)}</span>`;
+    else if (st.status === 'auto') stat = `<span class="auto">Otomatik eklendi</span>`;
+    else { const left = Math.round((new Date(st.due) - new Date(todayIso)) / 864e5); stat = left <= 0 ? 'Bugün' : left > 31 ? dm(st.due) : left + ' gün kaldı'; }
+    let badge = '';
+    if ((f.every || 1) > 1) badge += `<span class="badge" style="background:var(--primary-soft);color:var(--primary-ink)">${f.every === 12 ? 'yıllık' : f.every + ' ayda bir'}</span>`;
+    if (f.end) { const n = monthsLeft(f.end); badge += `<span class="badge ${n <= 3 ? 'soon' : ''}" title="Son taksit ${AYLAR[+f.end.slice(5) - 1]} ${f.end.slice(0, 4)}${n <= 3 ? '. Sözleşmeyi iptal etmeyi ya da yenilemeyi unutma.' : ''}">${n <= 1 ? 'son taksit' : n + ' ay'}</span>`; }
+    return `<div class="fx-row">
+      <button class="chk ${st.status === 'auto' ? 'auto' : ''}" data-tick="${f.id}" aria-pressed="${st.status === 'paid'}" aria-label="${esc(f.name)} ödendi">${svg('check')}</button>
+      <button class="fx-main" data-editfx="${f.id}" aria-label="${esc(f.name)} düzenle">
+        <span class="l1"><span class="who ${payerOf(f)}" title="${PAYER[payerOf(f)]} ödüyor">${PAYER[payerOf(f)][0]}</span><b>${esc(f.name)}</b>${badge}</span>
+        <span class="l2">Ayın ${f.day}. günü · ${stat}</span>
+      </button>
+      <b class="fx-amt num">${money(st.amount)}</b>
+    </div>${ui.editFx === f.id ? fxForm(f) : ''}`;
+  }
+  function fixedCard(items) {
+    const done = items.filter(x => x.st.status !== 'wait');
+    const tot = items.reduce((a, x) => a + x.st.amount, 0);
+    const doneSum = done.reduce((a, x) => a + x.st.amount, 0);
+    const paidN = items.filter(x => x.st.status === 'paid').length;
+    return `<section class="card" id="fixedCard">
+      <div class="card-h"><div><h2>Sabit giderler</h2><small class="num">${eur(doneSum)} / ${eur(tot)} düştü · ${paidN}/${items.length} ödendi</small></div>${ui.editFx === 'new' ? '' : `<button class="link" data-editfx="new">+ Ekle</button>`}</div>
+      ${ui.editFx === 'new' ? fxForm(null) : ''}
+      <div class="fx-list">${items.length ? items.map(fixedRow).join('') : `<div class="empty">Kira, fatura gibi her ay ödediğin giderleri ekle.</div>`}</div>
+      ${periodicHint()}
+    </section>`;
+  }
+  // Yıllık ve 3 aylık giderler için her ay kenara ayrılması gereken pay
+  function periodicHint() {
+    const per = db.fixed.filter(f => (f.every || 1) > 1 && !(f.end && f.end < ui.ym));
+    if (!per.length) return '';
+    const nextOf = f => { let ym = ui.ym; for (let k = 0; k < 13; k++, ym = ymAdd(ym, 1)) if (fixedState(f, ym)) return ym; return null; };
+    const off = per.filter(f => !fixedState(f, ui.ym));
+    const ed = off.find(f => f.id === ui.editFx);
+    return `${off.length ? `<div class="hscroll" aria-label="Bu ay ödemesi olmayan dönemsel giderler">${off.map(f => { const n = nextOf(f); return `<button class="pick" data-editfx="${f.id}" aria-pressed="${ui.editFx === f.id}">${esc(f.name)} · ${n ? AY_K[+n.slice(5) - 1] : '–'} <b class="num" style="color:var(--out-ink)">${money(f.amount)}</b></button>`; }).join('')}</div>` : ''}
+      ${ed ? fxForm(ed) : ''}`;
+  }
+  function fxForm(f) {
+    const n = !f;
+    f = f || { name: '', amount: '', day: '' };
+    return `<form class="fx-form" id="fxForm" data-id="${n ? '' : f.id}">
+      <label class="fld full">Ad<input id="fxName" maxlength="32" required placeholder="ör. Spor salonu" value="${esc(f.name)}"></label>
+      <div class="fld full freq">Sıklık
+        <div class="seg" style="--n:3" role="group" aria-label="Sıklık">${[[1, 'Her ay'], [3, '3 ayda bir'], [12, 'Yılda bir']].map(([v, l]) => `<button type="button" data-every="${v}" aria-pressed="${(f.every || 1) === v}">${l}</button>`).join('')}</div>
+        <input type="hidden" id="fxEvery" value="${f.every || 1}">
+        <label class="fld" id="fxFirstWrap" ${(f.every || 1) > 1 ? '' : 'hidden'}>Ödeme yapılan bir ay<input type="month" id="fxFirst" value="${f.anchor || ui.ym}"></label>
+      </div>
+      <div class="fld full freq">Kim ödüyor
+        <div class="seg" style="--n:2" role="group" aria-label="Kim ödüyor">${['mali', 'nisa'].map(p => `<button type="button" data-payer="${p}" aria-pressed="${payerOf(f) === p}">${PAYER[p]}</button>`).join('')}</div>
+        <input type="hidden" id="fxPayer" value="${payerOf(f)}">
+      </div>
+      <label class="fld">Tutar (€)<input id="fxAmt" inputmode="decimal" required placeholder="ör. 39,99" value="${f.amount === '' ? '' : String(f.amount).replace('.', ',')}"></label>
+      <label class="fld">Ödeme günü<input id="fxDay" type="number" min="1" max="31" required placeholder="1–31" value="${f.day}"></label>
+      <div class="fld full">Son ödeme
+        <div class="endrow"><label class="chkl"><input type="checkbox" id="fxNoEnd" ${f.end ? '' : 'checked'}> Süresiz</label><input type="month" id="fxEnd" value="${f.end || ''}" min="${curYm}" ${f.end ? '' : 'disabled'} aria-label="Son taksit ayı"></div>
+      </div>
+      <div class="btns"><button type="submit" class="btn">${n ? 'Ekle' : 'Kaydet'}</button><button type="button" class="btn ghost" data-fxcancel>Vazgeç</button>${n ? '' : `<button type="button" class="btn danger" data-fxdel="${f.id}">Sil</button>`}</div>
+    </form>`;
+  }
+
+  /* ---------- Hareketler ---------- */
+  function renderHareket() {
+    let mt = monthTx(ui.ym);
+    if (ui.filter !== 'all') mt = mt.filter(t => t.type === ui.filter);
+    const q = ui.q.trim().toLocaleLowerCase('tr-TR');
+    if (q) mt = mt.filter(t => (t.note + ' ' + catOf(t.type, t.cat).name).toLocaleLowerCase('tr-TR').includes(q));
+    const groups = {};
+    sorted(mt).forEach(t => (groups[t.date] = groups[t.date] || []).push(t));
+    const days = Object.keys(groups).sort().reverse();
+    return `<label class="search">${svg('search')}<input id="qIn" type="search" placeholder="Ara: Rewe, kira, telefon…" value="${esc(ui.q)}" aria-label="Kayıtlarda ara"></label>
+      <div class="seg" style="--n:4">${[['all', 'Tümü'], ['in', 'Gelir'], ['out', 'Gider'], ['inv', 'Yatırım']].map(([v, l]) => `<button data-f="${v}" aria-pressed="${ui.filter === v}">${l}</button>`).join('')}</div>
+      <div>${days.length ? days.map(d => {
+        const g = groups[d]; const net = sum(g, 'in') - sum(g, 'out') - sum(g, 'inv');
+        return `<div class="day-h"><span>${dayLabel(d)}</span>${g.length > 1 ? `<span class="num" style="color:var(${net >= 0 ? '--in-ink' : '--out-ink'})">${net >= 0 ? '+' : '−'}${money(Math.abs(net))}</span>` : ''}</div>
+          <div class="day-card">${g.map(t => t.fx ? rowHtml(t) : `<div class="sw"><div class="sw-bg">${svg('x')}Sil</div>${rowHtml(t)}</div>`).join('')}</div>`;
+      }).join('') : `<div class="empty">${q ? 'Aramana uyan kayıt yok.' : 'Bu ay için kayıt yok.'}</div>`}</div>
+      <p class="hint" style="text-align:center">Düzenlemek için kayda dokun, silmek için sola kaydır.</p>`;
+  }
+
+  /* ---------- Takvim ---------- */
+  function renderTakvim() {
+    if (ymOf(ui.selDay) !== ui.ym) ui.selDay = ui.ym === curYm ? todayIso : ui.ym + '-01';
+    const [Y, M] = ui.ym.split('-').map(Number);
+    const dim = new Date(Y, M, 0).getDate();
+    const lead = (new Date(Y, M - 1, 1).getDay() + 6) % 7;
+    const mt = monthTx(ui.ym);
+    const fx = fixedItems();
+    let cells = ['Pzt', 'Sal', 'Çar', 'Per', 'Cum', 'Cmt', 'Paz'].map(w => `<div class="wd">${w}</div>`).join('');
+    for (let k = 0; k < lead; k++) cells += '<div></div>';
+    for (let d = 1; d <= dim; d++) {
+      const ds = ui.ym + '-' + pad(d);
+      const dt = mt.filter(t => t.date === ds);
+      const net = sum(dt, 'in') - sum(dt, 'out') - sum(dt, 'inv');
+      const due = fx.filter(x => x.st.due === ds);
+      const pin = due.length ? `<i class="pin ${due.every(x => x.st.status === 'paid') ? 'paid' : ''}"></i>` : '';
+      cells += `<button class="d ${dt.length ? 'has' : ''} ${ds === todayIso ? 'today' : ''} ${ds > todayIso ? 'future' : ''}" data-day="${ds}" aria-pressed="${ds === ui.selDay}" aria-label="${dm(ds)}">${pin}<span class="n">${d}</span>${dt.length ? `<small class="${net >= 0 ? 'p' : 'm'}">${net >= 0 ? '+' : '−'}${short(Math.abs(net))}</small>` : ''}</button>`;
+    }
+    const sel = sorted(mt.filter(t => t.date === ui.selDay && !t.fx));
+    const selFx = fx.filter(x => x.st.due === ui.selDay);
+    const dt = mt.filter(t => t.date === ui.selDay);
+    return `<section class="card">
+        <div class="cal">${cells}</div>
+      </section>
+      <section class="card">
+        <div class="card-h"><h2>${dayLabel(ui.selDay)}</h2>${dt.length ? `<small class="num">Gelir ${eur(sum(dt, 'in'))} · Gider ${eur(sum(dt, 'out'))}</small>` : ''}</div>
+        ${selFx.length ? `<div class="fx-list">${selFx.map(fixedRow).join('')}</div>` : ''}
+        ${sel.length ? `<div class="list">${sel.map(rowHtml).join('')}</div>` : (selFx.length ? '' : '<div class="empty">Bu gün kayıt yok.</div>')}
+      </section>`;
+  }
+
+  /* ---------- Analiz ---------- */
+  function niceMax(v) {
+    if (v <= 0) return 1000;
+    const p = Math.pow(10, Math.floor(Math.log10(v)));
+    for (const m of [1, 2, 2.5, 5, 10]) if (m * p >= v) return m * p;
+    return 10 * p;
+  }
+  function bars() {
+    const months = []; for (let k = 5; k >= 0; k--) months.push(ymAdd(ui.ym, -k));
+    const data = months.map(ym => { const mt = monthTx(ym); return { ym, i: sum(mt, 'in'), o: sum(mt, 'out') }; });
+    const max = niceMax(Math.max(...data.map(d => Math.max(d.i, d.o))));
+    const W = 340, H = 170, L = 40, B = 22, T = 8, ch = H - B - T, slot = (W - L) / 6, bw = 14;
+    const y = v => T + ch - v / max * ch;
+    let g = '';
+    [0, .5, 1].forEach(f => { const yy = y(max * f); g += `<line x1="${L}" x2="${W}" y1="${yy}" y2="${yy}" stroke="var(--line)" stroke-width="1"/><text x="${L - 6}" y="${yy + 3}" text-anchor="end">${short(max * f)}</text>`; });
+    const bar = (x, v, col, op, tip) => {
+      if (!(v > 0)) return '';
+      const top = y(v), rr = Math.min(5, (T + ch - top) / 2);
+      return `<path d="M${x},${T + ch} V${top + rr} q0,-${rr} ${rr},-${rr} h${bw - 2 * rr} q${rr},0 ${rr},${rr} V${T + ch} Z" fill="${col}" opacity="${op}"><title>${tip}</title></path>`;
+    };
+    data.forEach((d, k) => {
+      const cx = L + slot * k + slot / 2, cur = d.ym === ui.ym, op = cur ? 1 : .35, mn = AYLAR[+d.ym.slice(5) - 1];
+      g += bar(cx - bw - 1, d.i, 'var(--in)', op, `${mn} gelir: ${money(d.i)}`);
+      g += bar(cx + 1, d.o, 'var(--out)', op, `${mn} gider: ${money(d.o)}`);
+      g += `<text x="${cx}" y="${H - 6}" text-anchor="middle" style="${cur ? 'fill:var(--ink);font-weight:800' : ''}">${AY_K[+d.ym.slice(5) - 1]}</text>`;
+    });
+    return { svg: `<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="Son 6 ay gelir ve gider">${g}</svg>`, data };
+  }
+
+  function renderAnaliz() {
+    const mt = monthTx(ui.ym), prev = monthTx(ymAdd(ui.ym, -1));
+    const list = mt.filter(t => t.type === ui.aType);
+    const total = list.reduce((a, t) => a + t.amount, 0);
+    const by = {}, pby = {};
+    list.forEach(t => by[t.cat] = (by[t.cat] || 0) + t.amount);
+    prev.filter(t => t.type === ui.aType).forEach(t => pby[t.cat] = (pby[t.cat] || 0) + t.amount);
+    const rows = Object.entries(by).sort((a, b) => b[1] - a[1]);
+    const items = foldItems(rows.map(([id, v]) => { const c = catOf(ui.aType, id); return { name: c.name, color: c.color, v }; }));
+    const b = bars();
+    const gi = sum(mt, 'in'), gd = sum(mt, 'out'), gv = sum(mt, 'inv');
+    const [Y, M] = ui.ym.split('-').map(Number);
+    const daysIn = ui.ym === curYm ? today.getDate() : new Date(Y, M, 0).getDate();
+    const vk = gd - sum(mt.filter(t => t.fx), 'out');
+    const ins = [];
+    const outV = Object.entries(mt.filter(t => t.type === 'out' && !t.fx).reduce((a, t) => (a[t.cat] = (a[t.cat] || 0) + t.amount, a), {})).sort((a, b) => b[1] - a[1]);
+    if (outV.length) ins.push(['cart', '#2a78d6', `Sabit giderler dışında en çok <b>${esc(catOf('out', outV[0][0]).name)}</b> için harcadın: ${money(outV[0][1])}`]);
+    if (vk && ui.ym <= curYm) ins.push(['clock', '#eb6834', `Günlük ortalama değişken harcaman <b class="num">${money(Math.round(vk / daysIn))}</b>`]);
+    const pO = b.data[4].o;
+    if (pO && ui.ym <= curYm) { const ch = Math.round((gd - pO) / pO * 100); ins.push([ch > 0 ? 'up' : 'down', ch > 0 ? 'var(--out)' : 'var(--in)', `Gider geçen aya göre <b>%${Math.abs(ch)} ${ch > 0 ? 'arttı' : 'azaldı'}</b>${ui.ym === curYm ? ' (ay henüz bitmedi)' : ''}`]); }
+    if (gi) ins.push(['wallet', 'var(--inv)', gi >= gd + gv ? `Gelirinin <b>%${Math.round((gi - gd - gv) / gi * 100)}</b> kadarı elinde kaldı, <b>%${Math.round(gv / gi * 100)}</b> kadarını yatırdın` : `Bu ay gelirinden <b class="num">${money(gd + gv - gi)}</b> fazla çıktı`]);
+    if (ui.ym === curYm && vk && daysIn > 3) { const dim = new Date(Y, M, 0).getDate(); const proj = vk / daysIn * dim; ins.push(['trend', '#6250d6', `Bu hızla ay sonunda değişken harcaman <b class="num">${eur(proj)}</b> olur${db.budget ? (proj > db.budget ? `, bütçeyi <b>${eur(proj - db.budget)}</b> aşar` : `, bütçenin içinde kalır`) : ''}`]); }
+    const last3 = db.tx.filter(t => t.type === 'out' && t.date > ymAdd(ui.ym, -3) + '-31' && ymOf(t.date) <= ui.ym);
+    const byNote = {}; last3.filter(t => t.note).forEach(t => { const k = t.note; byNote[k] = byNote[k] || { n: 0, v: 0 }; byNote[k].n++; byNote[k].v += t.amount; });
+    const topNote = Object.entries(byNote).sort((a, b) => b[1].n - a[1].n || b[1].v - a[1].v)[0];
+    if (topNote && topNote[1].n > 2) ins.push(['cart', '#e87ba4', `Son 3 ayda en sık <b>${esc(topNote[0])}</b>: ${topNote[1].n} kez, toplam ${eur(topNote[1].v)}`]);
+    const wd = [0, 0, 0, 0, 0, 0, 0]; last3.forEach(t => { const [a, b, c] = t.date.split('-').map(Number); wd[new Date(a, b - 1, c).getDay()] += t.amount; });
+    const wmax = wd.indexOf(Math.max(...wd)); if (last3.length > 5) ins.push(['calendar', '#0891b2', `En çok <b>${GUN[wmax]}</b> günleri harcıyorsun (son 3 ay)`]);
+    db.fixed.filter(f => f.end && ymDiff(f.end, curYm) >= 0 && ymDiff(f.end, curYm) < 3)
+      .forEach(f => ins.push(['alert', '#b76e00', `<b>${esc(f.name)}</b> ${AYLAR[+f.end.slice(5) - 1]} ${f.end.slice(0, 4)} sonunda bitiyor. İptal ya da yenileme kararını şimdiden ver.`]));
+
+    let share = '';
+    if (ui.who === 'all') {
+      const all = db.tx.filter(t => t.type === 'in' && ymOf(t.date) === ui.ym), tot = all.reduce((a, t) => a + t.amount, 0);
+      const ni = all.filter(t => t.payer === 'nisa').reduce((a, t) => a + t.amount, 0);
+      if (tot && ni) share = `<p class="hint">Hane geliri ${eur(tot)}: Mali <b>%${Math.round((tot - ni) / tot * 100)}</b>, Nisa <b>%${Math.round(ni / tot * 100)}</b>.</p>`;
+    }
+    return `<div class="seg" style="--n:3" role="group" aria-label="Kimin analizi">${[['all', 'Hane'], ['mali', 'Mali'], ['nisa', 'Nisa']].map(([v, l]) => `<button data-who="${v}" aria-pressed="${ui.who === v}">${v === 'all' ? '' : `<span class="who sm ${v}">${l[0]}</span>`}${l}</button>`).join('')}</div>
+      ${share}
+      <section class="card">
+        <div class="card-h"><h2>Kategori dağılımı</h2></div>
+        <div class="seg type">
+          <button data-at="out" data-v="out" aria-pressed="${ui.aType === 'out'}">Gider</button>
+          <button data-at="in" data-v="in" aria-pressed="${ui.aType === 'in'}">Gelir</button>
+          <button data-at="inv" data-v="inv" aria-pressed="${ui.aType === 'inv'}">Yatırım</button>
+        </div>
+        ${ui.aType === 'inv' ? `<div class="budget-row"><span>Bugüne kadar toplam yatırım</span><b class="num" style="color:var(--inv)">${eur(invTotal(ui.ym))}</b></div>` : ''}
+        ${rows.length ? `<div class="donut-row">${donutSvg(items, total, 'Toplam ' + TN[ui.aType].toLocaleLowerCase('tr-TR'), `var(--${ui.aType === 'inv' ? 'inv' : ui.aType + '-ink'})`)}
+          <div class="legend">${items.map(x => `<div><span class="dot" style="background:${x.color}"></span><span class="n">${esc(x.name)}</span><em class="num">%${Math.round(x.v / total * 100)}</em></div>`).join('')}</div>
+        </div>
+        <div class="list">${rows.map(([id, v]) => {
+          const c = catOf(ui.aType, id), p = pby[id] || 0;
+          const chg = p ? Math.round((v - p) / p * 100) : null;
+          const good = ui.aType === 'out' ? chg < 0 : chg > 0;
+          return `<div class="row">${icoBox(c)}<div class="t"><b>${esc(c.name)}</b><small>${list.filter(t => t.cat === id).length} kayıt${chg ? ` · <span class="chg" style="color:var(${good ? '--in-ink' : '--out-ink'})">${chg > 0 ? '↑' : '↓'} %${Math.abs(chg)}</span> geçen aya göre` : ''}</small></div><div class="amt num ${ui.aType}">${money(v)}</div></div>`;
+        }).join('')}</div>`
+        : `<div class="empty">Bu ay ${TN[ui.aType].toLocaleLowerCase('tr-TR')} kaydı yok.</div>`}
+      </section>
+      <section class="card bars">
+        <div class="card-h"><h2>Son 6 ay</h2><div class="keys"><span><i class="dot" style="background:var(--in)"></i>Gelir</span><span><i class="dot" style="background:var(--out)"></i>Gider</span></div></div>
+        ${b.svg}
+      </section>
+      ${catAnalysis()}
+      ${ins.length ? `<section class="card"><div class="card-h"><h2>Bu ay kısaca</h2></div><ul class="insights">${ins.slice(0, 3).map(([i, col, t]) => `<li><i style="background:color-mix(in srgb, ${col} 14%, transparent);color:${col}">${svg(i)}</i><span>${t}</span></li>`).join('')}</ul></section>` : ''}`;
+  }
+
+  // Kategori analizi: dönem + kategori seçimi, aylık çubuk grafik ve toplamlar
+  function catAnalysis() {
+    const endYm = ui.ym > curYm ? curYm : ui.ym;
+    let startYm = ui.per === '6' ? ymAdd(endYm, -5) : ui.per === '12' ? ymAdd(endYm, -11) : (ui.from <= endYm ? ui.from : endYm);
+    if (ymDiff(endYm, startYm) > 35) startYm = ymAdd(endYm, -35);
+    const months = []; for (let ym = startYm; ym <= endYm; ym = ymAdd(ym, 1)) months.push(ym);
+    const cats = db.cats.out;
+    const c = ui.acat === 'all' ? { name: 'Tüm giderler', color: 'var(--out)' } : catOf('out', ui.acat);
+    const vals = months.map(ym => monthTx(ym).filter(t => t.type === 'out' && (ui.acat === 'all' || t.cat === ui.acat)).reduce((a, t) => a + t.amount, 0));
+    const allOut = months.reduce((a, ym) => a + sum(monthTx(ym), 'out'), 0);
+    const tot = vals.reduce((a, v) => a + v, 0), avg = tot / months.length;
+    const mx = Math.max(...vals), mi = vals.indexOf(mx);
+    const max = niceMax(mx || 1);
+    const W = 340, H = 160, L = 40, T = 14, B = 22, ch = H - T - B, slot = (W - L) / months.length, bw = Math.max(4, Math.min(22, slot - 6));
+    const y = v => T + ch - v / max * ch;
+    let g = '';
+    [0, .5, 1].forEach(f => { const yy = y(max * f); g += `<line x1="${L}" x2="${W}" y1="${yy}" y2="${yy}" stroke="var(--line)"/><text x="${L - 6}" y="${yy + 3}" text-anchor="end">${short(max * f)}</text>`; });
+    const ay = y(avg); g += `<line x1="${L}" x2="${W}" y1="${ay}" y2="${ay}" stroke="var(--ink-2)" stroke-dasharray="3 3" opacity=".5"/>`;
+    const step = Math.ceil(months.length / 12);
+    months.forEach((ym, k) => {
+      const v = vals[k], x = L + slot * k + (slot - bw) / 2, top = y(v), rr = Math.min(4, (T + ch - top) / 2, bw / 2);
+      if (v > 0) g += `<path d="M${x},${T + ch} V${top + rr} q0,-${rr} ${rr},-${rr} h${bw - 2 * rr} q${rr},0 ${rr},${rr} V${T + ch} Z" fill="${c.color}" opacity="${k === mi ? 1 : .7}"><title>${AYLAR[+ym.slice(5) - 1]} ${ym.slice(0, 4)}: ${money(v)}</title></path>`;
+      if (k === mi && v > 0) g += `<text x="${x + bw / 2}" y="${top - 4}" text-anchor="middle" style="fill:var(--ink);font-weight:800">${short(v)}</text>`;
+      if (k % step === 0) g += `<text x="${L + slot * k + slot / 2}" y="${H - 6}" text-anchor="middle">${AY_K[+ym.slice(5) - 1]}</text>`;
+    });
+    const years = {}; months.forEach((ym, k) => years[ym.slice(0, 4)] = (years[ym.slice(0, 4)] || 0) + vals[k]);
+    return `<section class="card bars">
+      <div class="card-h"><h2>Kategori analizi</h2><small>${AY_K[+startYm.slice(5) - 1]} ${startYm.slice(0, 4)} – ${AY_K[+endYm.slice(5) - 1]} ${endYm.slice(0, 4)}</small></div>
+      <div class="seg" style="--n:3">${[['6', 'Son 6 ay'], ['12', 'Son 1 yıl'], ['from', 'Tarihten']].map(([v, l]) => `<button data-per="${v}" aria-pressed="${ui.per === v}">${l}</button>`).join('')}</div>
+      ${ui.per === 'from' ? `<label class="fld">Başlangıç ayı<input type="month" id="fromIn" value="${ui.from}" max="${curYm}"></label>` : ''}
+      <div class="hscroll" role="group" aria-label="Kategori seç">
+        <button class="pick" data-acat="all" aria-pressed="${ui.acat === 'all'}"><i class="dot" style="background:var(--out)"></i>Tüm giderler</button>
+        ${cats.map(k => `<button class="pick" data-acat="${k.id}" aria-pressed="${ui.acat === k.id}"><i class="dot" style="background:${k.color}"></i>${esc(k.name)}</button>`).join('')}
+      </div>
+      <svg viewBox="0 0 ${W} ${H}" role="img" aria-label="${esc(c.name)} aylık harcama">${g}</svg>
+      <div class="stats">
+        <div><span>Toplam</span><b class="num" style="color:var(--out-ink)">${eur(tot)}</b></div>
+        <div><span>Aylık ortalama</span><b class="num">${eur(avg)}</b></div>
+        <div><span>En yüksek ay</span><b class="num">${mx ? AY_K[+months[mi].slice(5) - 1] + ' · ' + eur(mx) : '–'}</b></div>
+      </div>
+      <p class="hint">${ui.acat !== 'all' && allOut ? `${esc(c.name)} bu dönemdeki giderlerinin <b>%${Math.round(tot / allOut * 100)}</b>'i. ` : ''}${Object.keys(years).length > 1 || ui.per === '12' ? 'Yıllara göre: ' + Object.entries(years).map(([yy, v]) => `${yy} <b class="num">${eur(v)}</b>`).join(' · ') + '. ' : ''}Kesikli çizgi aylık ortalama.</p>
+    </section>`;
+  }
+
+  // 50/30/20 kuralı: gelirin %50'si ihtiyaç (sabit), %30'u istek (değişken), %20'si birikim
+  function ruleCard(gi, fk, vk, gv) {
+    if (!gi) return '';
+    const left = Math.max(0, gi - fk - vk);
+    const rows = [['İhtiyaçlar', 'sabit giderler', fk / gi * 100, 50, '#6250d6', true], ['İstekler', 'değişken harcama', vk / gi * 100, 30, '#eb6834', true], ['Birikim', 'yatırım ve kalan', left / gi * 100, 20, 'var(--in)', false]];
+    return `<section class="card">
+      <div class="card-h"><h2>50/30/20 kontrolü</h2><small>bu ay</small></div>
+      <div class="rule">${rows.map(([n, d, p, tgt, col, lower]) => {
+        const ok = lower ? p <= tgt : p >= tgt;
+        return `<div><div class="r-h"><span>${n} <small>${d}</small></span><span class="num" style="color:var(${ok ? '--in-ink' : '--out-ink'})">%${Math.round(p)} <small>/ hedef %${tgt}</small></span></div>
+          <div class="track"><i style="width:${Math.min(100, p)}%;background:${col}"></i><em style="left:${tgt}%"></em></div></div>`;
+      }).join('')}</div>
+      <p class="hint">Yaygın bir bütçe kuralı: gelirin en fazla %50'si ihtiyaçlara, %30'u isteklere gitsin, en az %20'si birikime kalsın. Dikey çizgi hedefi gösterir.</p>
+    </section>`;
+  }
+
+  /* ---------- Kategoriler ---------- */
+  function renderKategori() {
+    const cats = db.cats[ui.kType];
+    const count = id => db.tx.filter(t => t.type === ui.kType && t.cat === id).length;
+    return `<div class="seg type">
+        <button data-kt="out" data-v="out" aria-pressed="${ui.kType === 'out'}">Gider</button>
+        <button data-kt="in" data-v="in" aria-pressed="${ui.kType === 'in'}">Gelir</button>
+        <button data-kt="inv" data-v="inv" aria-pressed="${ui.kType === 'inv'}">Yatırım</button>
+      </div>
+      <section class="card"><div class="list">${cats.map(c => `<div class="row">${icoBox(c)}
+          <div class="t"><b>${esc(c.name)}</b><small>${c.id === 'sabit' ? 'Özet ekranındaki listeden yönetilir' : count(c.id) ? count(c.id) + ' kayıt' : 'Henüz kullanılmadı'}</small></div>
+          <div>${count(c.id) || c.id === 'sabit' || cats.length <= 1 ? '' : `<button class="link" style="color:var(--out-ink)" data-rmcat="${c.id}">Kaldır</button>`}</div></div>`).join('')}</div>
+      </section>
+      ${ui.kType === 'inv' ? `<section class="card">
+        <div class="card-h"><h2>Mevcut yatırım bakiyesi</h2></div>
+        <p class="hint">Uygulamayı kullanmaya başlamadan önceki toplam yatırımın. Bundan sonra girdiğin yatırımlar bunun üstüne eklenir.</p>
+        <form class="inline-form" id="invForm"><input id="invIn" inputmode="decimal" value="${db.invBase ? String(db.invBase.amount).replace('.', ',') : ''}" placeholder="ör. 21000" aria-label="Mevcut yatırım bakiyesi"><button class="btn" type="submit">Kaydet</button></form>
+      </section>` : ''}
+      <section class="card">
+        <div class="card-h"><h2>Yeni ${TN[ui.kType].toLocaleLowerCase('tr-TR')} kategorisi</h2></div>
+        <form class="newcat" id="catForm">
+          <input class="emo" id="ncIcon" maxlength="4" placeholder="🏷️" aria-label="Simge (emoji)">
+          <input id="ncName" maxlength="18" placeholder="ör. Spor salonu" aria-label="Kategori adı">
+          <button class="btn" type="submit">Ekle</button>
+        </form>
+      </section>
+      <section class="card">
+        <div class="card-h"><h2>Yedek</h2></div>
+        <p class="hint">Bütün kayıtların, sabit giderlerin ve kategorilerin tek bir dosyaya kaydedilir. Başka bir telefonda bu dosyayı yükleyip kaldığın yerden devam edersin.</p>
+        ${ui.restore ? `<div class="chip-note"><span>${ui.restore.tx.length} kayıt ve ${ui.restore.fixed.length} sabit gider içeren yedek yüklensin mi? Şimdiki kayıtların yerine geçer.</span><button data-restore="yes">Yükle</button><button data-restore="no">Vazgeç</button></div>` : ''}
+        <div style="display:flex;gap:8px;flex-wrap:wrap">
+          <button class="btn" data-backup>Yedeği indir</button>
+          <label class="btn ghost" style="position:relative;cursor:pointer">Yedeği yükle<input type="file" id="restoreIn" accept=".json,application/json" style="position:absolute;inset:0;opacity:0;width:100%;cursor:pointer" aria-label="Yedek dosyası seç"></label>
+        </div>
+      </section>`;
+  }
+
+  /* ---------- Çizim ---------- */
+  const TITLES = { ozet: 'Özet', hareket: 'Hareketler', takvim: 'Takvim', analiz: 'Analiz', kategori: 'Kategoriler ve yedek' };
+  function render() {
+    $('#mLbl').textContent = AY_K[+ui.ym.slice(5) - 1] + ' ' + ui.ym.slice(0, 4);
+    $('#mNext').disabled = ui.ym >= maxYm;
+    $('.month').style.visibility = ui.tab === 'kategori' ? 'hidden' : 'visible';
+    $('#hSub').textContent = ui.tab === 'ozet' ? 'Merhaba' : 'Cüzdan';
+    $('#hTitle').textContent = ui.tab === 'ozet' ? AYLAR[+ui.ym.slice(5) - 1] + ' özeti' : TITLES[ui.tab];
+    ui.tab === 'kategori' ? $('#setBtn').setAttribute('aria-current', 'page') : $('#setBtn').removeAttribute('aria-current');
+    document.querySelectorAll('.tab').forEach(b => b.dataset.tab === ui.tab ? b.setAttribute('aria-current', 'page') : b.removeAttribute('aria-current'));
+    const focusQ = document.activeElement && document.activeElement.id === 'qIn';
+    view.innerHTML = ({ ozet: renderOzet, hareket: renderHareket, takvim: renderTakvim, analiz: renderAnaliz, kategori: renderKategori }[ui.tab] || renderOzet)();
+    if (focusQ) { const q = $('#qIn'); q.focus(); q.setSelectionRange(q.value.length, q.value.length); }
+  }
+  function setTab(t) { ui.tab = t; ui.editFx = null; ui.editBudget = false; ui.confirmClear = false; try { localStorage.setItem(KEY + '-tab', t); } catch (e) {} render(); window.scrollTo(0, 0); }
+
+  let toastT;
+  function toast(msg, undo) {
+    document.querySelectorAll('.toast').forEach(t => t.remove());
+    clearTimeout(toastT);
+    const el = document.createElement('div'); el.className = 'toast' + (undo ? ' undo' : ''); el.setAttribute('role', 'status');
+    el.innerHTML = `<span></span>${undo ? '<button>Geri al</button>' : ''}`;
+    el.querySelector('span').textContent = msg;
+    if (undo) el.querySelector('button').onclick = () => { undo(); el.remove(); };
+    document.body.appendChild(el); toastT = setTimeout(() => el.remove(), undo ? 5000 : 2000);
+  }
+  // Silmeler ve sıfırlama geri alınabilir
+  function withUndo(msg, fn) {
+    const snap = JSON.stringify(db);
+    fn(); save(); render();
+    toast(msg, () => { db = JSON.parse(snap); save(); render(); });
+  }
+
+  /* ---------- Olaylar ---------- */
+  document.querySelectorAll('.tab').forEach(b => b.addEventListener('click', () => setTab(b.dataset.tab)));
+  $('#mPrev').addEventListener('click', () => { ui.ym = ymAdd(ui.ym, -1); ui.editFx = null; render(); });
+  $('#mNext').addEventListener('click', () => { if (ui.ym < maxYm) { ui.ym = ymAdd(ui.ym, 1); ui.editFx = null; render(); } });
+  $('#fab').addEventListener('click', () => openSheet());
+  $('#setBtn').addEventListener('click', () => setTab(ui.tab === 'kategori' ? 'ozet' : 'kategori'));
+
+  view.addEventListener('click', e => {
+    const T = s => e.target.closest(s);
+    let el;
+    if ((el = T('[data-go]'))) return setTab(el.dataset.go);
+    if ((el = T('[data-add]'))) return openSheet({ type: el.dataset.add });
+    if ((el = T('[data-clear]'))) {
+      const v = el.dataset.clear;
+      if (v === 'ask') { ui.confirmClear = true; return render(); }
+      ui.confirmClear = false;
+      if (v === 'no') return render();
+      return withUndo('Örnek kayıtlar silindi', () => { db = { cats: JSON.parse(JSON.stringify(DEFAULT_CATS)), tx: [], paid: {}, fixed: db.fixed.map(f => ({ ...f, start: curYm })), budget: db.budget, invBase: db.invBase, sample: false }; });
+    }
+    if ((el = T('[data-tick]'))) {
+      const f = db.fixed.find(x => x.id === el.dataset.tick), key = ui.ym + '|' + f.id;
+      if (db.paid[key]) { delete db.paid[key]; save(); render(); return toast(f.name + ': işaret kaldırıldı'); }
+      const st = fixedState(f, ui.ym);
+      db.paid[key] = { date: ui.ym === curYm ? todayIso : st.due, amount: f.amount };
+      save(); render(); return toast(f.name + ' ödendi: ' + money(f.amount));
+    }
+    if ((el = T('[data-editfx]'))) { ui.editFx = ui.editFx === el.dataset.editfx ? null : el.dataset.editfx; render(); const n = $('#fxName'); if (n) n.focus(); return; }
+    if (T('[data-fxcancel]')) { ui.editFx = null; return render(); }
+    if ((el = T('[data-payer]'))) { el.parentNode.querySelectorAll('button').forEach(b => b.setAttribute('aria-pressed', b === el)); $('#fxPayer').value = el.dataset.payer; return; }
+    if ((el = T('[data-every]'))) {
+      el.parentNode.querySelectorAll('button').forEach(b => b.setAttribute('aria-pressed', b === el));
+      $('#fxEvery').value = el.dataset.every; $('#fxFirstWrap').hidden = el.dataset.every === '1'; return;
+    }
+    if ((el = T('[data-fxdel]'))) { const id = el.dataset.fxdel; ui.editFx = null; return withUndo('Sabit gider silindi', () => { db.fixed = db.fixed.filter(x => x.id !== id); }); }
+    if (T('[data-budget]')) { ui.editBudget = !ui.editBudget; render(); const b = $('#budgetIn'); if (b) b.focus(); return; }
+    if ((el = T('[data-f]'))) { ui.filter = el.dataset.f; return render(); }
+    if ((el = T('[data-at]'))) { ui.aType = el.dataset.at; return render(); }
+    if ((el = T('[data-who]'))) { ui.who = el.dataset.who; return render(); }
+    if ((el = T('[data-per]'))) { ui.per = el.dataset.per; return render(); }
+    if ((el = T('[data-acat]'))) { const sx = el.parentNode.scrollLeft; ui.acat = el.dataset.acat; render(); const h = $('.hscroll'); if (h) h.scrollLeft = sx; return; }
+    if ((el = T('[data-kt]'))) { ui.kType = el.dataset.kt; return render(); }
+    if ((el = T('[data-rmcat]'))) { const id = el.dataset.rmcat; return withUndo('Kategori kaldırıldı', () => { db.cats[ui.kType] = db.cats[ui.kType].filter(c => c.id !== id); }); }
+    if (T('[data-backup]')) return backup();
+    if ((el = T('[data-restore]'))) {
+      const obj = ui.restore; ui.restore = null;
+      if (el.dataset.restore === 'no' || !obj) return render();
+      return withUndo('Yedek yüklendi', () => { db = obj; });
+    }
+    if ((el = T('[data-day]'))) { ui.selDay = el.dataset.day; return render(); }
+    if ((el = T('[data-edit]'))) { const t = db.tx.find(x => x.id === el.dataset.edit); if (t) openSheet({ tx: t }); return; }
+    if ((el = T('[data-fxrow]'))) { const id = el.dataset.fxrow; setTab('ozet'); ui.editFx = id; render(); const fc = $('#fixedCard'); if (fc) fc.scrollIntoView({ block: 'center' }); return; }
+  });
+  // Sola kaydırınca sil (geri alınabilir)
+  let sw = null, swMoved = false;
+  view.addEventListener('pointerdown', e => {
+    const row = e.target.closest('.sw .row'); if (!row) return;
+    sw = { row, x: e.clientX, y: e.clientY, dx: 0, on: false }; swMoved = false;
+  });
+  view.addEventListener('pointermove', e => {
+    if (!sw) return;
+    const dx = e.clientX - sw.x, dy = e.clientY - sw.y;
+    if (!sw.on) { if (Math.abs(dy) > 10 && Math.abs(dy) > Math.abs(dx)) { sw = null; return; } if (dx < -8) { sw.on = true; sw.row.classList.add('drag'); } else return; }
+    sw.dx = Math.min(0, dx); swMoved = true;
+    sw.row.style.transform = `translateX(${sw.dx}px)`;
+  });
+  const swEnd = () => {
+    if (!sw) return;
+    const { row, dx, on } = sw; sw = null;
+    if (!on) return;
+    row.classList.remove('drag');
+    if (dx < -row.offsetWidth * 0.35) {
+      row.style.transform = 'translateX(-110%)';
+      const id = row.dataset.edit;
+      setTimeout(() => withUndo('Kayıt silindi', () => { db.tx = db.tx.filter(t => t.id !== id); }), 160);
+    } else row.style.transform = '';
+  };
+  view.addEventListener('pointerup', swEnd);
+  view.addEventListener('pointercancel', swEnd);
+  view.addEventListener('click', e => { if (swMoved) { swMoved = false; e.stopImmediatePropagation(); e.preventDefault(); } }, true);
+
+  view.addEventListener('input', e => { if (e.target.id === 'qIn') { ui.q = e.target.value; render(); } });
+  view.addEventListener('change', e => {
+    if (e.target.id === 'fromIn' && e.target.value) { ui.from = e.target.value; return render(); }
+    if (e.target.id === 'restoreIn' && e.target.files[0]) {
+      const fr = new FileReader();
+      fr.onload = () => {
+        try {
+          const o = JSON.parse(fr.result);
+          if (!(o && o.cats && o.cats.out && Array.isArray(o.tx) && Array.isArray(o.fixed) && o.paid)) throw 0;
+          o.cats.inv = o.cats.inv || JSON.parse(JSON.stringify(DEFAULT_CATS.inv));
+          ui.restore = o; render();
+        } catch (err) { toast('Bu dosya bir Cüzdan yedeği değil'); }
+      };
+      fr.readAsText(e.target.files[0]);
+      return;
+    }
+    if (e.target.id !== 'fxNoEnd') return;
+    const m = $('#fxEnd'); m.disabled = e.target.checked;
+    if (!e.target.checked) m.focus();
+  });
+  view.addEventListener('submit', e => {
+    e.preventDefault();
+    if (e.target.id === 'fxForm') {
+      const name = $('#fxName').value.trim();
+      const amt = parseAmt($('#fxAmt').value), day = Math.round(+$('#fxDay').value);
+      if (!name || !(amt > 0) || !(day >= 1 && day <= 31)) return toast('Ad, tutar ve 1–31 arası bir gün gir');
+      const end = $('#fxNoEnd').checked ? null : ($('#fxEnd').value || null);
+      if (!$('#fxNoEnd').checked && !end) return toast('Son taksit ayını seç ya da Süresiz işaretle');
+      const id = e.target.dataset.id;
+      const every = +$('#fxEvery').value || 1, anchor = every > 1 ? ($('#fxFirst').value || ui.ym) : null;
+      if (id) { const f = db.fixed.find(x => x.id === id); Object.assign(f, { name, amount: amt, day, end, every, anchor, payer: $('#fxPayer').value }); if (anchor && anchor < f.start) f.start = anchor; }
+      else { const st0 = ui.ym < curYm ? ui.ym : curYm; db.fixed.push({ id: 'f' + Date.now(), name, amount: amt, day, end, every, anchor, payer: $('#fxPayer').value, start: anchor && anchor < st0 ? anchor : st0 }); }
+      ui.editFx = null; save(); render(); return toast(id ? 'Kaydedildi' : 'Sabit gider eklendi');
+    }
+    if (e.target.id === 'budgetForm') {
+      const v = parseAmt($('#budgetIn').value);
+      db.budget = v > 0 ? v : 0; ui.editBudget = false; save(); render(); return toast(v > 0 ? 'Bütçe ' + eur(v) + ' oldu' : 'Bütçe kaldırıldı');
+    }
+    if (e.target.id === 'invForm') {
+      const v = parseAmt($('#invIn').value);
+      db.invBase = { amount: v > 0 ? v : 0, date: todayIso }; save(); render(); return toast('Yatırım bakiyesi ' + eur(db.invBase.amount) + ' oldu');
+    }
+    if (e.target.id === 'catForm') {
+      const name = $('#ncName').value.trim(); if (!name) return $('#ncName').focus();
+      addCat(ui.kType, name, $('#ncIcon').value.trim());
+      render(); toast('Kategori eklendi');
+    }
+  });
+
+  // Yedek dosyası: önce sayfanın indirme izniyle, olmazsa panoya kopyalayarak
+  async function backup() {
+    const data = JSON.stringify(Object.assign({}, db, { sample: false }), null, 1);
+    const filename = 'cuzdan-yedek-' + todayIso + '.json';
+    let dl = null;
+    try { dl = window.claude && window.claude.use ? await window.claude.use('downloads') : null; } catch (e) {}
+    if (dl) {
+      try { await dl.save({ filename, data }); return toast('Yedek kaydedildi'); }
+      catch (e) { if (e && e.code === 'declined') return; }
+    } else {
+      // Claude dışında (ör. GitHub Pages) normal dosya indirme
+      try { const a = document.createElement('a'); a.href = URL.createObjectURL(new Blob([data], { type: 'application/json' })); a.download = filename; document.body.appendChild(a); a.click(); a.remove(); setTimeout(() => URL.revokeObjectURL(a.href), 2000); return toast('Yedek indirildi'); } catch (e) {}
+    }
+    try { await navigator.clipboard.writeText(data); toast('İndirilemedi, yedek panoya kopyalandı'); }
+    catch (e) { toast('Yedek bu görünümde indirilemiyor'); }
+  }
+
+  function parseAmt(s) { s = String(s).replace(/\s|€/g, ''); if (s.includes(',')) s = s.replace(/\./g, '').replace(',', '.'); const v = parseFloat(s); return isFinite(v) ? Math.round(v * 100) / 100 : NaN; }
+  function addCat(type, name, icon) {
+    const c = { id: 'c' + Date.now(), name, icon: icon || name.charAt(0).toLocaleUpperCase('tr-TR'), color: PALET.find(h => !db.cats[type].some(x => x.color === h)) || GRAY };
+    const list = db.cats[type]; const di = list.findIndex(x => x.id.startsWith('diger'));
+    di >= 0 ? list.splice(di, 0, c) : list.push(c);
+    save(); return c;
+  }
+
+  /* ---------- Ekleme / düzenleme paneli ---------- */
+  function openSheet(opt) {
+    opt = opt || {};
+    const ed = opt.tx;
+    const type0 = ed ? ed.type : (opt.type || 'out');
+    const st = ed
+      ? { payer: ed.payer || 'mali', type: ed.type, cat: ed.cat, amount: String(ed.amount).replace('.', ','), date: ed.date, note: ed.note, adding: false, err: '' }
+      : { payer: ui.lastPayer, type: type0, cat: ui.last[type0] || null, amount: '', date: ui.ym < curYm ? ui.ym + '-01' : todayIso, note: '', adding: false, err: '', sig: false, sigAmt: '' };
+    const root = $('#sheetRoot');
+    // Kısayollar: son 3 ayda en sık girilen kayıtlar tek dokunuşla doldurulur
+    const favMap = {};
+    db.tx.filter(t => t.note && t.date > ymAdd(curYm, -3)).forEach(t => { const k = t.type + '|' + t.cat + '|' + t.note; const m = favMap[k] = favMap[k] || { type: t.type, cat: t.cat, note: t.note, n: 0, amount: t.amount, date: '' }; m.n++; if (t.date >= m.date) { m.date = t.date; m.amount = t.amount; m.payer = t.payer; } });
+    const favs = Object.values(favMap).filter(f => f.n > 1).sort((a, b) => b.n - a.n).slice(0, 8);
+    const prevFocus = document.activeElement;
+    let drawn = false;
+    function draw(focusAmount) {
+      const a = root.querySelector('#amt'); if (a) st.amount = a.value;
+      const n = root.querySelector('#nt'); if (n) st.note = n.value;
+      const sa = root.querySelector('#sigAmt'); if (sa) st.sigAmt = sa.value;
+      const cats = db.cats[st.type].filter(c => c.id !== 'sabit');
+      const custom = st.date !== todayIso && st.date !== yestIso;
+      root.innerHTML = `<div class="scrim" id="scrim"></div>
+        <div class="sheet${drawn ? '' : ' anim'}" role="dialog" aria-modal="true" aria-labelledby="shT">
+          <div class="grab"></div>
+          <div class="sheet-h"><h3 id="shT">${ed ? 'Kaydı düzenle' : 'Yeni kayıt'}</h3><button class="icon-btn" id="shClose" aria-label="Kapat">${svg('x')}</button></div>
+          <div class="seg type" id="tSeg">
+            <button data-v="out" aria-pressed="${st.type === 'out'}">Gider</button>
+            <button data-v="in" aria-pressed="${st.type === 'in'}">Gelir</button>
+            <button data-v="inv" aria-pressed="${st.type === 'inv'}">Yatırım</button>
+          </div>
+          <label class="amount"><span>€</span><input id="amt" inputmode="decimal" autocomplete="off" placeholder="0" value="${esc(st.amount)}" aria-label="Tutar"></label>
+          <div class="cats" role="group" aria-label="Kategori">
+            ${cats.map(c => `<button class="cat" style="--c:${c.color}" data-c="${c.id}" aria-pressed="${st.cat === c.id}">${icoBox(c, 'ci')}<span class="nm">${esc(c.name)}</span></button>`).join('')}
+            <button class="cat add" id="addCat"><span class="ci">${svg('plus')}</span><span class="nm">Yeni</span></button>
+          </div>
+          ${st.adding ? `<div class="newcat"><input class="emo" id="sIcon" maxlength="4" placeholder="🏷️" aria-label="Simge"><input id="sName" maxlength="18" placeholder="Kategori adı" aria-label="Kategori adı"><button class="btn" id="sAdd">Ekle</button></div>` : ''}
+          ${!ed && st.type === 'out' && st.cat && st.cat !== 'sigara' ? `<div class="sig${st.sig ? ' on' : ''}"><button class="sig-t" id="sigT" aria-pressed="${st.sig}"><span class="chk" aria-hidden="true">${svg('check')}</span>İçinde sigara var</button>${st.sig ? `<label class="sig-a"><span>€</span><input id="sigAmt" inputmode="decimal" autocomplete="off" placeholder="12" value="${esc(st.sigAmt)}" aria-label="Sigara tutarı"></label>` : ''}</div>` : ''}
+          <div class="dates" role="group" aria-label="Tarih">
+            <button data-d="${todayIso}" aria-pressed="${st.date === todayIso}">Bugün</button>
+            <button data-d="${yestIso}" aria-pressed="${st.date === yestIso}">Dün</button>
+            <label class="${custom ? 'on' : ''}">${svg('calendar')}${custom ? dm(st.date) + ' ' + st.date.slice(0, 4) : 'Başka gün'}<input type="date" id="dt" value="${st.date}" aria-label="Tarih seç"></label>
+          </div>
+          <div class="dates" role="group" aria-label="Kim">
+            ${['mali', 'nisa'].map(p => `<button class="pw" data-pw="${p}" aria-pressed="${st.payer === p}"><span class="who sm ${p}" style="margin:0">${PAYER[p][0]}</span>${PAYER[p]}</button>`).join('')}
+          </div>
+          <input class="note-in" id="nt" maxlength="40" placeholder="Not ekle (ör. Rewe)" value="${esc(st.note)}" aria-label="Not">
+          ${st.err ? `<p class="err">${st.err}</p>` : ''}
+          <button class="save ${st.type}" id="saveBtn">${{ out: 'Gideri kaydet', in: 'Geliri kaydet', inv: 'Yatırımı kaydet' }[st.type]}</button>
+          ${ed ? `<button class="btn danger" id="delBtn" style="align-self:center">Bu kaydı sil</button>` : ''}
+        </div>`;
+      drawn = true;
+      if (focusAmount) setTimeout(() => { const i = root.querySelector('#amt'); if (i) { i.focus(); i.setSelectionRange(i.value.length, i.value.length); } }, 30);
+      if (st.adding) setTimeout(() => { const i = root.querySelector('#sName'); if (i) i.focus(); }, 30);
+    }
+    function close() { root.innerHTML = ''; root.onclick = root.onchange = null; document.removeEventListener('keydown', onKey); if (prevFocus && prevFocus.focus && document.contains(prevFocus)) prevFocus.focus(); }
+    function onKey(e) { if (e.key === 'Escape') close(); }
+    root.onchange = e => { if (e.target.id === 'dt' && e.target.value) { st.date = e.target.value; draw(); } };
+    root.onclick = e => {
+      const T = s => e.target.closest(s);
+      let el;
+      if (e.target.id === 'scrim' || T('#shClose')) return close();
+      if ((el = T('#tSeg [data-v]'))) { st.type = el.dataset.v; st.cat = ui.last[st.type] || null; st.adding = false; st.err = ''; return draw(); }
+      if ((el = T('[data-c]'))) { st.cat = el.dataset.c; st.err = ''; return draw(); }
+      if ((el = T('[data-fav]'))) { const f = favs[+el.dataset.fav]; Object.assign(st, { type: f.type, cat: f.cat, note: f.note, payer: f.payer || st.payer, err: '' }); const a = root.querySelector('#amt'); if (a) a.value = String(f.amount).replace('.', ','); const n = root.querySelector('#nt'); if (n) n.value = f.note; draw(); return; }
+      if ((el = T('[data-d]'))) { st.date = el.dataset.d; return draw(); }
+      if ((el = T('[data-pw]'))) { st.payer = el.dataset.pw; return draw(); }
+      if (T('#sigT')) { st.sig = !st.sig; draw(); if (st.sig) setTimeout(() => { const i = root.querySelector('#sigAmt'); if (i) i.focus(); }, 30); return; }
+      if (T('#addCat')) { st.adding = !st.adding; return draw(); }
+      if (T('#sAdd')) { const n = root.querySelector('#sName').value.trim(); if (!n) return; const nc = addCat(st.type, n, root.querySelector('#sIcon').value.trim()); st.cat = nc.id; st.adding = false; return draw(); }
+      if (T('#delBtn')) { close(); return withUndo('Kayıt silindi', () => { db.tx = db.tx.filter(t => t.id !== ed.id); }); }
+      if (T('#saveBtn')) {
+        const v = parseAmt(root.querySelector('#amt').value);
+        if (!(v > 0)) { st.err = 'Tutarı yaz, örneğin 25 ya da 12,50.'; draw(true); return; }
+        if (!st.cat) { st.err = 'Bir kategori seç.'; draw(); return; }
+        const note = root.querySelector('#nt').value.trim();
+        // Sigara payı ayrı bir Sigara kaydı olur, kalan tutar seçilen kategoriye yazılır
+        const useSig = !ed && st.type === 'out' && st.sig && st.cat !== 'sigara';
+        const sv = useSig ? parseAmt(root.querySelector('#sigAmt').value) : 0;
+        if (useSig && !(sv > 0 && sv < v)) { st.err = 'Sigara tutarını yaz; toplam tutardan küçük olmalı.'; draw(); return; }
+        if (useSig) {
+          const ts = Date.now();
+          db.tx.push({ id: 't' + ts, ts, type: 'out', cat: st.cat, amount: Math.round((v - sv) * 100) / 100, date: st.date, note, payer: st.payer });
+          db.tx.push({ id: 't' + ts + 's', ts: ts + 1, type: 'out', cat: 'sigara', amount: sv, date: st.date, note, payer: st.payer });
+          ui.last.out = st.cat; ui.lastPayer = st.payer;
+          save(); ui.ym = ymOf(st.date); close(); render();
+          return toast(`${catOf('out', st.cat).name} ${money(v - sv)} · Sigara ${money(sv)} kaydedildi`);
+        }
+        if (ed) Object.assign(ed, { type: st.type, cat: st.cat, amount: v, date: st.date, note, payer: st.payer });
+        else db.tx.push({ id: 't' + Date.now(), ts: Date.now(), type: st.type, cat: st.cat, amount: v, date: st.date, note, payer: st.payer });
+        ui.last[st.type] = st.cat; ui.lastPayer = st.payer;
+        save(); ui.ym = ymOf(st.date); close(); render();
+        toast(ed ? 'Kayıt güncellendi' : TN[st.type] + ' kaydedildi: ' + money(v));
+      }
+    };
+    document.addEventListener('keydown', onKey);
+    draw(!ed);
+  }
+
+  render();
+})();
+</script>
+<script>if ('serviceWorker' in navigator) navigator.serviceWorker.register('sw.js').catch(() => {});</script>
+</body>
+</html>
