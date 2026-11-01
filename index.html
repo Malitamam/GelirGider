@@ -1152,10 +1152,10 @@ nav.tabs .tab[aria-current="page"] { color: var(--primary); }
 
     let html = '';
     { const dd = +todayIso.slice(8), feb = todayIso.slice(5, 7) === '02';
-      if (ui.ym === curYm && (feb ? dd === 28 : dd >= 28 && dd <= 30) && !(db.lastBackup && db.lastBackup.slice(0, 7) === curYm))
+      if (ui.ym === curYm && dd >= 28 && !(db.lastBackup && db.lastBackup.slice(0, 7) === curYm))
         html += `<button class="bk-rem" data-backup><span>💾</span><span><b>Yedeklemeyi unutma</b><small>Dokun, bu ayın yedeği telefona insin</small></span><span class="go">İndir</span></button>`; }
     if (db.sample) html += `<div class="chip-note">${ui.confirmClear
-      ? `<span>Örnek kayıtlar silinsin mi? Sabit gider listen kalır.</span><button data-clear="yes">Evet, sil</button><button data-clear="no">Vazgeç</button>`
+      ? `<span>Örnek kayıtlar, sabit giderler ve gelirler silinsin mi?</span><button data-clear="yes">Evet, sil</button><button data-clear="no">Vazgeç</button>`
       : `<span>Örnek verilerle açıldı</span><button data-clear="ask">Temizle</button>`}</div>`;
 
     const tilesHtml = `<div class="tiles">
@@ -1270,10 +1270,13 @@ nav.tabs .tab[aria-current="page"] { color: var(--primary); }
   }
 
   const monthsLeft = end => ymDiff(end, ui.ym) + 1;
+  // Harcama hedefi ay ay saklanır: hedef değişince geçmiş ayların hedefi değişmez
+  const budOf = ym => db.budgets && db.budgets[ym] != null ? db.budgets[ym] : (db.budget || 0);
   function budgetLine(vk) {
     if (ui.editBudget) return `<form class="bud-form" id="budgetForm"><span>Aylık harcama hedefi</span><input id="budgetIn" class="num" inputmode="decimal" value="${db.budget || ''}" placeholder="1500"><button>Kaydet</button></form>`;
-    if (!db.budget) return '';
-    const left = db.budget - vk, pct = Math.min(100, Math.max(0, vk / db.budget * 100));
+    const B = budOf(ui.ym);
+    if (!B) return '';
+    const left = B - vk, pct = Math.min(100, Math.max(0, vk / B * 100));
     let day = '';
     if (ui.ym === curYm && left > 0) { const [Y, M] = ui.ym.split('-').map(Number); const rest = new Date(Y, M, 0).getDate() - +todayIso.slice(8) + 1; day = `<span class="d dc" data-daychart role="button" aria-label="Günlük harcama hakkı grafiği">günde ~${eur(left / rest)} ›</span>`; }
     else if (ui.ym === actYm() && left > 0) { const [Y, M] = ui.ym.split('-').map(Number); const rest = Math.round((new Date(Y, M, 0) - new Date(+todayIso.slice(0, 4), +todayIso.slice(5, 7) - 1, +todayIso.slice(8))) / 864e5) + 1; day = `<span class="d">günde ~${eur(left / rest)}</span>`; }
@@ -1281,7 +1284,7 @@ nav.tabs .tab[aria-current="page"] { color: var(--primary); }
     let pace = '';
     if (ui.ym === curYm) { const [Y, M] = ui.ym.split('-').map(Number); pace = `<u style="left:${+todayIso.slice(8) / new Date(Y, M, 0).getDate() * 100}%" title="Bugünün temposu"></u>`; }
     const q = [[25, '¼'], [50, '½'], [75, '¾']];
-    return `<div class="bud ${left < 0 ? 'over' : pct > 75 ? 'warn' : ''}"><span class="t"><span><b class="num lc-open" data-leftchart role="button" aria-label="Kalan harcama hakkı grafiği">${left < 0 ? '−' + eur(-left) : eur(left)}</b> / <span class="num lim" data-budget role="button" aria-label="Aylık limiti değiştir">${eur(db.budget)}</span></span>${day}</span>
+    return `<div class="bud ${left < 0 ? 'over' : pct > 75 ? 'warn' : ''}"><span class="t"><span><b class="num lc-open" data-leftchart role="button" aria-label="Kalan harcama hakkı grafiği">${left < 0 ? '−' + eur(-left) : eur(left)}</b> / <span class="num lim" data-budget role="button" aria-label="Aylık limiti değiştir">${eur(B)}</span></span>${day}</span>
       <span class="bar2"><i style="width:${pct}%"></i>${q.map(([x]) => `<s style="left:${x}%"></s>`).join('')}${pace}</span></div>`;
   }
   function fixedRow({ f, st }) {
@@ -1495,7 +1498,9 @@ nav.tabs .tab[aria-current="page"] { color: var(--primary); }
     '2026-03-19': 'Ramazan Bayramı arifesi (yarım gün)', '2026-03-20': 'Ramazan Bayramı 1. gün', '2026-03-21': 'Ramazan Bayramı 2. gün', '2026-03-22': 'Ramazan Bayramı 3. gün',
     '2026-05-26': 'Kurban Bayramı arifesi (yarım gün)', '2026-05-27': 'Kurban Bayramı 1. gün', '2026-05-28': 'Kurban Bayramı 2. gün', '2026-05-29': 'Kurban Bayramı 3. gün', '2026-05-30': 'Kurban Bayramı 4. gün',
     '2027-03-08': 'Ramazan Bayramı arifesi (yarım gün)', '2027-03-09': 'Ramazan Bayramı 1. gün', '2027-03-10': 'Ramazan Bayramı 2. gün', '2027-03-11': 'Ramazan Bayramı 3. gün',
-    '2027-05-15': 'Kurban Bayramı arifesi (yarım gün)', '2027-05-16': 'Kurban Bayramı 1. gün', '2027-05-17': 'Kurban Bayramı 2. gün', '2027-05-18': 'Kurban Bayramı 3. gün', '2027-05-19': 'Kurban Bayramı 4. gün'
+    '2027-05-15': 'Kurban Bayramı arifesi (yarım gün)', '2027-05-16': 'Kurban Bayramı 1. gün', '2027-05-17': 'Kurban Bayramı 2. gün', '2027-05-18': 'Kurban Bayramı 3. gün', '2027-05-19': 'Kurban Bayramı 4. gün',
+    // 2028-2030: tahmini tarihler, Diyanet resmi takvimi açıklayınca kontrol edilmeli
+    '2028-02-25': 'Ramazan Bayramı arifesi (yarım gün, tahmini)', '2028-02-26': 'Ramazan Bayramı 1. gün (tahmini)', '2028-02-27': 'Ramazan Bayramı 2. gün (tahmini)', '2028-02-28': 'Ramazan Bayramı 3. gün (tahmini)', '2028-05-04': 'Kurban Bayramı arifesi (yarım gün, tahmini)', '2028-05-05': 'Kurban Bayramı 1. gün (tahmini)', '2028-05-06': 'Kurban Bayramı 2. gün (tahmini)', '2028-05-07': 'Kurban Bayramı 3. gün (tahmini)', '2028-05-08': 'Kurban Bayramı 4. gün (tahmini)', '2029-02-14': 'Ramazan Bayramı arifesi (yarım gün, tahmini)', '2029-02-15': 'Ramazan Bayramı 1. gün (tahmini)', '2029-02-16': 'Ramazan Bayramı 2. gün (tahmini)', '2029-02-17': 'Ramazan Bayramı 3. gün (tahmini)', '2029-04-23': 'Kurban Bayramı arifesi (yarım gün, tahmini)', '2029-04-24': 'Kurban Bayramı 1. gün (tahmini)', '2029-04-25': 'Kurban Bayramı 2. gün (tahmini)', '2029-04-26': 'Kurban Bayramı 3. gün (tahmini)', '2029-04-27': 'Kurban Bayramı 4. gün (tahmini)', '2030-02-04': 'Ramazan Bayramı arifesi (yarım gün, tahmini)', '2030-02-05': 'Ramazan Bayramı 1. gün (tahmini)', '2030-02-06': 'Ramazan Bayramı 2. gün (tahmini)', '2030-02-07': 'Ramazan Bayramı 3. gün (tahmini)', '2030-04-13': 'Kurban Bayramı arifesi (yarım gün, tahmini)', '2030-04-14': 'Kurban Bayramı 1. gün (tahmini)', '2030-04-15': 'Kurban Bayramı 2. gün (tahmini)', '2030-04-16': 'Kurban Bayramı 3. gün (tahmini)', '2030-04-17': 'Kurban Bayramı 4. gün (tahmini)'
   };
   const holCache = {};
   function holidays(y) {
@@ -1531,7 +1536,7 @@ nav.tabs .tab[aria-current="page"] { color: var(--primary); }
       for (let k = 0; k < lead; k++) c += '<i></i>';
       for (let d = 1; d <= dim; d++) {
         const ds = ym + '-' + pad(d), col = (lead + d - 1) % 7, hd = hol[ds] || [], lv = isLeave(ds);
-        if (lv && col < 5) nLeave++;
+        if (lv && col < 5 && !hd.some(x => x.who === 'de' && !/yarım/.test(x.name))) nLeave++;
         c += `<i class="${col >= 5 ? 'we' : ''} ${hd.some(x => x.who === 'de') ? 'deh' : ''} ${hd.some(x => x.who === 'tr') ? 'trh' : ''} ${lv ? 'lv' : ''} ${ds === todayIso ? 'today' : ''}">${d}</i>`;
       }
       return `<button class="ym-m ${ym === ui.ym ? 'cur' : ''}" data-pickym="${ym}"><b>${nm}</b><div class="ym-g">${c}</div></button>`;
@@ -1570,7 +1575,7 @@ nav.tabs .tab[aria-current="page"] { color: var(--primary); }
       const hdots = hd.some(x => x.who === 'tr') ? `<span class="hdots"><i class="tr"></i></span>` : '';
       cells += `<button class="d ${col >= 5 ? 'we' : ''} ${col === 5 ? 'sat' : ''} ${hd.some(x => x.who === 'de') ? 'deh' : ''} ${hd.some(x => !/yarım/.test(x.name)) ? 'hol' : ''} ${isLeave(ds) ? 'lv' : ''} ${dt.length ? 'has' : ''} ${ds === todayIso ? 'today' : ''} ${ds > todayIso ? 'future' : ''}" data-day="${ds}" aria-pressed="${ds === ui.selDay}" aria-label="${dm(ds)}${hd.length ? ', ' + esc(hd.map(x => x.name).join(', ')) : ''}">${pin}${hdots}<span class="n">${d}</span>${dt.length ? `<small class="${net >= 0 ? 'p' : 'm'}">${net >= 0 ? '+' : '−'}${short(Math.abs(net))}</small>` : ''}</button>`;
     }
-    const gi = sum(mt, 'in'), gd = sum(mt, 'out');
+    const gi = sum(mt, 'in'), gd = sum(mt, 'out'), gv = sum(mt, 'inv');
     let panel = '';
     if (ui.selDay) {
       const dt = sorted(calTx.filter(t => t.date === ui.selDay));
@@ -1587,7 +1592,7 @@ nav.tabs .tab[aria-current="page"] { color: var(--primary); }
       </div>`;
     }
     return `<section class="card calcard">
-        <div class="cal-sum num"><span>Gelir <b style="color:var(--in-ink)">${eur(gi)}</b></span><span>Gider <b>${eur(gd)}</b></span><span>Net <b>${eur(gi - gd)}</b></span></div>
+        <div class="cal-sum num"><span>Gelir <b style="color:var(--in-ink)">${eur(gi)}</b></span><span>Gider <b>${eur(gd)}</b></span><span>Kalan <b>${gi - gd - gv < 0 ? '−' : ''}${eur(Math.abs(gi - gd - gv))}</b></span></div>
         <div class="cal">${cells}</div>
       </section>${weeksCard()}${panel}`;
   }
@@ -1606,11 +1611,13 @@ nav.tabs .tab[aria-current="page"] { color: var(--primary); }
       weeks.push({ k: kw(m), a, b, items, parts, tot: items.reduce((x, t) => x + t.amount, 0), mo: iso(th).slice(0, 7) });
     }
     weeks.reverse();
+    // Haftalık uyarı eşiği: harcama hedefinden senin sabit giderlerin çıkınca kalan değişken pay × 12/52
+    const wkCap = db.budget ? Math.max(0, budOf(curYm) - db.fixed.filter(f => payerOf(f) === 'p1').reduce((a, f) => { const st = fixedState(f, curYm); return a + (st ? st.amount : 0); }, 0)) * 12 / 52 : 0;
     return `<section class="card">
       <div class="card-h"><div><h2>Haftalık harcama</h2><small>Sabit giderler hariç</small></div></div>
       <div class="wk-list">${weeks.map((w, i) => { const open = ui.openKw === w.a, mi = +w.mo.slice(5);
         const head = i === 0 || weeks[i - 1].mo !== w.mo ? `<div class="wk-mo m${mi % 2}">${AYLAR[mi - 1]} ${w.mo.slice(0, 4)}</div>` : '';
-        return head + `<button class="wk m${mi % 2} ${db.budget && w.tot > db.budget * 12 / 52 ? 'hi' : ''}" data-kw="${w.a}" aria-expanded="${open}"><b>KW ${w.k}</b><span class="r">${dm(w.a)} – ${dm(w.b)}</span><b class="num">${w.parts ? w.parts.map(([ym, v]) => `<small>${AY_K[+ym.slice(5) - 1]}</small> ${eur(v)}`).join(' / ') : eur(w.tot)}</b></button>${open ? `<div class="wk-items">${w.items.length ? w.items.map(t => { const c = catOf('out', t.cat), p = t.payer === 'p2' ? 'p2' : 'p1'; return `<div class="lrow"><span class="ld num">${dm(t.date)}</span><span class="who sm ${p}">${PAYER[p][0]}</span><span class="lc"><b>${esc(c.name)}</b>${t.note ? ` · ${esc(t.note)}` : ''}</span><b class="num" style="color:var(--out-ink)">${eur(t.amount)}</b></div>`; }).join('') : '<div class="empty">Bu hafta harcama yok.</div>'}</div>` : ''}`; }).join('')}</div>
+        return head + `<button class="wk m${mi % 2} ${wkCap && w.tot > wkCap ? 'hi' : ''}" data-kw="${w.a}" aria-expanded="${open}"><b>KW ${w.k}</b><span class="r">${dm(w.a)} – ${dm(w.b)}</span><b class="num">${w.parts ? w.parts.map(([ym, v]) => `<small>${AY_K[+ym.slice(5) - 1]}</small> ${eur(v)}`).join(' / ') : eur(w.tot)}</b></button>${open ? `<div class="wk-items">${w.items.length ? w.items.map(t => { const c = catOf('out', t.cat), p = payerOf(t); return `<div class="lrow"><span class="ld num">${dm(t.date)}</span><span class="who sm ${p}">${PAYER[p][0]}</span><span class="lc"><b>${esc(c.name)}</b>${t.note ? ` · ${esc(t.note)}` : ''}</span><b class="num" style="color:var(--out-ink)">${eur(t.amount)}</b></div>`; }).join('') : '<div class="empty">Bu hafta harcama yok.</div>'}</div>` : ''}`; }).join('')}</div>
     </section>`;
   }
 
@@ -1665,7 +1672,7 @@ nav.tabs .tab[aria-current="page"] { color: var(--primary); }
     if (pO && ui.ym <= curYm) { const ch = Math.round((gd - pO) / pO * 100); ins.push([ch > 0 ? 'up' : 'down', ch > 0 ? 'var(--out)' : 'var(--in)', `Gider geçen aya göre <b>%${Math.abs(ch)} ${ch > 0 ? 'arttı' : 'azaldı'}</b>${ui.ym === curYm ? ' (ay henüz bitmedi)' : ''}`]); }
     if (gi) ins.push(['wallet', 'var(--inv)', gi >= gd + gv ? `Gelirinin <b>%${Math.round((gi - gd - gv) / gi * 100)}</b> kadarı elinde kaldı, <b>%${Math.round(gv / gi * 100)}</b> kadarını yatırdın` : `Bu ay gelirinden <b class="num">${money(gd + gv - gi)}</b> fazla çıktı`]);
     if (ui.ym === curYm && vk && daysIn > 3) { const dim = new Date(Y, M, 0).getDate(); const proj = vk / daysIn * dim; ins.push(['trend', '#6250d6', `Bu hızla ay sonunda değişken harcaman <b class="num">${eur(proj)}</b> olur${db.budget ? (proj > db.budget ? `, bütçeyi <b>${eur(proj - db.budget)}</b> aşar` : `, bütçenin içinde kalır`) : ''}`]); }
-    const last3 = db.tx.filter(t => t.type === 'out' && t.date > ymAdd(ui.ym, -3) + '-31' && ymOf(t.date) <= ui.ym);
+    const last3 = db.tx.filter(t => t.type === 'out' && t.date > ymAdd(ui.ym, -3) + '-31' && ymOf(t.date) <= ui.ym && (ui.who === 'all' || payerOf(t) === ui.who));
     const byNote = {}; last3.filter(t => t.note).forEach(t => { const k = t.note; byNote[k] = byNote[k] || { n: 0, v: 0 }; byNote[k].n++; byNote[k].v += t.amount; });
     const topNote = Object.entries(byNote).sort((a, b) => b[1].n - a[1].n || b[1].v - a[1].v)[0];
     if (topNote && topNote[1].n > 2) ins.push(['cart', '#e87ba4', `Son 3 ayda en sık <b>${esc(topNote[0])}</b>: ${topNote[1].n} kez, toplam ${eur(topNote[1].v)}`]);
@@ -1962,7 +1969,7 @@ nav.tabs .tab[aria-current="page"] { color: var(--primary); }
       if (v === 'ask') { ui.confirmClear = true; return render(); }
       ui.confirmClear = false;
       if (v === 'no') return render();
-      return withUndo('Örnek kayıtlar silindi', () => { db = { catV: 4, fxV: 1, inV: 1, planV: 1, privV: 1, people: db.people, cats: JSON.parse(JSON.stringify(DEFAULT_CATS)), tx: [], paid: {}, fixed: db.fixed.map(f => ({ ...f, start: curYm })), income: db.income.map(f => ({ ...f, start: curYm })), got: {}, closed: {}, transfers: db.transfers || [], budget: db.budget, bgV: 1, invBase: db.invBase, sample: false }; });
+      return withUndo('Örnek kayıtlar silindi', () => { db = { catV: 4, fxV: 1, inV: 1, planV: 1, privV: 1, people: db.people, cats: JSON.parse(JSON.stringify(DEFAULT_CATS)), tx: [], paid: {}, fixed: [], income: [], got: {}, closed: {}, transfers: db.transfers || [], budget: db.budget, bgV: 1, invBase: db.invBase, sample: false }; });
     }
     if (T('[data-transfers]')) return openTransfers();
     if ((el = T('[data-list]'))) { if (el.hasAttribute('data-lcat')) listBy = 'cat'; return openList(el.dataset.list); }
@@ -2186,7 +2193,10 @@ nav.tabs .tab[aria-current="page"] { color: var(--primary); }
     }
     if (e.target.id === 'budgetForm') {
       const v = parseAmt($('#budgetIn').value);
-      db.budget = v > 0 ? v : 0; ui.editBudget = false; save(); render(); return toast(v > 0 ? 'Harcama hedefi ' + eur(v) + ' oldu' : 'Harcama hedefi kaldırıldı');
+      const old = db.budget || 0; db.budgets = db.budgets || {};
+      const first = db.tx.reduce((m, t) => t.date < m ? t.date : m, curYm + '-01').slice(0, 7);
+      for (let m = first; m < curYm; m = ymAdd(m, 1)) if (db.budgets[m] == null) db.budgets[m] = old;
+      db.budget = v > 0 ? v : 0; Object.keys(db.budgets).forEach(m => { if (m >= curYm) delete db.budgets[m]; }); ui.editBudget = false; save(); render(); return toast(v > 0 ? 'Harcama hedefi ' + eur(v) + ' oldu' : 'Harcama hedefi kaldırıldı');
     }
     if (e.target.id === 'invForm') {
       const v = parseAmt($('#invIn').value);
@@ -2236,10 +2246,11 @@ nav.tabs .tab[aria-current="page"] { color: var(--primary); }
       });
       y += 190;
       // harcama hedefi
-      if (db.budget) {
-        const left = db.budget - p1Out, pct = Math.min(1, Math.max(0, p1Out / db.budget));
+      const BB = budOf(ym);
+      if (BB) {
+        const left = BB - p1Out, pct = Math.min(1, Math.max(0, p1Out / BB));
         rr(P, y, CW, 176, 26, C.card);
-        tx('Harcama hedefi (' + PAYER.p1 + ')', P + 30, y + 48, 25, 800, C.ink); tx(eur(db.budget), W - P - 30, y + 48, 25, 800, C.ink2, 'right');
+        tx('Harcama hedefi (' + PAYER.p1 + ')', P + 30, y + 48, 25, 800, C.ink); tx(eur(BB), W - P - 30, y + 48, 25, 800, C.ink2, 'right');
         rr(P + 30, y + 72, CW - 60, 16, 8, C.track); if (pct > 0) rr(P + 30, y + 72, Math.max(16, (CW - 60) * pct), 16, 8, left < 0 ? C.out : C.pri);
         tx('Harcanan ' + eur(p1Out), P + 30, y + 130, 24, 700, C.ink2);
         tx(left < 0 ? eur(-left) + ' aşıldı' : eur(left) + ' kaldı', W - P - 30, y + 130, 28, 800, left < 0 ? C.out : C.in, 'right');
@@ -2346,7 +2357,7 @@ nav.tabs .tab[aria-current="page"] { color: var(--primary); }
   }
   // Kalan harcama hakkı grafiği: her günün sonunda kalan hak (hedef − o güne kadar 1. kişinin harcaması); noktaya dokununca o günün harcamaları
   function openLeftChart() {
-    const ym = ui.ym, [Y, M] = ym.split('-').map(Number), D = new Date(Y, M, 0).getDate(), B = db.budget || 0;
+    const ym = ui.ym, [Y, M] = ym.split('-').map(Number), D = new Date(Y, M, 0).getDate(), B = budOf(ym);
     const t = ym === curYm ? +todayIso.slice(8) : ym < curYm ? D : 0;
     const out = monthTx(ym).filter(x => x.type === 'out' && (x.payer || 'p1') === 'p1');
     const dOf = x => x.date < ym + '-01' ? 1 : x.date > ym + '-' + pad(D) ? D : +x.date.slice(8);
@@ -2611,6 +2622,8 @@ nav.tabs .tab[aria-current="page"] { color: var(--primary); }
   window.addEventListener('pagehide', seenNow);
   let hidAt = 0;
   document.addEventListener('visibilitychange', () => { if (document.hidden) { hidAt = Date.now(); seenNow(); } else { if (hidAt && Date.now() - hidAt > LOCK_MS) lockScreen(); seenNow(); } });
+  // Telefon yer açmak için kayıtları silmesin diye kalıcı depolama istenir
+  try { if (navigator.storage && navigator.storage.persist) navigator.storage.persist().catch(() => {}); } catch (e) {}
   ui.ym = actYm();
   render();
 })();
