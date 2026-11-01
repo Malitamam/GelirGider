@@ -440,6 +440,9 @@ svg.dchart .today { fill: var(--surface); stroke: var(--primary); stroke-width: 
 .lc-bub.dn { transform: translate(-50%, 14px); } .lc-bub.dn.r { transform: translate(calc(-100% + 16px), 14px); } .lc-bub.dn.l { transform: translate(-16px, 14px); }
 .lc-bub small { display: block; opacity: .75; margin-top: 3px; }
 .lc-bub div { display: flex; justify-content: space-between; gap: 10px; margin-top: 2px; } .lc-bub div span { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.icon-btn.gear { color: var(--primary-ink); }
+.icon-btn.gear[aria-current="page"], #setBtn[aria-current="page"] { background: var(--primary-soft); color: var(--primary-ink); }
+.seg button svg.i { width: 15px; height: 15px; vertical-align: -2px; }
 .task { display: flex; align-items: center; gap: 8px; margin: 0 0 2px; font-size: 12.5px; color: var(--muted); font-weight: 600; }
 .task .segs { flex: 1; display: flex; gap: 3px; }
 .task .segs i { flex: 1; height: 6px; border-radius: 3px; background: var(--surface-2); }
@@ -627,8 +630,8 @@ nav.tabs .tab[aria-current="page"] { color: var(--primary); }
         <span id="mLbl" class="num"></span>
         <button id="mNext" aria-label="Sonraki ay"></button>
       </div>
-      <button class="icon-btn" id="thBtn" aria-label="Koyu temaya geç" title="Tema"></button>
-      <button class="icon-btn" id="setBtn" aria-label="Kategoriler ve yedek" title="Kategoriler ve yedek"></button>
+      <button class="icon-btn" id="setBtn" aria-label="Kategoriler" title="Kategoriler"></button>
+      <button class="icon-btn gear" id="gearBtn" aria-label="Ayarlar" title="Ayarlar"></button>
     </div>
   </header>
   <main id="view" style="display:flex;flex-direction:column;gap:11px"></main>
@@ -696,22 +699,23 @@ nav.tabs .tab[aria-current="page"] { color: var(--primary); }
     spark: '<path d="M12 3l1.9 5.8L20 11l-6.1 2.2L12 19l-1.9-5.8L4 11l6.1-2.2z"/><path d="M19 3v4M17 5h4"/>',
     smile: '<circle cx="12" cy="12" r="10"/><path d="M8 14s1.5 2 4 2 4-2 4-2M9 9h.01M15 9h.01"/>',
     bread: '<path d="M3.5 16c0-4.4 3.8-8 8.5-8s8.5 3.6 8.5 8v1.5a1.5 1.5 0 0 1-1.5 1.5H5a1.5 1.5 0 0 1-1.5-1.5z"/><path d="M8.5 10.5l1.6 3M12 9.5l1.6 3.2M15.5 10.5l1.4 2.8"/>',
-    clock: '<circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/>'
+    clock: '<circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/>',
+    gear: '<circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 1 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 1 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 1 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 1 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/>'
   };
   const svg = n => `<svg class="i" viewBox="0 0 24 24" aria-hidden="true">${IC[n] || ''}</svg>`;
   document.querySelectorAll('[data-ic]').forEach(el => el.insertAdjacentHTML('afterbegin', svg(el.dataset.ic)));
   document.getElementById('mPrev').innerHTML = svg('left');
   document.getElementById('mNext').innerHTML = svg('right');
   document.getElementById('setBtn').innerHTML = svg('grid');
+  document.getElementById('gearBtn').innerHTML = svg('gear');
   // Açık / koyu tema geçişi
   function applyTheme(t) {
     const dark = t === 'dark';
     document.documentElement.dataset.theme = dark ? 'dark' : 'light';
-    const b = document.getElementById('thBtn'); b.innerHTML = svg(dark ? 'sun' : 'moon'); b.setAttribute('aria-label', dark ? 'Açık temaya geç' : 'Koyu temaya geç');
   }
   let theme = 'light'; try { theme = localStorage.getItem('cuzdan-theme') || 'light'; } catch (e) {}
   applyTheme(theme);
-  document.getElementById('thBtn').addEventListener('click', () => { theme = theme === 'dark' ? 'light' : 'dark'; applyTheme(theme); try { localStorage.setItem('cuzdan-theme', theme); } catch (e) {} });
+  const setTheme = t => { theme = t; applyTheme(t); try { localStorage.setItem('cuzdan-theme', t); } catch (e) {} };
 
   const KEY = 'cuzdan-v8';
   const AYLAR = ['Ocak','Şubat','Mart','Nisan','Mayıs','Haziran','Temmuz','Ağustos','Eylül','Ekim','Kasım','Aralık'];
@@ -926,7 +930,7 @@ nav.tabs .tab[aria-current="page"] { color: var(--primary); }
   const save = () => { try { localStorage.setItem(KEY, JSON.stringify(db)); } catch (e) {} };
 
   const ui = { who: 'all', lastPayer: 'p1', per: '6', from: ymAdd(curYm, -11), acat: 'all', restore: null, tab: 'ozet', ym: curYm, filter: 'all', q: '', aType: 'out', kType: 'out', editFx: null, editIn: null, gotAsk: null, closing: false, closeDt: '', editBudget: false, selDay: null, confirmClear: false, last: {} };
-  try { const t = localStorage.getItem(KEY + '-tab'); if (t && t !== 'kategori') ui.tab = t; } catch (e) {}
+  try { const t = localStorage.getItem(KEY + '-tab'); if (t && t !== 'kategori' && t !== 'ayarlar') ui.tab = t; } catch (e) {}
 
   const catOf = (type, id) => db.cats[type].find(c => c.id === id) || { name: 'Silinmiş kategori', ic: 'dots', color: GRAY };
   const catIcon = c => c.ic ? svg(c.ic) : esc(c.icon || c.name.charAt(0));
@@ -1590,6 +1594,19 @@ nav.tabs .tab[aria-current="page"] { color: var(--primary); }
           <input id="ncName" maxlength="18" placeholder="ör. Spor salonu" aria-label="Kategori adı">
           <button class="btn" type="submit">Ekle</button>
         </form>
+      </section>`;
+  }
+
+  /* ---------- Ayarlar ---------- */
+  function renderAyarlar() {
+    const lb = db.lastBackup;
+    return `<section class="card">
+        <div class="card-h"><div><h2>Görünüm</h2><small>Tema</small></div></div>
+        <div class="seg" style="--n:2" role="group" aria-label="Tema">${[['light', 'Açık'], ['dark', 'Koyu']].map(([v, l]) => `<button data-theme-set="${v}" aria-pressed="${theme === v}">${svg(v === 'dark' ? 'moon' : 'sun')} ${l}</button>`).join('')}</div>
+      </section>
+      <section class="card">
+        <div class="card-h"><div><h2>Aylık harcama limiti</h2><small>Sadece senin (${esc(PAYER.p1)}) harcamaların düşer</small></div></div>
+        <form class="bud-form" id="budgetForm"><span>Limit (€)</span><input id="budgetIn" class="num" inputmode="decimal" value="${db.budget || ''}" placeholder="1500"><button>Kaydet</button></form>
       </section>
       <section class="card">
         <div class="card-h"><div><h2>Ara rapor</h2><small>${AYLAR[+curYm.slice(5) - 1]} ayının bugüne kadarki özeti</small></div></div>
@@ -1610,28 +1627,30 @@ nav.tabs .tab[aria-current="page"] { color: var(--primary); }
         </form>
       </section>
       <section class="card">
-        <div class="card-h"><h2>Yedek</h2></div>
+        <div class="card-h"><div><h2>Yedek</h2><small>${lb ? 'Son yedek: ' + dm(lb) + ' ' + lb.slice(0, 4) : 'Henüz yedek alınmadı'}</small></div></div>
         <p class="hint">Bütün kayıtların, sabit giderlerin ve kategorilerin tek bir dosyaya kaydedilir. Başka bir telefonda bu dosyayı yükleyip kaldığın yerden devam edersin.</p>
         ${ui.restore ? `<div class="chip-note"><span>${ui.restore.tx.length} kayıt ve ${ui.restore.fixed.length} sabit gider içeren yedek yüklensin mi? Şimdiki kayıtların yerine geçer.</span><button data-restore="yes">Yükle</button><button data-restore="no">Vazgeç</button></div>` : ''}
         <div style="display:flex;gap:8px;flex-wrap:wrap">
           <button class="btn" data-backup>Yedeği indir</button>
           <label class="btn ghost" style="position:relative;cursor:pointer">Yedeği yükle<input type="file" id="restoreIn" accept=".json,application/json" style="position:absolute;inset:0;opacity:0;width:100%;cursor:pointer" aria-label="Yedek dosyası seç"></label>
         </div>
-      </section>`;
+      </section>
+      <p class="hint" style="text-align:center">Cüzdan · bütün kayıtlar sadece bu telefonda saklanır, internete gönderilmez.</p>`;
   }
 
   /* ---------- Çizim ---------- */
-  const TITLES = { ozet: 'Özet', hareket: 'Hareketler', takvim: 'Takvim', analiz: 'Analiz', kategori: 'Kategoriler ve yedek' };
+  const TITLES = { ozet: 'Özet', hareket: 'Hareketler', takvim: 'Takvim', analiz: 'Analiz', kategori: 'Kategoriler', ayarlar: 'Ayarlar' };
   function render() {
     $('#mLbl').textContent = AY_K[+ui.ym.slice(5) - 1] + ' ' + ui.ym.slice(0, 4);
     $('#mNext').disabled = ui.ym >= maxYm;
-    $('.month').style.visibility = ui.tab === 'kategori' ? 'hidden' : 'visible';
+    $('.month').style.visibility = ui.tab === 'kategori' || ui.tab === 'ayarlar' ? 'hidden' : 'visible';
     $('#hSub').textContent = ui.tab === 'ozet' ? 'Merhaba' : 'Cüzdan';
     $('#hTitle').textContent = ui.tab === 'ozet' ? AYLAR[+ui.ym.slice(5) - 1] + ' özeti' : TITLES[ui.tab];
     ui.tab === 'kategori' ? $('#setBtn').setAttribute('aria-current', 'page') : $('#setBtn').removeAttribute('aria-current');
+    ui.tab === 'ayarlar' ? $('#gearBtn').setAttribute('aria-current', 'page') : $('#gearBtn').removeAttribute('aria-current');
     document.querySelectorAll('.tab').forEach(b => b.dataset.tab === ui.tab ? b.setAttribute('aria-current', 'page') : b.removeAttribute('aria-current'));
     const focusQ = document.activeElement && document.activeElement.id === 'qIn';
-    view.innerHTML = ({ ozet: renderOzet, hareket: renderHareket, takvim: renderTakvim, analiz: renderAnaliz, kategori: renderKategori }[ui.tab] || renderOzet)();
+    view.innerHTML = ({ ozet: renderOzet, hareket: renderHareket, takvim: renderTakvim, analiz: renderAnaliz, kategori: renderKategori, ayarlar: renderAyarlar }[ui.tab] || renderOzet)();
     if (focusQ) { const q = $('#qIn'); q.focus(); q.setSelectionRange(q.value.length, q.value.length); }
   }
   function setTab(t) { ui.tab = t; ui.editFx = null; ui.editIn = null; ui.editBudget = false; ui.confirmClear = false; try { localStorage.setItem(KEY + '-tab', t); } catch (e) {} render(); window.scrollTo(0, 0); }
@@ -1659,6 +1678,7 @@ nav.tabs .tab[aria-current="page"] { color: var(--primary); }
   $('#mNext').addEventListener('click', () => { if (ui.ym < maxYm) { ui.ym = ymAdd(ui.ym, 1); ui.editFx = ui.editIn = null; render(); } });
   $('#fab').addEventListener('click', () => openSheet());
   $('#setBtn').addEventListener('click', () => setTab(ui.tab === 'kategori' ? 'ozet' : 'kategori'));
+  $('#gearBtn').addEventListener('click', () => setTab(ui.tab === 'ayarlar' ? 'ozet' : 'ayarlar'));
 
   view.addEventListener('click', e => {
     const T = s => e.target.closest(s);
@@ -1719,6 +1739,7 @@ nav.tabs .tab[aria-current="page"] { color: var(--primary); }
     if ((el = T('[data-acat]'))) { const sx = el.parentNode.scrollLeft; ui.acat = el.dataset.acat; render(); const h = $('.hscroll'); if (h) h.scrollLeft = sx; return; }
     if ((el = T('[data-kt]'))) { ui.kType = el.dataset.kt; return render(); }
     if ((el = T('[data-rmcat]'))) { const id = el.dataset.rmcat; return withUndo('Kategori kaldırıldı', () => { db.cats[ui.kType] = db.cats[ui.kType].filter(c => c.id !== id); }); }
+    if ((el = T('[data-theme-set]'))) { setTheme(el.dataset.themeSet); return render(); }
     if (T('[data-backup]')) return backup();
     if (T('[data-pinoff]')) { try { localStorage.removeItem(PINK); } catch (er) {} render(); return toast('PIN kaldırıldı'); }
     if ((el = T('[data-report]'))) return shareReport(el.dataset.report);
@@ -1920,6 +1941,7 @@ nav.tabs .tab[aria-current="page"] { color: var(--primary); }
     toast('Rapor resmi indirildi: ' + name);
   }
   async function backup() {
+    db.lastBackup = todayIso; save(); if (ui.tab === 'ayarlar') render();
     const data = JSON.stringify(Object.assign({}, db, { sample: false }), null, 1);
     const filename = 'cuzdan-yedek-' + todayIso + '.json';
     let dl = null;
