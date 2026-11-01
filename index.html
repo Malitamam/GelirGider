@@ -214,6 +214,18 @@ header.top { display: flex; align-items: center; justify-content: space-between;
 
 /* Liste satırları */
 .list { display: flex; flex-direction: column; }
+.cmp .row { grid-template-columns: 30px minmax(0, 1fr) auto; gap: 9px; padding: 5px 0; }
+.cmp .ico { width: 30px; height: 30px; border-radius: 10px; font-size: 14px; }
+.cmp .ico svg.i { width: 15px; height: 15px; }
+.cmp .row .t b { font-size: 13.5px; }
+.cmp .row .t small { font-size: 11px; }
+.cmp .amt { font-size: 14px; }
+.cmp-tab { display: grid; gap: 4px; font-size: 12.5px; }
+.cmp-tab div { display: grid; grid-template-columns: minmax(0, 1.4fr) 1fr 1fr 1fr; gap: 6px; align-items: center; padding: 4px 0; border-top: 1px solid var(--line); }
+.cmp-tab div.h { border: 0; color: var(--muted); font-size: 11px; font-weight: 700; }
+.cmp-tab span { display: flex; align-items: center; gap: 6px; min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; font-weight: 600; }
+.cmp-tab b { text-align: right; font-weight: 700; }
+.cmp-tab .h span:not(:first-child) { justify-content: flex-end; }
 .row { display: grid; grid-template-columns: 42px minmax(0, 1fr) auto; gap: 12px; align-items: center; padding: 9px 0; border: 0; background: none; text-align: left; width: 100%; }
 .list .row + .row { border-top: 1px solid var(--line); }
 .ico { width: 42px; height: 42px; border-radius: 13px; display: grid; place-items: center; font-size: 19px; }
@@ -993,7 +1005,7 @@ nav.tabs .tab[aria-current="page"] { color: var(--primary); }
   }
   const save = () => { try { localStorage.setItem(KEY, JSON.stringify(db)); } catch (e) {} };
 
-  const ui = { who: 'all', lastPayer: 'p1', per: '6', from: ymAdd(curYm, -11), acat: 'all', restore: null, tab: 'ozet', ym: curYm, filter: 'all', q: '', aType: 'out', kType: 'out', editFx: null, editIn: null, gotAsk: null, closing: false, closeDt: '', editBudget: false, selDay: null, confirmClear: false, fOpen: false, mOpen: false, fCats: [], fWho: [], fNoFx: false, xMonths: [], last: {} };
+  const ui = { who: 'all', lastPayer: 'p1', per: '6', from: ymAdd(curYm, -11), acat: 'all', restore: null, tab: 'ozet', ym: curYm, filter: 'all', q: '', aType: 'out', kType: 'out', editFx: null, editIn: null, gotAsk: null, closing: false, closeDt: '', editBudget: false, selDay: null, confirmClear: false, acats: [], fOpen: false, mOpen: false, fCats: [], fWho: [], fNoFx: false, xMonths: [], last: {} };
   try { const t = localStorage.getItem(KEY + '-tab'); if (t && t !== 'kategori' && t !== 'ayarlar') ui.tab = t; } catch (e) {}
 
   const catOf = (type, id) => db.cats[type].find(c => c.id === id) || { name: 'Silinmiş kategori', ic: 'dots', color: GRAY };
@@ -1173,6 +1185,7 @@ nav.tabs .tab[aria-current="page"] { color: var(--primary); }
   // Sabit giderler hariç harcamalar: kategori başına yatay çubuk, en büyükten küçüğe (dokununca kategori listesi açılır)
   // Açılır/kapanır kartlar (varsayılan kapalı); seçim telefonda hatırlanır
   let fold = {}; try { fold = JSON.parse(localStorage.getItem(KEY + '-fold')) || {}; } catch (e) {}
+  if (fold.ad === undefined) fold.ad = true;
   const isOpen = k => fold[k] === true;
   const foldH = (k, title, small) => `<button class="fold-h" data-fold="${k}" aria-expanded="${isOpen(k)}"><h2>${title}<span class="chev">${svg(isOpen(k) ? 'chevU' : 'chevD')}</span></h2>${small}</button>`;
   // Sütun grafik: kategoriler yan yana, üstte tutar
@@ -1567,8 +1580,8 @@ nav.tabs .tab[aria-current="page"] { color: var(--primary); }
     return `<div class="seg" style="--n:${PEOPLE().length + 1}" role="group" aria-label="Kimin analizi">${[['all', 'Hane']].concat(PEOPLE().map(p => [p, PAYER[p]])).map(([v, l]) => `<button data-who="${v}" aria-pressed="${ui.who === v}">${v === 'all' ? '' : `<span class="who sm ${v}">${l[0]}</span>`}${l}</button>`).join('')}</div>
       ${share}
       <section class="card">
-        <div class="card-h"><h2>Kategori dağılımı</h2></div>
-        <div class="seg type">
+        <div class="card-h">${foldH('ad', 'Kategori dağılımı', `<small>${AYLAR[+ui.ym.slice(5) - 1]} · <b class="num" style="color:var(--ink)">${eur(total)}</b> ${TN[ui.aType].toLocaleLowerCase('tr-TR')}</small>`)}</div>
+        ${isOpen('ad') ? `<div class="seg type">
           <button data-at="out" data-v="out" aria-pressed="${ui.aType === 'out'}">Gider</button>
           <button data-at="in" data-v="in" aria-pressed="${ui.aType === 'in'}">Gelir</button>
           <button data-at="inv" data-v="inv" aria-pressed="${ui.aType === 'inv'}">Yatırım</button>
@@ -1577,13 +1590,13 @@ nav.tabs .tab[aria-current="page"] { color: var(--primary); }
         ${rows.length ? `<div class="donut-row">${donutSvg(items, total, 'Toplam ' + TN[ui.aType].toLocaleLowerCase('tr-TR'), `var(--${ui.aType === 'inv' ? 'inv' : ui.aType + '-ink'})`)}
           <div class="legend">${items.map(x => `<div><span class="dot" style="background:${x.color}"></span><span class="n">${esc(x.name)}</span><em class="num">%${Math.round(x.v / total * 100)}</em></div>`).join('')}</div>
         </div>
-        <div class="list">${rows.map(([id, v]) => {
+        <div class="list cmp">${rows.map(([id, v]) => {
           const c = catOf(ui.aType, id), p = pby[id] || 0;
           const chg = p ? Math.round((v - p) / p * 100) : null;
           const good = ui.aType === 'out' ? chg < 0 : chg > 0;
           return `<div class="row">${icoBox(c)}<div class="t"><b>${esc(c.name)}</b><small>${list.filter(t => t.cat === id).length} kayıt${chg ? ` · <span class="chg" style="color:var(${good ? '--in-ink' : '--out-ink'})">${chg > 0 ? '↑' : '↓'} %${Math.abs(chg)}</span> geçen aya göre` : ''}${id === 'market' && ui.aType === 'out' ? (t => t ? ` · TM ${money(t)}` : '')(list.filter(t => t.cat === 'market' && t.tm).reduce((a, t) => a + t.amount, 0)) : ''}</small></div><div class="amt num ${ui.aType}">${money(v)}</div></div>`;
         }).join('')}</div>`
-        : `<div class="empty">Bu ay ${TN[ui.aType].toLocaleLowerCase('tr-TR')} kaydı yok.</div>`}
+        : `<div class="empty">Bu ay ${TN[ui.aType].toLocaleLowerCase('tr-TR')} kaydı yok.</div>`}` : ''}
       </section>
       <section class="card bars">
         <div class="card-h"><h2>Son 6 ay</h2><div class="keys"><span><i class="dot" style="background:var(--in)"></i>Gelir</span><span><i class="dot" style="background:var(--out)"></i>Gider</span></div></div>
@@ -1600,7 +1613,38 @@ nav.tabs .tab[aria-current="page"] { color: var(--primary); }
     if (ymDiff(endYm, startYm) > 35) startYm = ymAdd(endYm, -35);
     const months = []; for (let ym = startYm; ym <= endYm; ym = ymAdd(ym, 1)) months.push(ym);
     const cats = db.cats.out;
-    const c = ui.acat === 'all' ? { name: 'Tüm giderler', color: 'var(--out)' } : catOf('out', ui.acat);
+    ui.acats = ui.acats.filter(id => cats.some(k => k.id === id));
+    ui.acat = ui.acats.length === 1 ? ui.acats[0] : 'all';
+    const perSeg = `<div class="seg" style="--n:3">${[['6', 'Son 6 ay'], ['12', 'Son 1 yıl'], ['from', 'Tarihten']].map(([v, l]) => `<button data-per="${v}" aria-pressed="${ui.per === v}">${l}</button>`).join('')}</div>
+      ${ui.per === 'from' ? `<label class="fld">Başlangıç ayı<input type="month" id="fromIn" value="${ui.from}" max="${curYm}"></label>` : ''}`;
+    const chips = `<div class="hscroll ac" role="group" aria-label="Kategori seç (birden fazla seçebilirsin)">
+        <button class="pick" data-acat="all" aria-pressed="${!ui.acats.length}"><i class="dot" style="background:#7b8aa3"></i>Tüm giderler</button>
+        ${cats.map(k => `<button class="pick" data-acat="${k.id}" aria-pressed="${ui.acats.includes(k.id)}"><i class="dot" style="background:${k.color}"></i>${esc(k.name)}</button>`).join('')}
+      </div>`;
+    const range = `${AY_K[+startYm.slice(5) - 1]} ${startYm.slice(0, 4)} – ${AY_K[+endYm.slice(5) - 1]} ${endYm.slice(0, 4)}`;
+    const savedHtml = savedCard(months, range);
+    if (ui.acats.length > 1) {
+      const series = ui.acats.map(id => { const k = catOf('out', id); return { k, vals: months.map(ym => monthTx(ym).filter(t => t.type === 'out' && t.cat === id).reduce((a, t) => a + t.amount, 0)) }; });
+      const mx2 = niceMax(Math.max(1, ...series.flatMap(x => x.vals)));
+      const W = 340, H = 170, L = 40, T = 14, B = 22, ch = H - T - B, slot = (W - L) / months.length;
+      const y = v => T + ch - v / mx2 * ch, xc = k => L + slot * k + slot / 2;
+      let g = '';
+      [0, .5, 1].forEach(f => { const yy = y(mx2 * f); g += `<line x1="${L}" x2="${W}" y1="${yy}" y2="${yy}" stroke="var(--line)"/><text x="${L - 6}" y="${yy + 3}" text-anchor="end">${short(mx2 * f)}</text>`; });
+      const step = Math.ceil(months.length / 12);
+      months.forEach((ym, k) => { if (k % step === 0) g += `<text x="${xc(k)}" y="${H - 6}" text-anchor="middle">${AY_K[+ym.slice(5) - 1]}</text>`; });
+      series.forEach(({ k, vals }) => {
+        g += `<polyline fill="none" stroke="${k.color}" stroke-width="2.2" stroke-linejoin="round" stroke-linecap="round" points="${vals.map((v, i) => xc(i) + ',' + y(v)).join(' ')}"/>`;
+        vals.forEach((v, i) => g += `<circle cx="${xc(i)}" cy="${y(v)}" r="3" fill="${k.color}"><title>${esc(k.name)} · ${AYLAR[+months[i].slice(5) - 1]}: ${money(v)}</title></circle>`);
+      });
+      return `<section class="card bars">
+      <div class="card-h"><h2>Kıyaslama</h2><small>${range}</small></div>
+      ${perSeg}${chips}
+      <svg viewBox="0 0 ${W} ${H}" role="img" aria-label="Kategorilerin aylık karşılaştırması">${g}</svg>
+      <div class="cmp-tab"><div class="h"><span></span><span>Toplam</span><span>Ort./ay</span><span>Son ay</span></div>${series.map(({ k, vals }) => { const t = vals.reduce((a, v) => a + v, 0); return `<div><span><i class="dot" style="background:${k.color}"></i>${esc(k.name)}</span><b class="num">${eur(t)}</b><b class="num">${eur(t / months.length)}</b><b class="num">${eur(vals[vals.length - 1])}</b></div>`; }).join('')}</div>
+      <p class="hint">Birden fazla kategori seçtin; her çizgi bir kategori. Tek kategoriye dönmek için diğerlerine tekrar dokun.</p>
+    </section>${savedHtml}`;
+    }
+    const c = ui.acat === 'all' ? { name: 'Tüm giderler', color: '#7b8aa3' } : catOf('out', ui.acat);
     const vals = months.map(ym => monthTx(ym).filter(t => t.type === 'out' && (ui.acat === 'all' || t.cat === ui.acat)).reduce((a, t) => a + t.amount, 0));
     const allOut = months.reduce((a, ym) => a + sum(monthTx(ym), 'out'), 0);
     const tot = vals.reduce((a, v) => a + v, 0), avg = tot / months.length;
@@ -1625,22 +1669,46 @@ nav.tabs .tab[aria-current="page"] { color: var(--primary); }
     });
     const years = {}; months.forEach((ym, k) => years[ym.slice(0, 4)] = (years[ym.slice(0, 4)] || 0) + vals[k]);
     return `<section class="card bars">
-      <div class="card-h"><h2>Kategori analizi</h2><small>${AY_K[+startYm.slice(5) - 1]} ${startYm.slice(0, 4)} – ${AY_K[+endYm.slice(5) - 1]} ${endYm.slice(0, 4)}</small></div>
-      <div class="seg" style="--n:3">${[['6', 'Son 6 ay'], ['12', 'Son 1 yıl'], ['from', 'Tarihten']].map(([v, l]) => `<button data-per="${v}" aria-pressed="${ui.per === v}">${l}</button>`).join('')}</div>
-      ${ui.per === 'from' ? `<label class="fld">Başlangıç ayı<input type="month" id="fromIn" value="${ui.from}" max="${curYm}"></label>` : ''}
-      <div class="hscroll" role="group" aria-label="Kategori seç">
-        <button class="pick" data-acat="all" aria-pressed="${ui.acat === 'all'}"><i class="dot" style="background:var(--out)"></i>Tüm giderler</button>
-        ${cats.map(k => `<button class="pick" data-acat="${k.id}" aria-pressed="${ui.acat === k.id}"><i class="dot" style="background:${k.color}"></i>${esc(k.name)}</button>`).join('')}
-      </div>
+      <div class="card-h"><h2>Kategori analizi</h2><small>${range}</small></div>
+      ${perSeg}${chips}
       <svg viewBox="0 0 ${W} ${H}" role="img" aria-label="${esc(c.name)} aylık harcama">${g}</svg>
       <div class="stats">
-        <div><span>Toplam</span><b class="num" style="color:var(--out-ink)">${eur(tot)}</b></div>
+        <div><span>Toplam</span><b class="num">${eur(tot)}</b></div>
         <div><span>Aylık ortalama</span><b class="num">${eur(avg)}</b></div>
         ${ui.acat === 'market' ? `<div><span>TM (Türk marketi)</span><b class="num">${eur(tmSum)}</b></div><div><span>Diğer market</span><b class="num">${eur(tot - tmSum)}</b></div><div><span>TM payı</span><b class="num">%${tot ? Math.round(tmSum / tot * 100) : 0}</b></div>` : ''}
         ${ui.acat === 'araba' ? `<div><span>Alınan benzin</span><b class="num">${eur(fuelGross)}</b></div><div><span>Gutschein ile</span><b class="num">${eur(fuelGs)}</b></div><div><span>${curYm.slice(0, 4)} Gutschein toplamı</span><b class="num">${eur(gsYear)}</b></div>` : ''}
         <div><span>En yüksek ay</span><b class="num">${mx ? AY_K[+months[mi].slice(5) - 1] + ' · ' + eur(mx) : '–'}</b></div>
       </div>
-      <p class="hint">${ui.acat !== 'all' && allOut ? `${esc(c.name)} bu dönemdeki giderlerinin <b>%${Math.round(tot / allOut * 100)}</b>'i. ` : ''}${Object.keys(years).length > 1 || ui.per === '12' ? 'Yıllara göre: ' + Object.entries(years).map(([yy, v]) => `${yy} <b class="num">${eur(v)}</b>`).join(' · ') + '. ' : ''}Kesikli çizgi aylık ortalama.</p>
+      <p class="hint">${ui.acat !== 'all' && allOut ? `${esc(c.name)} bu dönemdeki giderlerinin <b>%${Math.round(tot / allOut * 100)}</b>'i. ` : ''}${Object.keys(years).length > 1 || ui.per === '12' ? 'Yıllara göre: ' + Object.entries(years).map(([yy, v]) => `${yy} <b class="num">${eur(v)}</b>`).join(' · ') + '. ' : ''}Kesikli çizgi aylık ortalama. Kıyaslamak için birden fazla kategori seçebilirsin.</p>
+    </section>${savedHtml}`;
+  }
+
+  // Artırılan para: her ay gelir − gider (yatırımlar gider sayılmaz)
+  function savedCard(months, range) {
+    const vals = months.map(ym => { const m = monthTx(ym); return sum(m, 'in') - sum(m, 'out'); });
+    const tot = vals.reduce((a, v) => a + v, 0), avg = tot / months.length;
+    const hi = niceMax(Math.max(1, ...vals)), lo = Math.min(0, ...vals) < 0 ? -niceMax(-Math.min(...vals)) : 0;
+    const W = 340, H = 160, L = 40, T = 16, B = 22, ch = H - T - B, slot = (W - L) / months.length, bw = Math.max(4, Math.min(22, slot - 6));
+    const y = v => T + (hi - v) / (hi - lo) * ch;
+    let g = '';
+    [hi, 0, lo].filter((v, i, a) => a.indexOf(v) === i).forEach(v => { g += `<line x1="${L}" x2="${W}" y1="${y(v)}" y2="${y(v)}" stroke="${v === 0 ? 'var(--muted)' : 'var(--line)'}"/><text x="${L - 6}" y="${y(v) + 3}" text-anchor="end">${short(v)}</text>`; });
+    const step = Math.ceil(months.length / 12);
+    months.forEach((ym, k) => {
+      const v = vals[k], x = L + slot * k + (slot - bw) / 2, y0 = y(0), y1 = y(v);
+      if (v) g += `<rect x="${x}" y="${Math.min(y0, y1)}" width="${bw}" height="${Math.max(1, Math.abs(y1 - y0))}" rx="3" fill="${v >= 0 ? 'var(--in)' : '#d0a24c'}"><title>${AYLAR[+ym.slice(5) - 1]} ${ym.slice(0, 4)}: ${v >= 0 ? '+' : '−'}${money(Math.abs(v))}</title></rect>`;
+      if (k === months.length - 1 || months.length <= 6) g += `<text x="${x + bw / 2}" y="${v >= 0 ? y1 - 4 : y1 + 11}" text-anchor="middle" style="fill:var(--ink);font-weight:700">${short(v)}</text>`;
+      if (k % step === 0) g += `<text x="${L + slot * k + slot / 2}" y="${H - 6}" text-anchor="middle">${AY_K[+ym.slice(5) - 1]}</text>`;
+    });
+    const best = vals.indexOf(Math.max(...vals));
+    return `<section class="card bars">
+      <div class="card-h"><h2>Artırılan para</h2><small>${range}</small></div>
+      <svg viewBox="0 0 ${W} ${H}" role="img" aria-label="Aylara göre artırılan para">${g}</svg>
+      <div class="stats">
+        <div><span>Toplam</span><b class="num" style="color:var(${tot >= 0 ? '--in-ink' : '--ink'})">${tot < 0 ? '−' : ''}${eur(Math.abs(tot))}</b></div>
+        <div><span>Aylık ortalama</span><b class="num">${avg < 0 ? '−' : ''}${eur(Math.abs(avg))}</b></div>
+        <div><span>En iyi ay</span><b class="num">${AY_K[+months[best].slice(5) - 1]} · ${eur(vals[best])}</b></div>
+      </div>
+      <p class="hint">Gelir eksi gider. Yatırımlar gider sayılmaz, yani yatırdığın para da artırılan paraya dahil.</p>
     </section>`;
   }
 
@@ -1837,7 +1905,7 @@ nav.tabs .tab[aria-current="page"] { color: var(--primary); }
     if ((el = T('[data-at]'))) { ui.aType = el.dataset.at; return render(); }
     if ((el = T('[data-who]'))) { ui.who = el.dataset.who; return render(); }
     if ((el = T('[data-per]'))) { ui.per = el.dataset.per; return render(); }
-    if ((el = T('[data-acat]'))) { const sx = el.parentNode.scrollLeft; ui.acat = el.dataset.acat; render(); const h = $('.hscroll'); if (h) h.scrollLeft = sx; return; }
+    if ((el = T('[data-acat]'))) { const sx = el.parentNode.scrollLeft, id = el.dataset.acat; ui.acats = id === 'all' ? [] : ui.acats.includes(id) ? ui.acats.filter(x => x !== id) : ui.acats.concat(id); render(); const h = $('.hscroll.ac'); if (h) h.scrollLeft = sx; return; }
     if ((el = T('[data-kt]'))) { ui.kType = el.dataset.kt; return render(); }
     if ((el = T('[data-rmcat]'))) { const id = el.dataset.rmcat; return withUndo('Kategori kaldırıldı', () => { db.cats[ui.kType] = db.cats[ui.kType].filter(c => c.id !== id); }); }
     if ((el = T('[data-editp]'))) { ui.editP = el.dataset.editp; render(); const inp = $('#ppIn'); if (inp) { inp.focus(); inp.select(); } return; }
