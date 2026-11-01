@@ -443,6 +443,24 @@ svg.dchart .today { fill: var(--surface); stroke: var(--primary); stroke-width: 
 .icon-btn.gear { color: var(--primary-ink); }
 .icon-btn.gear[aria-current="page"], #setBtn[aria-current="page"] { background: var(--primary-soft); color: var(--primary-ink); }
 .seg button svg.i { width: 15px; height: 15px; vertical-align: -2px; }
+.st-sec { gap: 10px; }
+.st-line { display: flex; align-items: center; gap: 10px; } .st-line > b { font-size: 14px; min-width: 86px; }
+.st-line .seg { flex: 1; } .bud-form.st-line { margin: 0; } .bud-form.st-line input { flex: 1; min-width: 0; }
+.st-sec > .seg.type { margin-top: 2px; }
+.st-sec .card { box-shadow: none; padding: 0; background: none; }
+.emo-grid { display: grid; grid-template-columns: repeat(10, minmax(0, 1fr)); gap: 4px; margin-top: 8px; }
+.emo-grid button { border: 0; background: var(--surface-2); border-radius: 10px; font-size: 18px; padding: 5px 0; line-height: 1.2; }
+.emo-grid button[aria-pressed="true"] { box-shadow: inset 0 0 0 2px var(--primary); background: var(--primary-soft); }
+.newcat .emo { display: grid; place-items: center; font-size: 20px; }
+.ppl { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+.pp, .pp-ed { display: inline-flex; align-items: center; gap: 6px; background: var(--surface-2); border-radius: 99px; padding: 5px 6px 5px 6px; font-size: 14px; }
+.pp small { color: var(--muted); font-size: 11px; }
+.pp-pen { border: 0; background: none; padding: 2px 4px; font-size: 13px; color: var(--muted); }
+.pp-ed input { border: 0; background: var(--surface); border-radius: 99px; padding: 4px 10px; font: inherit; font-size: 14px; color: var(--ink); width: 110px; }
+.pp-add { width: 32px; height: 32px; border-radius: 50%; border: 1.5px dashed var(--line); background: none; color: var(--muted); font-size: 18px; }
+.bk-rem { display: flex; align-items: center; gap: 12px; width: 100%; border: 0; text-align: left; font: inherit; background: var(--primary-soft); color: var(--ink); border-radius: 16px; padding: 12px 14px; }
+.bk-rem > span:first-child { font-size: 22px; } .bk-rem > span:nth-child(2) { flex: 1; display: flex; flex-direction: column; } .bk-rem small { color: var(--muted); font-size: 12px; }
+.bk-rem .go { background: var(--primary); color: #fff; border-radius: 99px; padding: 6px 14px; font-weight: 800; font-size: 13px; }
 .task { display: flex; align-items: center; gap: 8px; margin: 0 0 2px; font-size: 12.5px; color: var(--muted); font-weight: 600; }
 .task .segs { flex: 1; display: flex; gap: 3px; }
 .task .segs i { flex: 1; height: 6px; border-radius: 3px; background: var(--surface-2); }
@@ -516,6 +534,7 @@ svg.cols .p { font-size: 9.5px; font-weight: 600; fill: var(--muted); }
 .who { width: 20px; height: 20px; border-radius: 50%; display: grid; place-items: center; font-size: 10.5px; font-weight: 800; flex: none; }
 .who.p1 { background: var(--inv-soft); color: var(--inv); }
 .who.p2 { background: #fde4f1; color: #c0267a; }
+.who.p3 { background: #dcfce7; color: #15803d; } .who.p4 { background: #fef3c7; color: #b45309; } .who.p5, .who.p6 { background: #ede9fe; color: #6d28d9; }
 .payers { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
 .payers > div { border-radius: 14px; padding: 10px 12px; display: flex; align-items: center; gap: 10px; min-width: 0; }
 .payers > div > div { min-width: 0; }
@@ -630,7 +649,6 @@ nav.tabs .tab[aria-current="page"] { color: var(--primary); }
         <span id="mLbl" class="num"></span>
         <button id="mNext" aria-label="Sonraki ay"></button>
       </div>
-      <button class="icon-btn" id="setBtn" aria-label="Kategoriler" title="Kategoriler"></button>
       <button class="icon-btn gear" id="gearBtn" aria-label="Ayarlar" title="Ayarlar"></button>
     </div>
   </header>
@@ -706,7 +724,6 @@ nav.tabs .tab[aria-current="page"] { color: var(--primary); }
   document.querySelectorAll('[data-ic]').forEach(el => el.insertAdjacentHTML('afterbegin', svg(el.dataset.ic)));
   document.getElementById('mPrev').innerHTML = svg('left');
   document.getElementById('mNext').innerHTML = svg('right');
-  document.getElementById('setBtn').innerHTML = svg('grid');
   document.getElementById('gearBtn').innerHTML = svg('gear');
   // Açık / koyu tema geçişi
   function applyTheme(t) {
@@ -900,27 +917,45 @@ nav.tabs .tab[aria-current="page"] { color: var(--primary); }
   db.cats.out.forEach(c => { if (c.id === 'ekstra' && c.color === '#98a2b3') c.color = '#b45309'; });
   // Kişi adları sadece telefonda (Kategoriler > Kişiler); kodda isim yok
   const PAYER = new Proxy({}, { get: (_, k) => ((db.people || {})[k] || '').trim() || (k === 'p2' ? 'Eşim' : 'Ben') });
-  const payerOf = f => f.payer === 'p2' ? 'p2' : 'p1';
+  // Kişiler: p1 (sen), p2, p3... adlar db.people'da
+  function savePerson(val) {
+    const k = ui.editP, inp = document.getElementById('ppIn'); if (!k || (!inp && val == null)) return;
+    const v = (val != null ? val : inp.value).trim(); ui.editP = null;
+    if (v && v !== db.people[k]) { db.people[k] = v; save(); toast('Ad kaydedildi: ' + v); }
+    render();
+  }
+  document.addEventListener('focusout', e => { if (e.target && e.target.id === 'ppIn') { const val = e.target.value; setTimeout(() => { if (ui.editP) savePerson(val); }, 0); } });
+  const PEOPLE = () => Object.keys(db.people || { p1: 1, p2: 1 }).sort((a, b) => a.slice(1) - b.slice(1));
+  const payerOf = f => PEOPLE().includes(f && f.payer) ? f.payer : 'p1';
   const PINK = KEY + '-pin';
   const pinGet = () => { try { return localStorage.getItem(PINK); } catch (e) { return null; } };
   async function pinHash(pin) { const t = 'cuzdan|' + pin; try { const b = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(t)); return [...new Uint8Array(b)].map(x => x.toString(16).padStart(2, '0')).join(''); } catch (e) { return 'h' + hk(t); } }
   function lockScreen() {
     if (!pinGet() || document.getElementById('lock')) return;
+    try { if (!localStorage.getItem(PINK + 'At')) localStorage.setItem(PINK + 'At', Date.now()); } catch (er) {}
     const el = document.createElement('div'); el.id = 'lock'; el.setAttribute('role', 'dialog'); el.setAttribute('aria-label', 'PIN ile aç');
-    let v = '', err = false, forgot = false;
-    const draw = () => { el.innerHTML = `<div class="lk"><div class="lk-ic">🔒</div><div class="lk-t">Cüzdan</div><div class="lk-s">${err ? 'PIN yanlış, tekrar dene' : 'PIN gir'}</div>
+    let v = '', err = '', forgot = false, mode = 'unlock', first = '';
+    const done = () => { el.remove(); document.removeEventListener('keydown', kd, true); try { sessionStorage.setItem(PINK + 'Ok', '1'); } catch (er) {} };
+    const draw = () => { el.innerHTML = `<div class="lk"><div class="lk-ic">🔒</div><div class="lk-t">Cüzdan</div><div class="lk-s">${err || (mode === 'new1' ? '3 ay oldu, yeni bir PIN belirle' : mode === 'new2' ? 'Yeni PIN\'i tekrar gir' : 'PIN gir')}</div>
       <div class="lk-dots ${err ? 'err' : ''}">${[0, 1, 2, 3].map(i => `<i class="${i < v.length ? 'on' : ''}"></i>`).join('')}</div>
       <div class="lk-pad">${['1', '2', '3', '4', '5', '6', '7', '8', '9', '', '0', '⌫'].map(k => k === '' ? '<span></span>' : `<button data-k="${k}" aria-label="${k === '⌫' ? 'Sil' : k}">${k}</button>`).join('')}</div>
-      ${forgot ? `<div class="lk-fg">PIN bilinmeden kayıtlar açılamaz. Sıfırlarsan bu telefondaki <b>tüm kayıtlar silinir</b> (yedeğin varsa sonra yükleyebilirsin).<button data-wipe>Kayıtları sil ve sıfırla</button><button data-fgx>Vazgeç</button></div>` : `<button class="lk-forgot" data-forgot>PIN'i unuttum</button>`}</div>`; };
+      ${mode === 'new1' && !err ? `<button class="lk-forgot" data-later>Sonra hatırlat</button>` : forgot ? `<div class="lk-fg">PIN bilinmeden kayıtlar açılamaz. Sıfırlarsan bu telefondaki <b>tüm kayıtlar silinir</b> (yedeğin varsa sonra yükleyebilirsin).<button data-wipe>Kayıtları sil ve sıfırla</button><button data-fgx>Vazgeç</button></div>` : `<button class="lk-forgot" data-forgot>PIN'i unuttum</button>`}</div>`; };
     const press = async k => {
       if (k === '⌫') v = v.slice(0, -1); else if (v.length < 4) v += k;
       err = false; draw();
-      if (v.length === 4) { const ok = (await pinHash(v)) === pinGet(); if (ok) { el.remove(); document.removeEventListener('keydown', kd, true); } else { v = ''; err = true; draw(); } }
+      if (v.length === 4) {
+        if (mode === 'new1') { first = v; v = ''; mode = 'new2'; return draw(); }
+        if (mode === 'new2') { if (v === first) { const h = await pinHash(v); try { localStorage.setItem(PINK, h); localStorage.setItem(PINK + 'At', Date.now()); } catch (er) {} return done(); } v = ''; mode = 'new1'; err = 'PIN\'ler aynı değil, baştan gir'; return draw(); }
+        const ok = (await pinHash(v)) === pinGet();
+        if (ok) { const at = +(localStorage.getItem(PINK + 'At') || 0); if (at && Date.now() - at > 90 * 864e5) { v = ''; mode = 'new1'; err = ''; return draw(); } return done(); }
+        v = ''; err = 'PIN yanlış, tekrar dene'; draw();
+      }
     };
     const kd = e => { if (!document.getElementById('lock')) return; if (/^\d$/.test(e.key)) { e.preventDefault(); e.stopPropagation(); press(e.key); } else if (e.key === 'Backspace') { e.preventDefault(); e.stopPropagation(); press('⌫'); } };
     el.onclick = e => {
       const b = e.target.closest('[data-k]'); if (b) return press(b.dataset.k);
       if (e.target.closest('[data-forgot]')) { forgot = true; return draw(); }
+      if (e.target.closest('[data-later]')) { try { localStorage.setItem(PINK + 'At', Date.now() - 83 * 864e5); } catch (er) {} return done(); }
       if (e.target.closest('[data-fgx]')) { forgot = false; return draw(); }
       if (e.target.closest('[data-wipe]')) { try { localStorage.removeItem(KEY); localStorage.removeItem(PINK); } catch (er) {} location.reload(); }
     };
@@ -964,8 +999,8 @@ nav.tabs .tab[aria-current="page"] { color: var(--primary); }
   // Bir kayıt "ym" alanı taşıyorsa (ör. gelecek aya sayılan gelir) o aya yazılır
   const txYm = t => t.ym || ymOf(t.date);
   const monthTx = ym => db.tx.filter(t => txYm(t) === ym).concat(fixedTx(ym), incomeTx(ym))
-    .filter(t => ui.tab !== 'analiz' || ui.who === 'all' || (t.payer || 'p1') === ui.who);
-  const whoBadge = t => { const p = t.payer === 'p2' ? 'p2' : 'p1'; return `<span class="who sm ${p}" title="${PAYER[p]}">${PAYER[p][0]}</span>`; };
+    .filter(t => ui.tab !== 'analiz' || ui.who === 'all' || payerOf(t) === ui.who);
+  const whoBadge = t => { const p = payerOf(t); return `<span class="who sm ${p}" title="${PAYER[p]}">${PAYER[p][0]}</span>`; };
   const sum = (arr, type) => arr.filter(t => t.type === type).reduce((a, t) => a + t.amount, 0);
   const sorted = arr => arr.slice().sort((a, b) => b.date.localeCompare(a.date) || (b.ts || 0) - (a.ts || 0));
   const fixedItems = () => db.fixed.map(f => ({ f, st: fixedState(f, ui.ym) })).filter(x => x.st).sort((a, b) => a.st.due.localeCompare(b.st.due) || a.f.name.localeCompare(b.f.name, 'tr'));
@@ -1022,6 +1057,9 @@ nav.tabs .tab[aria-current="page"] { color: var(--primary); }
     const mName = AYLAR[+ui.ym.slice(5) - 1];
 
     let html = '';
+    { const dd = +todayIso.slice(8), feb = todayIso.slice(5, 7) === '02';
+      if (ui.ym === curYm && (feb ? dd === 28 : dd >= 28 && dd <= 30) && !(db.lastBackup && db.lastBackup.slice(0, 7) === curYm))
+        html += `<button class="bk-rem" data-backup><span>💾</span><span><b>Yedeklemeyi unutma</b><small>Dokun, bu ayın yedeği telefona insin</small></span><span class="go">İndir</span></button>`; }
     if (db.sample) html += `<div class="chip-note">${ui.confirmClear
       ? `<span>Örnek kayıtlar silinsin mi? Sabit gider listen kalır.</span><button data-clear="yes">Evet, sil</button><button data-clear="no">Vazgeç</button>`
       : `<span>Örnek verilerle açıldı</span><button data-clear="ask">Temizle</button>`}</div>`;
@@ -1161,12 +1199,12 @@ nav.tabs .tab[aria-current="page"] { color: var(--primary); }
     const tot = items.reduce((a, x) => a + x.st.amount, 0);
     const doneSum = done.reduce((a, x) => a + x.st.amount, 0);
     const paidN = items.filter(x => x.st.status === 'paid' || x.st.status === 'auto').length;
-    const byP = p => items.filter(x => (x.f.payer || 'p1') === p).reduce((a, x) => a + x.st.amount, 0);
+    const byP = p => items.filter(x => payerOf(x.f) === p).reduce((a, x) => a + x.st.amount, 0);
     return `<section class="card" id="fixedCard">
       <div class="card-h">${foldH('fx', 'Sabit giderler', `<small class="num">${eur(doneSum)} / ${eur(tot)} düştü</small>`)}${ui.editFx === 'new' ? '' : `<button class="link" data-editfx="new">+ Ekle</button>`}</div>
       ${items.length ? `<div class="task"><div class="segs">${items.map(x => `<i class="${x.st.status === 'paid' || x.st.status === 'auto' ? 'on' : ''}" title="${esc(x.f.name)}"></i>`).join('')}</div><b class="num">${paidN}/${items.length}</b><span>ödendi</span></div>` : ''}
       ${ui.editFx === 'new' ? fxForm(null) : ''}
-      ${isOpen('fx') || ui.editFx ? `${items.length ? `<div class="fx-who num"><span class="who sm p1">${PAYER.p1[0]}</span>${esc(PAYER.p1)} ${eur(byP('p1'))}<span class="sep">·</span><span class="who sm p2">${PAYER.p2[0]}</span>${esc(PAYER.p2)} ${eur(byP('p2'))}</div>` : ''}<div class="fx-list">${items.length ? items.map(fixedRow).join('') : `<div class="empty">Kira, fatura gibi her ay ödediğin giderleri ekle.</div>`}</div>
+      ${isOpen('fx') || ui.editFx ? `${items.length ? `<div class="fx-who num">${PEOPLE().map(p => `<span class="who sm ${p}">${PAYER[p][0]}</span>${esc(PAYER[p])} ${eur(byP(p))}`).join('<span class="sep">·</span>')}</div>` : ''}<div class="fx-list">${items.length ? items.map(fixedRow).join('') : `<div class="empty">Kira, fatura gibi her ay ödediğin giderleri ekle.</div>`}</div>
       ${periodicHint()}` : ''}
     </section>`;
   }
@@ -1250,7 +1288,7 @@ nav.tabs .tab[aria-current="page"] { color: var(--primary); }
         <input type="hidden" id="inCat" value="${f.cat || ''}">
       </div>
       <div class="fld full freq">Kimin
-        <div class="seg" style="--n:2" role="group" aria-label="Kimin">${['p1', 'p2'].map(p => `<button type="button" data-payer="${p}" aria-pressed="${payerOf(f) === p}">${PAYER[p]}</button>`).join('')}</div>
+        <div class="seg" style="--n:${PEOPLE().length}" role="group" aria-label="Kimin">${PEOPLE().map(p => `<button type="button" data-payer="${p}" aria-pressed="${payerOf(f) === p}">${PAYER[p]}</button>`).join('')}</div>
         <input type="hidden" id="fxPayer" value="${payerOf(f)}">
       </div>
       <label class="fld full">${x ? 'Bu ay gelen tutar (€)' : 'Aylık tutar (€)'}<input id="inAmt" inputmode="decimal" placeholder="boş bırakılabilir" value="${x ? String(x.amount).replace('.', ',') : f.amount === '' ? '' : String(f.amount).replace('.', ',')}"></label>
@@ -1282,7 +1320,7 @@ nav.tabs .tab[aria-current="page"] { color: var(--primary); }
         <input type="hidden" id="fxManual" value="${f.manual ? '1' : '0'}">
       </div>
       <div class="fld full freq">Kim ödüyor
-        <div class="seg" style="--n:2" role="group" aria-label="Kim ödüyor">${['p1', 'p2'].map(p => `<button type="button" data-payer="${p}" aria-pressed="${payerOf(f) === p}">${PAYER[p]}</button>`).join('')}</div>
+        <div class="seg" style="--n:${PEOPLE().length}" role="group" aria-label="Kim ödüyor">${PEOPLE().map(p => `<button type="button" data-payer="${p}" aria-pressed="${payerOf(f) === p}">${PAYER[p]}</button>`).join('')}</div>
         <input type="hidden" id="fxPayer" value="${payerOf(f)}">
       </div>
       <label class="fld">Tutar (€)<input id="fxAmt" inputmode="decimal" required placeholder="ör. 39,99" value="${f.amount === '' ? '' : String(f.amount).replace('.', ',')}"></label>
@@ -1369,7 +1407,7 @@ nav.tabs .tab[aria-current="page"] { color: var(--primary); }
     if (ui.selDay) {
       const dt = sorted(mt.filter(t => t.date === ui.selDay));
       const plan = fx.filter(x => x.st.due === ui.selDay && x.st.status === 'wait');
-      const simple = t => { const c = catOf(t.type, t.cat), p = t.payer === 'p2' ? 'p2' : 'p1';
+      const simple = t => { const c = catOf(t.type, t.cat), p = payerOf(t);
         return `<div class="lrow"><span class="who sm ${p}">${PAYER[p][0]}</span><span class="lc"><b>${esc(t.fx ? 'Sabit' : c.name)}</b>${t.note ? ` · ${esc(t.note)}` : ''}</span><b class="num" style="color:${t.type === 'in' ? 'var(--in-ink)' : t.type === 'inv' ? 'var(--inv)' : 'var(--ink)'}">${t.type === 'out' ? '−' : '+'}${eur(t.amount)}</b></div>`; };
       panel = `<div class="daypanel" role="region" aria-label="${dayLabel(ui.selDay)}">
         <div class="dp-h"><b>${dayLabel(ui.selDay)}</b>${dt.length ? `<small class="num">Gelir <b style="color:var(--in-ink)">${eur(sum(dt, 'in'))}</b> · Gider <b>${eur(sum(dt, 'out'))}</b></small>` : ''}</div>
@@ -1470,10 +1508,10 @@ nav.tabs .tab[aria-current="page"] { color: var(--primary); }
     let share = '';
     if (ui.who === 'all') {
       const all = db.tx.filter(t => t.type === 'in' && txYm(t) === ui.ym).concat(incomeTx(ui.ym)), tot = all.reduce((a, t) => a + t.amount, 0);
-      const ni = all.filter(t => t.payer === 'p2').reduce((a, t) => a + t.amount, 0);
-      if (tot && ni) share = `<p class="hint">Hane geliri ${eur(tot)}: ${esc(PAYER.p1)} <b>%${Math.round((tot - ni) / tot * 100)}</b>, ${esc(PAYER.p2)} <b>%${Math.round(ni / tot * 100)}</b>.</p>`;
+      const parts = PEOPLE().map(p => [p, all.filter(t => payerOf(t) === p).reduce((a, t) => a + t.amount, 0)]).filter(([, v]) => v);
+      if (tot && parts.length > 1) share = `<p class="hint">Hane geliri ${eur(tot)}: ${parts.map(([p, v]) => `${esc(PAYER[p])} <b>%${Math.round(v / tot * 100)}</b>`).join(', ')}.</p>`;
     }
-    return `<div class="seg" style="--n:3" role="group" aria-label="Kimin analizi">${[['all', 'Hane'], ['p1', PAYER.p1], ['p2', PAYER.p2]].map(([v, l]) => `<button data-who="${v}" aria-pressed="${ui.who === v}">${v === 'all' ? '' : `<span class="who sm ${v}">${l[0]}</span>`}${l}</button>`).join('')}</div>
+    return `<div class="seg" style="--n:${PEOPLE().length + 1}" role="group" aria-label="Kimin analizi">${[['all', 'Hane']].concat(PEOPLE().map(p => [p, PAYER[p]])).map(([v, l]) => `<button data-who="${v}" aria-pressed="${ui.who === v}">${v === 'all' ? '' : `<span class="who sm ${v}">${l[0]}</span>`}${l}</button>`).join('')}</div>
       ${share}
       <section class="card">
         <div class="card-h"><h2>Kategori dağılımı</h2></div>
@@ -1516,7 +1554,7 @@ nav.tabs .tab[aria-current="page"] { color: var(--primary); }
     // Market seçiliyken Türk marketi (TM) ile diğer market karşılaştırması
     const fuelTx = ui.acat === 'araba' ? months.flatMap(ym => monthTx(ym).filter(t => t.type === 'out' && t.cat === 'araba' && t.fuel)) : [];
     const fuelGross = fuelTx.reduce((a, t) => a + (t.gross || t.amount), 0), fuelGs = fuelTx.reduce((a, t) => a + (t.gs || 0), 0);
-    const gsYear = ui.acat === 'araba' ? db.tx.filter(t => t.gs && t.date.slice(0, 4) === curYm.slice(0, 4) && (ui.who === 'all' || (t.payer || 'p1') === ui.who)).reduce((a, t) => a + t.gs, 0) : 0;
+    const gsYear = ui.acat === 'araba' ? db.tx.filter(t => t.gs && t.date.slice(0, 4) === curYm.slice(0, 4) && (ui.who === 'all' || payerOf(t) === ui.who)).reduce((a, t) => a + t.gs, 0) : 0;
     const tmSum = ui.acat === 'market' ? months.reduce((a, ym) => a + monthTx(ym).filter(t => t.type === 'out' && t.cat === 'market' && t.tm).reduce((x, t) => x + t.amount, 0), 0) : 0;
     const mx = Math.max(...vals), mi = vals.indexOf(mx);
     const max = niceMax(mx || 1);
@@ -1570,6 +1608,7 @@ nav.tabs .tab[aria-current="page"] { color: var(--primary); }
   }
 
   /* ---------- Kategoriler ---------- */
+  const CAT_EMO = ['🏋️', '⚽', '🛒', '🍞', '🍽️', '☕', '💊', '🏥', '🚗', '⛽', '🚌', '✈️', '🏠', '💡', '📱', '🎓', '📚', '👶', '🐶', '👕', '💇', '🎮', '🎬', '🎁', '💳', '🧾', '🔧', '🌱', '❤️', '💰'];
   function renderKategori() {
     const cats = db.cats[ui.kType];
     const count = id => db.tx.filter(t => t.type === ui.kType && t.cat === id).length;
@@ -1590,67 +1629,70 @@ nav.tabs .tab[aria-current="page"] { color: var(--primary); }
       <section class="card">
         <div class="card-h"><h2>Yeni ${TN[ui.kType].toLocaleLowerCase('tr-TR')} kategorisi</h2></div>
         <form class="newcat" id="catForm">
-          <input class="emo" id="ncIcon" maxlength="4" placeholder="🏷️" aria-label="Simge (emoji)">
+          <span class="emo" id="ncShow" aria-hidden="true">${ui.ncIc || '🏷️'}</span><input type="hidden" id="ncIcon" value="${ui.ncIc || ''}">
           <input id="ncName" maxlength="18" placeholder="ör. Spor salonu" aria-label="Kategori adı">
           <button class="btn" type="submit">Ekle</button>
         </form>
+        <div class="emo-grid" role="group" aria-label="Simge seç">${CAT_EMO.map(e => `<button type="button" data-emo="${e}" aria-pressed="${ui.ncIc === e}">${e}</button>`).join('')}</div>
       </section>`;
   }
 
   /* ---------- Ayarlar ---------- */
+  function peopleRow() {
+    return `<div class="ppl">${PEOPLE().map(p => ui.editP === p
+      ? `<form class="pp-ed" data-ppform="${p}"><span class="who sm ${p}">${PAYER[p][0]}</span><input id="ppIn" maxlength="16" value="${esc(db.people[p] || '')}" aria-label="Ad" enterkeyhint="done"></form>`
+      : `<span class="pp"><span class="who sm ${p}">${PAYER[p][0]}</span><b>${esc(PAYER[p])}</b>${p === 'p1' ? '<small>(sen)</small>' : ''}<button class="pp-pen" data-editp="${p}" aria-label="${esc(PAYER[p])} adını değiştir">✏️</button>${+p.slice(1) > 2 && !db.tx.some(t => t.payer === p) && !db.fixed.some(f => f.payer === p) ? `<button class="pp-pen" data-rmp="${p}" aria-label="Kişiyi kaldır">✕</button>` : ''}</span>`).join('')}
+      ${PEOPLE().length < 6 ? `<button class="pp-add" data-addp aria-label="Kişi ekle">＋</button>` : ''}</div>`;
+  }
   function renderAyarlar() {
     const lb = db.lastBackup;
-    return `<section class="card">
-        <div class="card-h"><div><h2>Görünüm</h2><small>Tema</small></div></div>
-        <div class="seg" style="--n:2" role="group" aria-label="Tema">${[['light', 'Açık'], ['dark', 'Koyu']].map(([v, l]) => `<button data-theme-set="${v}" aria-pressed="${theme === v}">${svg(v === 'dark' ? 'moon' : 'sun')} ${l}</button>`).join('')}</div>
+    return `<section class="card st-sec">
+        <div class="st-line"><b>Tema</b><div class="seg" style="--n:2" role="group" aria-label="Tema">${[['light', 'Açık'], ['dark', 'Koyu']].map(([v, l]) => `<button data-theme-set="${v}" aria-pressed="${theme === v}">${svg(v === 'dark' ? 'moon' : 'sun')} ${l}</button>`).join('')}</div></div>
+        <form class="bud-form st-line" id="budgetForm"><b>Aylık limit</b><input id="budgetIn" class="num" inputmode="decimal" value="${db.budget || ''}" placeholder="1500" aria-label="Aylık harcama limiti (€)"><button>Kaydet</button></form>
       </section>
-      <section class="card">
-        <div class="card-h"><div><h2>Aylık harcama limiti</h2><small>Sadece senin (${esc(PAYER.p1)}) harcamaların düşer</small></div></div>
-        <form class="bud-form" id="budgetForm"><span>Limit (€)</span><input id="budgetIn" class="num" inputmode="decimal" value="${db.budget || ''}" placeholder="1500"><button>Kaydet</button></form>
+      <section class="card st-sec">
+        <div class="card-h">${foldH('st-cat', 'Kategoriler', `<small>Düzenle, yeni kategori ekle</small>`)}</div>
+        ${isOpen('st-cat') ? renderKategori() : ''}
       </section>
-      <section class="card">
-        <div class="card-h"><div><h2>Ara rapor</h2><small>${AYLAR[+curYm.slice(5) - 1]} ayının bugüne kadarki özeti</small></div></div>
-        <button class="rep-btn" data-report="${curYm}">${svg('share')}Ara rapor al ve paylaş</button>
-      </section>
-      <section class="card">
-        <div class="card-h"><div><h2>Gizlilik</h2><small>Bütün bilgiler sadece bu telefonda saklanır</small></div></div>
-        <form id="peopleForm" class="pp-form">
-          <label>1. kişi (sen)<input id="pp1" maxlength="16" value="${esc((db.people || {}).p1 || '')}" placeholder="Ben"></label>
-          <label>2. kişi<input id="pp2" maxlength="16" value="${esc((db.people || {}).p2 || '')}" placeholder="Eşim"></label>
-          <button class="btn">Adları kaydet</button>
-        </form>
+      <section class="card st-sec">
+        <div class="card-h">${foldH('st-priv', 'Gizlilik', `<small>Kişiler ve PIN · bilgiler sadece bu telefonda</small>`)}</div>
+        ${isOpen('st-priv') ? `${peopleRow()}
         <form id="pinForm" class="pp-form">
           <span class="pin-st">${pinGet() ? '🔒 PIN kilidi açık' : 'PIN kilidi kapalı'}</span>
           <input id="pinNew" type="password" inputmode="numeric" pattern="[0-9]{4}" maxlength="4" autocomplete="off" placeholder="${pinGet() ? 'Yeni' : '4 haneli'} PIN" aria-label="PIN">
           <button class="btn">${pinGet() ? 'PIN\'i değiştir' : 'PIN koy'}</button>
           ${pinGet() ? `<button type="button" class="btn ghost" data-pinoff>PIN'i kaldır</button>` : ''}
         </form>
+        ` : ''}
       </section>
-      <section class="card">
-        <div class="card-h"><div><h2>Yedek</h2><small>${lb ? 'Son yedek: ' + dm(lb) + ' ' + lb.slice(0, 4) : 'Henüz yedek alınmadı'}</small></div></div>
-        <p class="hint">Bütün kayıtların, sabit giderlerin ve kategorilerin tek bir dosyaya kaydedilir. Başka bir telefonda bu dosyayı yükleyip kaldığın yerden devam edersin.</p>
+      <section class="card st-sec">
+        <div class="card-h">${foldH('st-rep', 'Ara rapor', `<small>${AYLAR[+curYm.slice(5) - 1]} ayının bugüne kadarki özeti</small>`)}</div>
+        ${isOpen('st-rep') ? `<button class="rep-btn" data-report="${curYm}">${svg('share')}Ara rapor al ve paylaş</button>` : ''}
+      </section>
+      <section class="card st-sec">
+        <div class="card-h">${foldH('st-bak', 'Yedekleme', `<small>${lb ? 'Son yedek: ' + dm(lb) + ' ' + lb.slice(0, 4) : 'Henüz yedek alınmadı'}</small>`)}</div>
+        ${isOpen('st-bak') ? `<p class="hint">Bütün kayıtların, sabit giderlerin ve kategorilerin tek bir dosyaya kaydedilir. Başka bir telefonda bu dosyayı yükleyip kaldığın yerden devam edersin.</p>
         ${ui.restore ? `<div class="chip-note"><span>${ui.restore.tx.length} kayıt ve ${ui.restore.fixed.length} sabit gider içeren yedek yüklensin mi? Şimdiki kayıtların yerine geçer.</span><button data-restore="yes">Yükle</button><button data-restore="no">Vazgeç</button></div>` : ''}
         <div style="display:flex;gap:8px;flex-wrap:wrap">
           <button class="btn" data-backup>Yedeği indir</button>
           <label class="btn ghost" style="position:relative;cursor:pointer">Yedeği yükle<input type="file" id="restoreIn" accept=".json,application/json" style="position:absolute;inset:0;opacity:0;width:100%;cursor:pointer" aria-label="Yedek dosyası seç"></label>
-        </div>
+        </div>` : ''}
       </section>
       <p class="hint" style="text-align:center">Cüzdan · bütün kayıtlar sadece bu telefonda saklanır, internete gönderilmez.</p>`;
   }
 
   /* ---------- Çizim ---------- */
-  const TITLES = { ozet: 'Özet', hareket: 'Hareketler', takvim: 'Takvim', analiz: 'Analiz', kategori: 'Kategoriler', ayarlar: 'Ayarlar' };
+  const TITLES = { ozet: 'Özet', hareket: 'Hareketler', takvim: 'Takvim', analiz: 'Analiz', kategori: 'Ayarlar', ayarlar: 'Ayarlar' };
   function render() {
     $('#mLbl').textContent = AY_K[+ui.ym.slice(5) - 1] + ' ' + ui.ym.slice(0, 4);
     $('#mNext').disabled = ui.ym >= maxYm;
     $('.month').style.visibility = ui.tab === 'kategori' || ui.tab === 'ayarlar' ? 'hidden' : 'visible';
     $('#hSub').textContent = ui.tab === 'ozet' ? 'Merhaba' : 'Cüzdan';
     $('#hTitle').textContent = ui.tab === 'ozet' ? AYLAR[+ui.ym.slice(5) - 1] + ' özeti' : TITLES[ui.tab];
-    ui.tab === 'kategori' ? $('#setBtn').setAttribute('aria-current', 'page') : $('#setBtn').removeAttribute('aria-current');
     ui.tab === 'ayarlar' ? $('#gearBtn').setAttribute('aria-current', 'page') : $('#gearBtn').removeAttribute('aria-current');
     document.querySelectorAll('.tab').forEach(b => b.dataset.tab === ui.tab ? b.setAttribute('aria-current', 'page') : b.removeAttribute('aria-current'));
     const focusQ = document.activeElement && document.activeElement.id === 'qIn';
-    view.innerHTML = ({ ozet: renderOzet, hareket: renderHareket, takvim: renderTakvim, analiz: renderAnaliz, kategori: renderKategori, ayarlar: renderAyarlar }[ui.tab] || renderOzet)();
+    view.innerHTML = ({ ozet: renderOzet, hareket: renderHareket, takvim: renderTakvim, analiz: renderAnaliz, kategori: renderAyarlar, ayarlar: renderAyarlar }[ui.tab] || renderOzet)();
     if (focusQ) { const q = $('#qIn'); q.focus(); q.setSelectionRange(q.value.length, q.value.length); }
   }
   function setTab(t) { ui.tab = t; ui.editFx = null; ui.editIn = null; ui.editBudget = false; ui.confirmClear = false; try { localStorage.setItem(KEY + '-tab', t); } catch (e) {} render(); window.scrollTo(0, 0); }
@@ -1677,7 +1719,6 @@ nav.tabs .tab[aria-current="page"] { color: var(--primary); }
   $('#mPrev').addEventListener('click', () => { ui.ym = ymAdd(ui.ym, -1); ui.editFx = ui.editIn = null; render(); });
   $('#mNext').addEventListener('click', () => { if (ui.ym < maxYm) { ui.ym = ymAdd(ui.ym, 1); ui.editFx = ui.editIn = null; render(); } });
   $('#fab').addEventListener('click', () => openSheet());
-  $('#setBtn').addEventListener('click', () => setTab(ui.tab === 'kategori' ? 'ozet' : 'kategori'));
   $('#gearBtn').addEventListener('click', () => setTab(ui.tab === 'ayarlar' ? 'ozet' : 'ayarlar'));
 
   view.addEventListener('click', e => {
@@ -1739,6 +1780,10 @@ nav.tabs .tab[aria-current="page"] { color: var(--primary); }
     if ((el = T('[data-acat]'))) { const sx = el.parentNode.scrollLeft; ui.acat = el.dataset.acat; render(); const h = $('.hscroll'); if (h) h.scrollLeft = sx; return; }
     if ((el = T('[data-kt]'))) { ui.kType = el.dataset.kt; return render(); }
     if ((el = T('[data-rmcat]'))) { const id = el.dataset.rmcat; return withUndo('Kategori kaldırıldı', () => { db.cats[ui.kType] = db.cats[ui.kType].filter(c => c.id !== id); }); }
+    if ((el = T('[data-editp]'))) { ui.editP = el.dataset.editp; render(); const inp = $('#ppIn'); if (inp) { inp.focus(); inp.select(); } return; }
+    if (T('[data-addp]')) { const n = Math.max(...PEOPLE().map(p => +p.slice(1))) + 1, k = 'p' + n; db.people[k] = 'Kişi ' + n; save(); ui.editP = k; render(); const inp = $('#ppIn'); if (inp) { inp.focus(); inp.select(); } return; }
+    if ((el = T('[data-rmp]'))) { delete db.people[el.dataset.rmp]; save(); return render(); }
+    if ((el = T('[data-emo]'))) { ui.ncIc = el.dataset.emo; $('#ncIcon').value = ui.ncIc; $('#ncShow').textContent = ui.ncIc; document.querySelectorAll('[data-emo]').forEach(b => b.setAttribute('aria-pressed', b === el)); return; }
     if ((el = T('[data-theme-set]'))) { setTheme(el.dataset.themeSet); return render(); }
     if (T('[data-backup]')) return backup();
     if (T('[data-pinoff]')) { try { localStorage.removeItem(PINK); } catch (er) {} render(); return toast('PIN kaldırıldı'); }
@@ -1803,13 +1848,14 @@ nav.tabs .tab[aria-current="page"] { color: var(--primary); }
   });
   view.addEventListener('submit', e => {
     e.preventDefault();
+    if (e.target.dataset && e.target.dataset.ppform) { savePerson(); return; }
     if (e.target.id === 'peopleForm') {
       db.people = { p1: $('#pp1').value.trim() || 'Ben', p2: $('#pp2').value.trim() || 'Eşim' }; save(); render(); return toast('Adlar kaydedildi');
     }
     if (e.target.id === 'pinForm') {
       const v = $('#pinNew').value.trim();
       if (!/^\d{4}$/.test(v)) return toast('PIN 4 rakam olmalı');
-      pinHash(v).then(h => { try { localStorage.setItem(PINK, h); } catch (er) {} render(); toast('PIN kaydedildi. Uygulama açılırken sorulacak'); });
+      pinHash(v).then(h => { try { localStorage.setItem(PINK, h); localStorage.setItem(PINK + 'At', Date.now()); sessionStorage.setItem(PINK + 'Ok', '1'); } catch (er) {} render(); toast('PIN kaydedildi. Uygulama açılırken sorulacak'); });
       return;
     }
     if (e.target.id === 'gotForm') {
@@ -1852,7 +1898,7 @@ nav.tabs .tab[aria-current="page"] { color: var(--primary); }
     }
     if (e.target.id === 'catForm') {
       const name = $('#ncName').value.trim(); if (!name) return $('#ncName').focus();
-      addCat(ui.kType, name, $('#ncIcon').value.trim());
+      addCat(ui.kType, name, $('#ncIcon').value.trim()); ui.ncIc = '';
       render(); toast('Kategori eklendi');
     }
   });
@@ -1918,9 +1964,9 @@ nav.tabs .tab[aria-current="page"] { color: var(--primary); }
       });
       y += th + 20;
       // kim ödedi + öne çıkanlar
-      const hw = (CW - 16) / 2, ch = 190;
+      const hw = (CW - 16) / 2, ch = Math.max(190, 76 + PEOPLE().length * 54);
       rr(P, y, hw, ch, 26, C.card); tx('Kim ne ödedi', P + 30, y + 50, 25, 800, C.ink);
-      [['p1', PAYER.p1[0], PAYER.p1, '#e3ecfd', C.inv], ['p2', PAYER.p2[0], PAYER.p2, '#fde4f1', '#c0267a']].forEach(([p, l, n, bg, fg], k) => { const yy = y + 100 + k * 54; dot(P + 46, yy - 8, 16, bg); tx(l, P + 46, yy, 19, 800, fg, 'center'); tx(n, P + 74, yy, 24, 600, C.ink); tx(eur(pay(p)), P + hw - 30, yy, 25, 800, C.ink, 'right'); });
+      PEOPLE().map((p, k) => [p, PAYER[p][0], PAYER[p], ['#e3ecfd', '#fde4f1', '#dcfce7', '#fef3c7', '#ede9fe'][k % 5], [C.inv, '#c0267a', '#15803d', '#b45309', '#6d28d9'][k % 5]]).forEach(([p, l, n, bg, fg], k) => { const yy = y + 100 + k * 54; dot(P + 46, yy - 8, 16, bg); tx(l, P + 46, yy, 19, 800, fg, 'center'); tx(n, P + 74, yy, 24, 600, C.ink); tx(eur(pay(p)), P + hw - 30, yy, 25, 800, C.ink, 'right'); });
       const x2 = P + hw + 16; rr(x2, y, hw, ch, 26, C.card); tx('Öne çıkanlar', x2 + 30, y + 50, 25, 800, C.ink);
       const hl = [['Sabit giderler', eur(fk)]]; if (fuel.length) hl.push(['Benzin / GS', eur(fuelG) + ' / ' + eur(fuelGs)]); else hl.push(['Gider kaydı', vt.length + ' adet']);
       hl.forEach(([k, v], i) => { const yy = y + 100 + i * 54; tx(k, x2 + 30, yy, 23, 600, C.ink2); tx(v, x2 + hw - 30, yy, 24, 800, C.ink, 'right'); });
@@ -2080,7 +2126,7 @@ nav.tabs .tab[aria-current="page"] { color: var(--primary); }
     const sum = type === 'out' ? `Toplam <b class="num">${eur(tot)}</b> · FK <b class="num">${eur(fk)}</b> · V <b class="num">${eur(tot - fk)}</b>`
       : type === 'inv' ? `Bu ay <b class="num">${eur(tot)}</b> · Bugüne kadar <b class="num">${eur(invTotal(ui.ym))}</b>`
       : `Toplam <b class="num">${eur(tot)}</b>`;
-    const row = (t, withCat) => { const c = catOf(t.type, t.cat), p = t.payer === 'p2' ? 'p2' : 'p1';
+    const row = (t, withCat) => { const c = catOf(t.type, t.cat), p = payerOf(t);
       const gsTxt = t.gs ? ` · ⛽ ${money(t.gross)}, GS ${money(t.gs)}` : '';
       const label = (withCat ? `<b>${esc(t.fx ? 'Sabit' : c.name)}</b>${t.note ? ` · ${esc(t.note)}` : ''}` : `<span style="color:var(--ink)">${esc(t.note || c.name)}</span>`) + gsTxt;
       return `<div class="lrow ${withCat ? '' : 'sub'}"><span class="ld num">${dm(t.date)}</span><span class="who sm ${p}">${PAYER[p][0]}</span><span class="lc">${label}</span><b class="num" style="color:${col}">${eur(t.amount)}</b></div>`; };
@@ -2162,7 +2208,7 @@ nav.tabs .tab[aria-current="page"] { color: var(--primary); }
             <label class="${custom ? 'on' : ''}">${svg('calendar')}${custom ? dm(st.date) + ' ' + st.date.slice(0, 4) : 'Başka gün'}<input type="date" id="dt" value="${st.date}" aria-label="Tarih seç"></label>
           </div>
           <div class="dates" role="group" aria-label="Kim">
-            ${['p1', 'p2'].map(p => `<button class="pw" data-pw="${p}" aria-pressed="${st.payer === p}"><span class="who sm ${p}" style="margin:0">${PAYER[p][0]}</span>${PAYER[p]}</button>`).join('')}
+            ${PEOPLE().map(p => `<button class="pw" data-pw="${p}" aria-pressed="${st.payer === p}"><span class="who sm ${p}" style="margin:0">${PAYER[p][0]}</span>${PAYER[p]}</button>`).join('')}
             <button class="nx" id="nxT" aria-pressed="${st.next}" title="Bu kaydı bir sonraki aya say">→ ${ayaDat(ymAdd(ymOf(st.date), 1))} at</button>
           </div>
           <input class="note-in" id="nt" maxlength="40" placeholder="Not ekle (ör. Rewe)" value="${esc(st.note)}" aria-label="Not">
@@ -2258,9 +2304,15 @@ nav.tabs .tab[aria-current="page"] { color: var(--primary); }
   }
 
   // PIN kilidi: PIN'in kendisi değil özeti telefonda saklanır; açılışta ve 1 dakikadan uzun arka planda kalınca sorulur
-  lockScreen();
+  // Kural: soğuk açılışta sor; aşağı çekip yenilemede (aynı oturum, 5 dk içinde) sorma; 5 dk'dan uzun arka planda kalınca sor
+  const LOCK_MS = 5 * 60000;
+  let fresh = true; try { const ok = sessionStorage.getItem(PINK + 'Ok'), seen = +(sessionStorage.getItem(PINK + 'Seen') || 0); fresh = !(ok && seen && Date.now() - seen < LOCK_MS); } catch (er) {}
+  if (fresh) { try { sessionStorage.removeItem(PINK + 'Ok'); } catch (er) {} lockScreen(); }
+  const seenNow = () => { try { sessionStorage.setItem(PINK + 'Seen', Date.now()); } catch (er) {} };
+  seenNow(); setInterval(() => { if (!document.hidden) seenNow(); }, 30000);
+  window.addEventListener('pagehide', seenNow);
   let hidAt = 0;
-  document.addEventListener('visibilitychange', () => { if (document.hidden) hidAt = Date.now(); else if (hidAt && Date.now() - hidAt > 60000) lockScreen(); });
+  document.addEventListener('visibilitychange', () => { if (document.hidden) { hidAt = Date.now(); seenNow(); } else { if (hidAt && Date.now() - hidAt > LOCK_MS) lockScreen(); seenNow(); } });
   render();
 })();
 </script>
