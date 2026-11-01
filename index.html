@@ -484,7 +484,7 @@ svg.dchart .today { fill: var(--surface); stroke: var(--primary); stroke-width: 
 .pp-form { display: flex; flex-wrap: wrap; gap: 8px; align-items: flex-end; }
 .pp-form label { flex: 1 1 120px; display: flex; flex-direction: column; gap: 4px; font-size: 12px; color: var(--muted); font-weight: 600; }
 .pp-form input { border: 1px solid var(--line); background: var(--surface-2); border-radius: 10px; padding: 9px 10px; font: inherit; font-size: 14px; color: var(--ink); min-width: 0; }
-.pp-form #pinNew { flex: 1 1 110px; }
+.pp-form #pinNew, .pp-form #pinNew2 { flex: 1 1 110px; }
 .pin-st { flex-basis: 100%; font-size: 13px; font-weight: 700; color: var(--ink-2); }
 #lock { position: fixed; inset: 0; z-index: 1000; background: var(--bg); display: grid; place-items: center; padding: 24px; }
 .lk { width: 100%; max-width: 300px; display: flex; flex-direction: column; align-items: center; gap: 10px; }
@@ -1043,29 +1043,50 @@ nav.tabs .tab[aria-current="page"] { color: var(--primary); }
   const icoBox = (c, cls) => `<div class="${cls || 'ico'}" style="background:color-mix(in srgb, ${c.color} 15%, transparent);color:${c.color}">${catIcon(c)}</div>`;
 
   // Sabit gider durumu: işaretlendiyse "paid", ödeme günü geçtiyse "auto" (otomatik gider), yoksa "wait"
+  // Sadece o ay için farklı tutar (ör. elektrik bu ay farklı geldi): db.fxAmt["ay|id"]
+  const fxAmtOf = (f, ym) => { const o = (db.fxAmt || {})[ym + '|' + f.id]; return o > 0 ? o : f.amount; };
   function fixedState(f, ym) {
-    if (ym < f.start || (f.end && ym > f.end)) return null;
-    if ((f.every || 1) > 1) { const d = ymDiff(ym, f.anchor || f.start); if (d < 0 || d % f.every) return null; }
+    if (ym < f.start) return null;
     const [Y, M] = ym.split('-').map(Number);
-    const due = ym + '-' + pad(Math.min(f.day, new Date(Y, M, 0).getDate()));
     const p = db.paid[ym + '|' + f.id];
-    if (p) return { status: 'paid', due, date: p.date, amount: p.amount };
+    // Kayda geçmiş (ödenmiş) aylar, sabit gider sonradan değişse de olduğu gibi kalır
+    if (p) return { status: 'paid', due: p.due || p.date, date: p.date, amount: p.amount, payer: p.payer };
+    if (f.end && ym > f.end) return null;
+    if ((f.every || 1) > 1) { const e = f.every, d = ymDiff(ym, f.anchor || f.start); if (((d % e) + e) % e) return null; }
+    const due = ym + '-' + pad(Math.min(f.day, new Date(Y, M, 0).getDate())), amt = fxAmtOf(f, ym);
     // Otomatik çekilenler vade günü kendiliğinden ödenmiş sayılır; elle ödenenler işaretlenene kadar bekler (vadesi geçtiyse "late")
-    if (due <= todayIso) return f.manual ? { status: 'late', due, amount: f.amount } : { status: 'auto', due, date: due, amount: f.amount };
-    return { status: 'wait', due, amount: f.amount };
+    if (due <= todayIso) return f.manual ? { status: 'late', due, amount: amt } : { status: 'auto', due, date: due, amount: amt };
+    return { status: 'wait', due, amount: amt };
+  }
+  // Sabit gider değişmeden ya da bitmeden önce geçmiş aylar dondurulur: o ayların tutarı, günü ve kişisi kayda geçer
+  function freezeFixed(f, upTo) {
+    for (let ym = f.start; ym <= upTo; ym = ymAdd(ym, 1)) {
+      const k = ym + '|' + f.id, st = fixedState(f, ym);
+      if (db.paid[k]) { if (!db.paid[k].payer) db.paid[k].payer = payerOf(f); continue; }
+      if (st && st.status === 'auto') db.paid[k] = { date: st.date, due: st.due, amount: st.amount, payer: payerOf(f) };
+    }
   }
   const fixedTx = ym => db.fixed.map(f => {
     const st = fixedState(f, ym);
     if (!st || st.status === 'wait' || st.status === 'late') return null;
-    return { id: 'fx|' + ym + '|' + f.id, fx: f.id, type: 'out', cat: 'sabit', amount: st.amount, date: st.date, note: f.name, auto: st.status === 'auto', payer: payerOf(f) };
+    return { id: 'fx|' + ym + '|' + f.id, fx: f.id, type: 'out', cat: 'sabit', amount: st.amount, date: st.date, note: f.name, auto: st.status === 'auto', payer: PEOPLE().includes(st.payer) ? st.payer : payerOf(f) };
   }).filter(Boolean);
   // Analiz sekmesinde kişi filtresi (kişi 1 / kişi 2) bütün hesaplara uygulanır
   // Elle girilen gelir kaydı (aynı kategori; maaşta aynı kişi) o ayın sabit gelirini kendiliğinden işaretler
   const expIn = (f, ym) => +((f.plan && f.plan[ym]) || f.amount) || 0;
-  const linkedIn = (f, ym) => db.tx.filter(t => t.type === 'in' && txYm(t) === ym && t.cat === f.cat && (f.cat !== 'maas' || (t.payer || 'p1') === payerOf(f)));
+  // Sabit gelir o ay geçerli mi (başlangıç ve bitiş ayı arasında)
+  const inAct = (f, ym) => ym >= f.start && !(f.end && ym > f.end);
+  // Eşleşme sadece Maaş (aynı kişi) ve Çocuk parası için; birden fazla aday varsa tutarı en yakın olana bağlanır
+  const linkOf = (t, ym) => {
+    if (t.type !== 'in' || (t.cat !== 'maas' && t.cat !== 'cocuk')) return null;
+    const c = db.income.filter(f => inAct(f, ym) && f.cat === t.cat && (f.cat !== 'maas' || (t.payer || 'p1') === payerOf(f)));
+    if (!c.length) return null;
+    return c.reduce((b, f) => Math.abs(expIn(f, ym) - t.amount) < Math.abs(expIn(b, ym) - t.amount) ? f : b).id;
+  };
+  const linkedIn = (f, ym) => db.tx.filter(t => t.type === 'in' && txYm(t) === ym && linkOf(t, ym) === f.id);
   const incomeTx = ym => db.income.map(f => {
-    const g = ym >= f.start && !linkedIn(f, ym).length && db.got[ym + '|' + f.id];
-    return g ? { id: 'fi|' + ym + '|' + f.id, fi: f.id, type: 'in', cat: f.cat, amount: g.amount, date: ym + '-01', note: f.name, payer: payerOf(f) } : null;
+    const g = inAct(f, ym) && !linkedIn(f, ym).length && db.got[ym + '|' + f.id];
+    return g ? { id: 'fi|' + ym + '|' + f.id, fi: f.id, type: 'in', cat: f.cat, amount: g.amount, date: g.date && ymOf(g.date) === ym ? g.date : ym + '-01', note: f.name, payer: PEOPLE().includes(g.payer) ? g.payer : payerOf(f) } : null;
   }).filter(Boolean);
   // Bir kayıt "ym" alanı taşıyorsa (ör. gelecek aya sayılan gelir) o aya yazılır
   const txYm = t => t.ym || ymOf(t.date);
@@ -1136,7 +1157,7 @@ nav.tabs .tab[aria-current="page"] { color: var(--primary); }
       : `<span>Örnek verilerle açıldı</span><button data-clear="ask">Temizle</button>`}</div>`;
 
     const tilesHtml = `<div class="tiles">
-      ${(() => { const est = ui.ym > curYm ? gi + db.income.filter(f => ui.ym >= f.start && !linkedIn(f, ui.ym).length && !db.got[ui.ym + '|' + f.id]).reduce((x, f) => x + expIn(f, ui.ym), 0) : 0; return est > gi ? `<div class="tile in" data-list="in" role="button"><div class="lbl">Tahmini gelir</div><div class="v num">${eur(est)}</div><button class="tile-ek" data-add="in">Gelir ekle</button></div>` : `<div class="tile in" data-list="in" role="button"><div class="lbl">Gelir</div><div class="v num">${eur(gi)}</div><button class="tile-ek" data-add="in">Gelir ekle</button></div>`; })()}
+      ${(() => { const est = ui.ym > curYm ? gi + db.income.filter(f => inAct(f, ui.ym) && !linkedIn(f, ui.ym).length && !db.got[ui.ym + '|' + f.id]).reduce((x, f) => x + expIn(f, ui.ym), 0) : 0; return est > gi ? `<div class="tile in" data-list="in" role="button"><div class="lbl">Tahmini gelir</div><div class="v num">${eur(est)}</div><button class="tile-ek" data-add="in">Gelir ekle</button></div>` : `<div class="tile in" data-list="in" role="button"><div class="lbl">Gelir</div><div class="v num">${eur(gi)}</div><button class="tile-ek" data-add="in">Gelir ekle</button></div>`; })()}
       <div class="tile out" data-list="out" role="button"><div class="lbl">Gider</div><div class="v num">${eur(gd)}</div>
         <small class="num" title="Sabit giderler (fixed cost)"><b>FK</b> ${eur(fk)}</small><small class="num" title="Değişken giderler"><b>V</b> ${eur(vk)}</small><button class="tile-ek" data-add="out">Gider ekle</button></div>
       <div class="tile inv" data-list="inv" role="button"><div class="lbl">Yatırım</div><div class="v num">${eur(gv)}</div><small><b>Toplam</b></small><small class="num">${eur(invAll)}</small><button class="tile-ek" data-add="inv">Yatırım ekle</button></div>
@@ -1332,7 +1353,7 @@ nav.tabs .tab[aria-current="page"] { color: var(--primary); }
     draw(false);
   }
   function incomeCard() {
-    const items = db.income.filter(f => ui.ym >= f.start);
+    const items = db.income.filter(f => inAct(f, ui.ym));
     const g = f => { const l = linkedIn(f, ui.ym); if (l.length) return { amount: l.reduce((a, t) => a + t.amount, 0), linked: true }; return db.got[ui.ym + '|' + f.id]; };
     const gotSum = items.reduce((a, f) => a + (g(f) ? g(f).amount : 0), 0), tot = items.reduce((a, f) => a + (g(f) ? g(f).amount : expIn(f, ui.ym)), 0);
     const mName = AYLAR[+ui.ym.slice(5) - 1];
@@ -1364,9 +1385,14 @@ nav.tabs .tab[aria-current="page"] { color: var(--primary); }
         <input type="hidden" id="fxPayer" value="${payerOf(f)}">
       </div>
       <label class="fld full">${x ? 'Bu ay gelen tutar (€)' : 'Aylık tutar (€)'}<input id="inAmt" inputmode="decimal" placeholder="boş bırakılabilir" value="${x ? String(x.amount).replace('.', ',') : f.amount === '' ? '' : String(f.amount).replace('.', ',')}"></label>
-      <div class="btns"><button type="submit" class="btn">${n ? 'Ekle' : 'Kaydet'}</button><button type="button" class="btn ghost" data-incancel>Vazgeç</button>${n ? '' : `<button type="button" class="btn danger" data-indel="${f.id}">Sil</button>`}</div>
+      <div class="btns"><button type="submit" class="btn">${n ? 'Ekle' : 'Kaydet'}</button><button type="button" class="btn ghost" data-incancel>Vazgeç</button>${n ? '' : `<button type="button" class="btn danger" data-indel="${f.id}">${inEndYm(f) >= f.start ? 'Bitir' : 'Sil'}</button>`}</div>
+      ${!n && inEndYm(f) >= f.start ? `<p class="hint">Bitir: ${AYLAR[+inEndYm(f).slice(5) - 1]} ${inEndYm(f).slice(0, 4)} sonrasında durur, geçmiş aylar korunur.</p>` : ''}
     </form>`;
   }
+  // Bitirilen sabit gelir: bu ay geldiyse bu ayın sonunda, gelmediyse geçen ayın sonunda biter
+  const inEndYm = f => db.got[curYm + '|' + f.id] || linkedIn(f, curYm).length ? curYm : ymAdd(curYm, -1);
+  // Bitirilen sabit gider: bu ay düştüyse bu ayın sonunda, düşmediyse geçen ayın sonunda biter
+  const fxEndYm = f => { const st = fixedState(f, curYm); return st && (st.status === 'paid' || st.status === 'auto') ? curYm : ymAdd(curYm, -1); };
   // Yıllık ve 3 aylık giderler için her ay kenara ayrılması gereken pay
   function periodicHint() {
     const per = db.fixed.filter(f => (f.every || 1) > 1 && !(f.end && f.end < ui.ym));
@@ -1397,10 +1423,12 @@ nav.tabs .tab[aria-current="page"] { color: var(--primary); }
       </div>
       <label class="fld">Tutar (€)<input id="fxAmt" inputmode="decimal" required placeholder="ör. 39,99" value="${f.amount === '' ? '' : String(f.amount).replace('.', ',')}"></label>
       <label class="fld">Ödeme günü<input id="fxDay" type="number" min="1" max="31" required placeholder="1–31" value="${f.day}"></label>
+      ${!n && fixedState(f, ui.ym) ? (() => { const k = ui.ym + '|' + f.id, p = db.paid[k], o = (db.fxAmt || {})[k], v = p && p.amount !== f.amount ? p.amount : o; return `<label class="fld full">Sadece ${AYLAR[+ui.ym.slice(5) - 1]} için farklı tutar (€)<input id="fxOnce" inputmode="decimal" placeholder="aynı: ${money(f.amount)}" value="${v ? String(v).replace('.', ',') : ''}"></label>`; })() : ''}
       <div class="fld full">Son ödeme
         <div class="endrow"><label class="chkl"><input type="checkbox" id="fxNoEnd" ${f.end ? '' : 'checked'}> Süresiz</label><input type="month" id="fxEnd" value="${f.end || ''}" min="${curYm}" ${f.end ? '' : 'disabled'} aria-label="Son taksit ayı"></div>
       </div>
-      <div class="btns"><button type="submit" class="btn">${n ? 'Ekle' : 'Kaydet'}</button><button type="button" class="btn ghost" data-fxcancel>Vazgeç</button>${n ? '' : `<button type="button" class="btn danger" data-fxdel="${f.id}">Sil</button>`}</div>
+      <div class="btns"><button type="submit" class="btn">${n ? 'Ekle' : 'Kaydet'}</button><button type="button" class="btn ghost" data-fxcancel>Vazgeç</button>${n ? '' : `<button type="button" class="btn danger" data-fxdel="${f.id}">${fxEndYm(f) >= f.start ? 'Bitir' : 'Sil'}</button>`}</div>
+      ${!n && fxEndYm(f) >= f.start ? `<p class="hint">Tutarı değiştirmek bu aydan itibaren geçerli olur, geçmiş aylar değişmez. Bitir: ${AYLAR[+fxEndYm(f).slice(5) - 1]} ${fxEndYm(f).slice(0, 4)} sonrasında durur.</p>` : ''}
     </form>`;
   }
 
@@ -1841,6 +1869,7 @@ nav.tabs .tab[aria-current="page"] { color: var(--primary); }
         <form id="pinForm" class="pp-form">
           <span class="pin-st">${pinGet() ? '🔒 PIN kilidi açık' : 'PIN kilidi kapalı'}</span>
           <input id="pinNew" type="password" inputmode="numeric" pattern="[0-9]{4}" maxlength="4" autocomplete="off" placeholder="${pinGet() ? 'Yeni' : '4 haneli'} PIN" aria-label="PIN">
+          <input id="pinNew2" type="password" inputmode="numeric" pattern="[0-9]{4}" maxlength="4" autocomplete="off" placeholder="Tekrar" aria-label="PIN tekrar">
           <button class="btn">${pinGet() ? 'PIN\'i değiştir' : 'PIN koy'}</button>
           ${pinGet() ? `<button type="button" class="btn ghost" data-pinoff>PIN'i kaldır</button>` : ''}
         </form>
@@ -1936,14 +1965,17 @@ nav.tabs .tab[aria-current="page"] { color: var(--primary); }
     if ((el = T('[data-editin]'))) { ui.editIn = ui.editIn === el.dataset.editin ? null : el.dataset.editin; ui.editFx = null; render(); return; }
     if (T('[data-incancel]')) { ui.editIn = null; return render(); }
     if ((el = T('[data-incat]'))) { el.parentNode.querySelectorAll('button').forEach(b => b.setAttribute('aria-pressed', b === el)); $('#inCat').value = el.dataset.incat; return; }
-    if ((el = T('[data-indel]'))) { const id = el.dataset.indel; ui.editIn = null; return withUndo('Sabit gelir silindi', () => { db.income = db.income.filter(x => x.id !== id); }); }
+    if ((el = T('[data-indel]'))) { const id = el.dataset.indel, f = db.income.find(x => x.id === id), e = inEndYm(f); ui.editIn = null;
+      if (e < f.start) return withUndo('Sabit gelir silindi', () => { db.income = db.income.filter(x => x.id !== id); });
+      return withUndo(f.name + ' ' + AYLAR[+e.slice(5) - 1] + ' sonunda bitti · geçmiş korunuyor', () => { Object.keys(db.got).forEach(k => { if (k.endsWith('|' + id) && !db.got[k].payer) db.got[k].payer = payerOf(f); }); f.end = e; }); }
     if ((el = T('[data-firow]'))) { const id = el.dataset.firow; setTab('ozet'); ui.editIn = id; render(); const c = $('#incomeCard'); if (c) c.scrollIntoView({ block: 'center' }); return; }
     if ((el = T('[data-tick]'))) {
       const ym = el.dataset.ym || ui.ym, f = db.fixed.find(x => x.id === el.dataset.tick), key = ym + '|' + f.id;
       if (db.paid[key]) { delete db.paid[key]; save(); render(); return toast(f.name + ': işaret kaldırıldı'); }
       const st = fixedState(f, ym);
-      db.paid[key] = { date: ym === curYm || st.due > todayIso ? todayIso : st.due, amount: f.amount };
-      save(); render(); return toast(f.name + ' ödendi: ' + money(f.amount));
+      const amt = fxAmtOf(f, ym);
+      db.paid[key] = { date: ym === curYm || st.due > todayIso ? todayIso : st.due, due: st.due, amount: amt, payer: payerOf(f) };
+      save(); render(); return toast(f.name + ' ödendi: ' + money(amt));
     }
     if ((el = T('[data-editfx]'))) { ui.editFx = ui.editFx === el.dataset.editfx ? null : el.dataset.editfx; ui.editIn = null; render(); const n = $('#fxName'); if (n) n.focus(); return; }
     if (T('[data-fxcancel]')) { ui.editFx = null; return render(); }
@@ -1953,7 +1985,9 @@ nav.tabs .tab[aria-current="page"] { color: var(--primary); }
       el.parentNode.querySelectorAll('button').forEach(b => b.setAttribute('aria-pressed', b === el));
       $('#fxEvery').value = el.dataset.every; $('#fxFirstWrap').hidden = el.dataset.every === '1'; return;
     }
-    if ((el = T('[data-fxdel]'))) { const id = el.dataset.fxdel; ui.editFx = null; return withUndo('Sabit gider silindi', () => { db.fixed = db.fixed.filter(x => x.id !== id); }); }
+    if ((el = T('[data-fxdel]'))) { const id = el.dataset.fxdel, f = db.fixed.find(x => x.id === id), e = fxEndYm(f); ui.editFx = null;
+      if (e < f.start) return withUndo('Sabit gider silindi', () => { db.fixed = db.fixed.filter(x => x.id !== id); });
+      return withUndo(f.name + ' ' + AYLAR[+e.slice(5) - 1] + ' sonunda bitti · geçmiş korunuyor', () => { freezeFixed(f, e); f.end = e; }); }
     if (T('[data-daychart]')) return openDayChart();
     if (T('[data-leftchart]')) return openLeftChart();
     if (T('[data-budget]')) { ui.editBudget = !ui.editBudget; render(); const b = $('#budgetIn'); if (b) b.focus(); return; }
@@ -2082,6 +2116,7 @@ nav.tabs .tab[aria-current="page"] { color: var(--primary); }
     if (e.target.id === 'pinForm') {
       const v = $('#pinNew').value.trim();
       if (!/^\d{4}$/.test(v)) return toast('PIN 4 rakam olmalı');
+      if ($('#pinNew2').value.trim() !== v) { $('#pinNew2').value = ''; return toast('İki PIN aynı değil, tekrar yaz'); }
       pinHash(v).then(h => { try { localStorage.setItem(PINK, h); localStorage.setItem(PINK + 'At', Date.now()); sessionStorage.setItem(PINK + 'Ok', '1'); } catch (er) {} render(); toast('PIN kaydedildi. Uygulama açılırken sorulacak'); });
       return;
     }
@@ -2099,6 +2134,8 @@ nav.tabs .tab[aria-current="page"] { color: var(--primary); }
         const f = db.income.find(x => x.id === id), x = db.got[ui.ym + '|' + id];
         // İşaretli ayda tutar o ayın geliridir; işaretsizse aylık tutar değişir
         if (x) x.amount = amt; else f.amount = amt > 0 ? amt : "";
+        // Kişi değişirse geçmiş aylardaki gelir eski kişide kalır
+        Object.keys(db.got).forEach(k => { if (k.endsWith('|' + id) && !db.got[k].payer && k.slice(0, 7) < curYm) db.got[k].payer = payerOf(f); });
         Object.assign(f, { name, cat, payer });
       } else db.income.push({ id: 'i' + Date.now(), name, amount: amt > 0 ? amt : '', cat, payer, start: ui.ym });
       ui.editIn = null; save(); render(); return toast(id ? 'Kaydedildi' : 'Sabit gelir eklendi');
@@ -2111,7 +2148,18 @@ nav.tabs .tab[aria-current="page"] { color: var(--primary); }
       if (!$('#fxNoEnd').checked && !end) return toast('Son taksit ayını seç ya da Süresiz işaretle');
       const id = e.target.dataset.id;
       const every = +$('#fxEvery').value || 1, anchor = every > 1 ? ($('#fxFirst').value || ui.ym) : null;
-      if (id) { const f = db.fixed.find(x => x.id === id); Object.assign(f, { name, amount: amt, day, end, every, anchor, payer: $('#fxPayer').value, manual: $('#fxManual').value === '1' }); if (anchor && anchor < f.start) f.start = anchor; }
+      if (id) {
+        const f = db.fixed.find(x => x.id === id), oi = $('#fxOnce'), once = oi && oi.value.trim() ? parseAmt(oi.value) : null;
+        if (oi && oi.value.trim() && !(once > 0)) return toast('Bu ayın tutarını doğru yaz');
+        // Geçmiş aylar eski haliyle kayda geçer; değişiklik bu aydan itibaren geçerli
+        freezeFixed(f, ymAdd(curYm, -1));
+        Object.assign(f, { name, amount: amt, day, end, every, anchor, payer: $('#fxPayer').value, manual: $('#fxManual').value === '1' }); if (anchor && anchor < f.start) f.start = anchor;
+        if (oi) {
+          const k = ui.ym + '|' + f.id; db.fxAmt = db.fxAmt || {};
+          if (once > 0 && once !== amt) db.fxAmt[k] = once; else delete db.fxAmt[k];
+          if (db.paid[k]) db.paid[k].amount = once > 0 ? once : amt;
+        }
+      }
       else { const st0 = ui.ym < curYm ? ui.ym : curYm; db.fixed.push({ id: 'f' + Date.now(), name, amount: amt, day, end, every, anchor, payer: $('#fxPayer').value, manual: $('#fxManual').value === '1', start: anchor && anchor < st0 ? anchor : st0 }); }
       ui.editFx = null; save(); render(); return toast(id ? 'Kaydedildi' : 'Sabit gider eklendi');
     }
@@ -2230,7 +2278,7 @@ nav.tabs .tab[aria-current="page"] { color: var(--primary); }
     catch (e) { toast('Yedek bu görünümde indirilemiyor'); }
   }
 
-  function parseAmt(s) { s = String(s).replace(/\s|€/g, ''); if (s.includes(',')) s = s.replace(/\./g, '').replace(',', '.'); const v = parseFloat(s); return isFinite(v) ? Math.round(v * 100) / 100 : NaN; }
+  function parseAmt(s) { s = String(s).replace(/\s|€/g, ''); if (s.includes(',')) s = s.replace(/\./g, '').replace(',', '.'); else if (/^-?\d{1,3}(\.\d{3})+$/.test(s)) s = s.replace(/\./g, ''); const v = parseFloat(s); return isFinite(v) ? Math.round(v * 100) / 100 : NaN; }
   function addCat(type, name, icon) {
     const c = { id: 'c' + Date.now(), name, icon: icon || name.charAt(0).toLocaleUpperCase('tr-TR'), color: PALET.find(h => !db.cats[type].some(x => x.color === h)) || GRAY };
     const list = db.cats[type]; const di = list.findIndex(x => x.id.startsWith('diger'));
@@ -2505,19 +2553,21 @@ nav.tabs .tab[aria-current="page"] { color: var(--primary); }
         // Ayrılan paylar (Sigara, Çocuk ekstra) ayrı kayıt olur, kalan tutar seçilen kategoriye yazılır
         const parts = ed || st.type !== 'out' ? [] : SPLITS.filter(([id]) => id !== st.cat && st.split[id]).map(([id, l]) => [id, l, parseAmt(st.splitAmt[id] || (root.querySelector(`[data-splitamt="${id}"]`) || {}).value || '')]);
         const pSum = parts.reduce((x, p) => x + p[2], 0);
-        if (parts.length && (parts.some(p => !(p[2] > 0)) || pSum >= v)) { st.err = 'Ayırdığın tutarları yaz; toplamları alışveriş tutarından küçük olmalı.'; draw(); return; }
         const tm = st.type === 'out' && st.cat === 'market' && st.tm ? { tm: true } : {};
         const isCar = st.type === 'out' && st.cat === 'araba', gsV = isCar && st.gsOn ? parseAmt((root.querySelector('#gsAmt') || {}).value || st.gs) : 0;
-        if (isCar && st.gsOn && (!(gsV > 0) || gsV > v)) { st.err = 'Gutschein tutarını yaz; benzin tutarından büyük olamaz.'; draw(); return; }
-        const fuelX = isCar && (st.fuel || gsV) ? Object.assign({ fuel: true }, gsV ? { gs: gsV, gross: v } : {}) : {};
-        const cash = gsV ? Math.round((v - gsV) * 100) / 100 : v;
+        // Fişten ayrılan paylar (ör. benzinlikte sigara) önce çıkar; Gutschein kalan benzin tutarından düşer
+        const gross = Math.round((v - pSum) * 100) / 100;
+        if (parts.length && (parts.some(p => !(p[2] > 0)) || pSum >= v)) { st.err = 'Ayırdığın tutarları yaz; toplamları alışveriş tutarından küçük olmalı.'; draw(); return; }
+        if (isCar && st.gsOn && (!(gsV > 0) || gsV > gross)) { st.err = 'Gutschein tutarını yaz; benzin tutarından büyük olamaz.'; draw(); return; }
+        const fuelX = isCar && (st.fuel || gsV) ? Object.assign({ fuel: true }, gsV ? { gs: gsV, gross } : {}) : {};
+        const cash = gsV ? Math.round((gross - gsV) * 100) / 100 : gross;
         if (parts.length) {
-          const ts = Date.now(), rest = Math.round((v - pSum) * 100) / 100;
-          db.tx.push({ id: 't' + ts, ts, type: 'out', cat: st.cat, amount: rest, date: st.date, note, payer: st.payer, ...nx, ...tm });
+          const ts = Date.now(), rest = cash;
+          db.tx.push({ id: 't' + ts, ts, type: 'out', cat: st.cat, amount: rest, date: st.date, note, payer: st.payer, ...nx, ...tm, ...fuelX });
           parts.forEach(([id, l, pv], k) => db.tx.push({ id: 't' + ts + id, ts: ts + 1 + k, type: 'out', cat: id, amount: pv, date: st.date, note, payer: st.payer, ...nx }));
           ui.last.out = st.cat; ui.lastPayer = st.payer;
           save(); ui.ym = ym2 || ymOf(st.date); close(); render();
-          return toast(`${catOf('out', st.cat).name} ${money(rest)} · ` + parts.map(p => `${p[1]} ${money(p[2])}`).join(' · '));
+          return toast(`${catOf('out', st.cat).name} ${money(rest)}${gsV ? ` (GS ${money(gsV)})` : ''} · ` + parts.map(p => `${p[1]} ${money(p[2])}`).join(' · '));
         }
         if (ed) { Object.assign(ed, { type: st.type, cat: st.cat, amount: cash, date: st.date, note, payer: st.payer }); if (ym2) ed.ym = ym2; else delete ed.ym; if (tm.tm) ed.tm = true; else delete ed.tm; delete ed.fuel; delete ed.gs; delete ed.gross; Object.assign(ed, fuelX); }
         else db.tx.push(Object.assign({ id: 't' + Date.now(), ts: Date.now(), type: st.type, cat: st.cat, amount: cash, date: st.date, note, payer: st.payer }, nx, tm, fuelX));
