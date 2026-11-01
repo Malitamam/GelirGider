@@ -227,6 +227,33 @@ header.top { display: flex; align-items: center; justify-content: space-between;
 .day-card .row + .row { border-top: 1px solid var(--line); }
 .empty { text-align: center; color: var(--muted); padding: 22px 8px; font-size: 14px; }
 .search { display: flex; align-items: center; gap: 8px; background: var(--surface); border-radius: 14px; padding: 0 12px; box-shadow: var(--shadow); color: var(--muted); }
+.hk-bar { display: grid; grid-template-columns: minmax(0, 1fr) auto auto; gap: 8px; }
+.hk-bar .search { min-width: 0; }
+.hk-bar .hk-btn { padding: 0 11px; }
+.hk-bar .search input { padding: 10px 0; }
+.hk-btn { border: 0; background: var(--surface); box-shadow: var(--shadow); border-radius: 14px; padding: 0 12px; display: flex; align-items: center; gap: 6px; font-weight: 700; font-size: 13.5px; color: var(--ink-2); }
+.hk-btn svg.i { width: 17px; height: 17px; }
+.hk-btn[aria-pressed="true"] { background: var(--ink-2); color: var(--surface); }
+.hk-btn em { font-style: normal; background: var(--primary); color: #fff; border-radius: 99px; min-width: 18px; height: 18px; font-size: 11px; display: grid; place-items: center; padding: 0 5px; }
+.hk-menu { display: grid; gap: 10px; padding: 12px 14px; }
+.hk-sec > span { display: block; font-size: 11.5px; font-weight: 700; letter-spacing: .04em; text-transform: uppercase; color: var(--muted); margin-bottom: 6px; }
+.hk-chips { display: flex; flex-wrap: wrap; gap: 6px; }
+.hk-chips .pick { padding: 6px 10px; font-size: 12.5px; }
+.hk-chips .pick svg.i { width: 13px; height: 13px; }
+.pick.on { background: var(--primary-soft); color: var(--primary-ink); }
+.hk-foot { display: flex; justify-content: flex-end; gap: 8px; }
+.btn-s { border: 0; border-radius: 10px; padding: 8px 14px; font-weight: 700; font-size: 13px; background: var(--surface-2); color: var(--ink-2); }
+.btn-s.pri { background: var(--primary); color: #fff; }
+.btn-s:disabled { opacity: .45; }
+.hk-sum { display: flex; gap: 14px; justify-content: center; font-size: 12.5px; color: var(--muted); }
+.hk-sum b { color: var(--ink); margin-left: 3px; }
+.hk .row { grid-template-columns: 34px minmax(0, 1fr) auto; gap: 10px; padding: 6px 0; }
+.hk .ico { width: 34px; height: 34px; border-radius: 11px; font-size: 16px; }
+.hk .ico svg.i { width: 17px; height: 17px; }
+.hk .row .t b { font-size: 14px; }
+.hk .row .t small { font-size: 11.5px; }
+.hk .day-h { padding: 8px 4px 4px; font-size: 11px; }
+.hk .day-card { border-radius: 14px; padding: 1px 12px; }
 .search input { flex: 1; border: 0; background: none; padding: 12px 0; outline: none; min-width: 0; color: var(--ink); }
 
 .seg { display: grid; grid-template-columns: repeat(var(--n, 3), 1fr); background: var(--surface-2); border-radius: 14px; padding: 4px; gap: 4px; }
@@ -686,6 +713,8 @@ nav.tabs .tab[aria-current="page"] { color: var(--primary); }
     moon: '<path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9z"/>',
     sun: '<circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/>',
     x: '<path d="M18 6 6 18M6 6l12 12"/>',
+    filter: '<path d="M3 5h18M6 12h12M10 19h4"/>',
+    plus: '<path d="M12 5v14M5 12h14"/>',
     search: '<circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/>',
     down: '<path d="M17 7 7 17M17 17H7V7"/>',
     up: '<path d="M7 17 17 7M7 7h10v10"/>',
@@ -964,7 +993,7 @@ nav.tabs .tab[aria-current="page"] { color: var(--primary); }
   }
   const save = () => { try { localStorage.setItem(KEY, JSON.stringify(db)); } catch (e) {} };
 
-  const ui = { who: 'all', lastPayer: 'p1', per: '6', from: ymAdd(curYm, -11), acat: 'all', restore: null, tab: 'ozet', ym: curYm, filter: 'all', q: '', aType: 'out', kType: 'out', editFx: null, editIn: null, gotAsk: null, closing: false, closeDt: '', editBudget: false, selDay: null, confirmClear: false, last: {} };
+  const ui = { who: 'all', lastPayer: 'p1', per: '6', from: ymAdd(curYm, -11), acat: 'all', restore: null, tab: 'ozet', ym: curYm, filter: 'all', q: '', aType: 'out', kType: 'out', editFx: null, editIn: null, gotAsk: null, closing: false, closeDt: '', editBudget: false, selDay: null, confirmClear: false, fOpen: false, mOpen: false, fCats: [], fWho: [], fNoFx: false, xMonths: [], last: {} };
   try { const t = localStorage.getItem(KEY + '-tab'); if (t && t !== 'kategori' && t !== 'ayarlar') ui.tab = t; } catch (e) {}
 
   const catOf = (type, id) => db.cats[type].find(c => c.id === id) || { name: 'Silinmiş kategori', ic: 'dots', color: GRAY };
@@ -1334,21 +1363,45 @@ nav.tabs .tab[aria-current="page"] { color: var(--primary); }
 
   /* ---------- Hareketler ---------- */
   function renderHareket() {
-    let mt = monthTx(ui.ym);
+    const yms = [ui.ym].concat(ui.xMonths.filter(m => m !== ui.ym)).sort();
+    let mt = yms.flatMap(m => monthTx(m));
     if (ui.filter !== 'all') mt = mt.filter(t => t.type === ui.filter);
+    if (ui.fCats.length) mt = mt.filter(t => ui.fCats.includes(t.type + ':' + t.cat));
+    if (ui.fWho.length) mt = mt.filter(t => ui.fWho.includes(payerOf(t)));
+    if (ui.fNoFx) mt = mt.filter(t => !t.fx && !t.fi);
     const q = ui.q.trim().toLocaleLowerCase('tr-TR');
     if (q) mt = mt.filter(t => (t.note + ' ' + catOf(t.type, t.cat).name).toLocaleLowerCase('tr-TR').includes(q));
     const groups = {};
     sorted(mt).forEach(t => (groups[t.date] = groups[t.date] || []).push(t));
     const days = Object.keys(groups).sort().reverse();
-    return `<label class="search">${svg('search')}<input id="qIn" type="search" placeholder="Ara: Rewe, kira, telefon…" value="${esc(ui.q)}" aria-label="Kayıtlarda ara"></label>
+    const nf = ui.fCats.length + ui.fWho.length + (ui.fNoFx ? 1 : 0);
+    const types = ui.filter === 'all' ? ['out', 'in', 'inv'] : [ui.filter];
+    const mLbl = m => AY_K[+m.slice(5) - 1] + (m.slice(0, 4) !== curYm.slice(0, 4) ? ' ' + m.slice(2, 4) : '');
+    const past = []; for (let k = 1; k <= 12; k++) past.push(ymAdd(ui.ym, -k));
+    const tot = { in: sum(mt, 'in'), out: sum(mt, 'out'), inv: sum(mt, 'inv') };
+    return `<div class="hk" style="display:contents">
+      <div class="hk-bar">
+        <label class="search">${svg('search')}<input id="qIn" type="search" placeholder="Ara…" value="${esc(ui.q)}" aria-label="Kayıtlarda ara"></label>
+        <button class="hk-btn" data-fopen aria-pressed="${ui.fOpen}">${svg('filter')}Filtre${nf ? `<em>${nf}</em>` : ''}</button>
+        <button class="hk-btn" data-mopen aria-pressed="${ui.mOpen}" aria-label="Ay ekle">${svg('plus')}Ay</button>
+      </div>
+      ${ui.fOpen ? `<section class="card hk-menu">
+        <div class="hk-sec"><span>Kategori</span><div class="hk-chips">${types.flatMap(ty => db.cats[ty].map(c => [ty, c])).map(([ty, c]) => `<button class="pick" data-fcat="${ty}:${c.id}" aria-pressed="${ui.fCats.includes(ty + ':' + c.id)}"><i class="dot" style="background:${c.color}"></i>${esc(c.name)}</button>`).join('')}</div></div>
+        <div class="hk-sec"><span>Kişi</span><div class="hk-chips">${PEOPLE().map(pp => `<button class="pick" data-fwho="${pp}" aria-pressed="${ui.fWho.includes(pp)}"><span class="who sm ${pp}">${esc(PAYER[pp][0])}</span>${esc(PAYER[pp])}</button>`).join('')}</div></div>
+        <div class="hk-sec"><span>Sabitler</span><div class="hk-chips"><button class="pick" data-fnofx aria-pressed="${ui.fNoFx}">Sabit gelir ve giderleri gizle</button></div></div>
+        <div class="hk-foot"><button class="btn-s" data-fclear ${nf ? '' : 'disabled'}>Temizle</button><button class="btn-s pri" data-fopen>Tamam</button></div>
+      </section>` : ''}
+      ${ui.mOpen ? `<section class="card hk-menu"><div class="hk-sec"><span>Listeye ay ekle</span><div class="hk-chips">${past.map(m => `<button class="pick" data-xm="${m}" aria-pressed="${ui.xMonths.includes(m)}">${mLbl(m)}</button>`).join('')}</div></div></section>` : ''}
+      ${ui.xMonths.length ? `<div class="hk-chips">${yms.map(m => m === ui.ym ? `<span class="pick on">${mLbl(m)}</span>` : `<button class="pick on" data-xm="${m}" aria-label="${mLbl(m)} kaldır">${mLbl(m)} ${svg('x')}</button>`).join('')}</div>` : ''}
       <div class="seg" style="--n:4">${[['all', 'Tümü'], ['in', 'Gelir'], ['out', 'Gider'], ['inv', 'Yatırım']].map(([v, l]) => `<button data-f="${v}" aria-pressed="${ui.filter === v}">${l}</button>`).join('')}</div>
+      ${nf || q || ui.xMonths.length ? `<div class="hk-sum"><span>Gelir <b class="num" style="color:var(--in-ink)">${money(tot.in)}</b></span><span>Gider <b class="num">${money(tot.out)}</b></span>${tot.inv ? `<span>Yatırım <b class="num" style="color:var(--inv)">${money(tot.inv)}</b></span>` : ''}</div>` : ''}
       <div>${days.length ? days.map(d => {
         const g = groups[d]; const net = sum(g, 'in') - sum(g, 'out') - sum(g, 'inv');
-        return `<div class="day-h"><span>${dayLabel(d)}</span>${g.length > 1 ? `<span class="num" style="color:var(${net >= 0 ? '--in-ink' : '--out-ink'})">${net >= 0 ? '+' : '−'}${money(Math.abs(net))}</span>` : ''}</div>
+        return `<div class="day-h"><span>${dayLabel(d)}</span>${g.length > 1 ? `<span class="num" style="color:var(${net >= 0 ? '--in-ink' : '--ink-2'})">${net >= 0 ? '+' : '−'}${money(Math.abs(net))}</span>` : ''}</div>
           <div class="day-card">${g.map(t => t.fx || t.fi ? rowHtml(t) : `<div class="sw"><div class="sw-bg">${svg('x')}Sil</div>${rowHtml(t)}</div>`).join('')}</div>`;
-      }).join('') : `<div class="empty">${q ? 'Aramana uyan kayıt yok.' : 'Bu ay için kayıt yok.'}</div>`}</div>
-      <p class="hint" style="text-align:center">Düzenlemek için kayda dokun, silmek için sola kaydır.</p>`;
+      }).join('') : `<div class="empty">${q || nf ? 'Bu filtreye uyan kayıt yok.' : 'Bu ay için kayıt yok.'}</div>`}</div>
+      <p class="hint" style="text-align:center">Düzenlemek için kayda dokun, silmek için sola kaydır.</p>
+    </div>`;
   }
 
   /* ---------- Takvim ---------- */
@@ -1773,7 +1826,14 @@ nav.tabs .tab[aria-current="page"] { color: var(--primary); }
     if (T('[data-daychart]')) return openDayChart();
     if (T('[data-leftchart]')) return openLeftChart();
     if (T('[data-budget]')) { ui.editBudget = !ui.editBudget; render(); const b = $('#budgetIn'); if (b) b.focus(); return; }
-    if ((el = T('[data-f]'))) { ui.filter = el.dataset.f; return render(); }
+    if ((el = T('[data-f]'))) { ui.filter = el.dataset.f; if (ui.filter !== 'all') ui.fCats = ui.fCats.filter(k => k.startsWith(ui.filter + ':')); return render(); }
+    if (T('[data-fopen]')) { ui.fOpen = !ui.fOpen; ui.mOpen = false; return render(); }
+    if (T('[data-mopen]')) { ui.mOpen = !ui.mOpen; ui.fOpen = false; return render(); }
+    if ((el = T('[data-fcat]'))) { const k = el.dataset.fcat; ui.fCats = ui.fCats.includes(k) ? ui.fCats.filter(x => x !== k) : ui.fCats.concat(k); return render(); }
+    if ((el = T('[data-fwho]'))) { const k = el.dataset.fwho; ui.fWho = ui.fWho.includes(k) ? ui.fWho.filter(x => x !== k) : ui.fWho.concat(k); return render(); }
+    if (T('[data-fnofx]')) { ui.fNoFx = !ui.fNoFx; return render(); }
+    if (T('[data-fclear]')) { ui.fCats = []; ui.fWho = []; ui.fNoFx = false; return render(); }
+    if ((el = T('[data-xm]'))) { const k = el.dataset.xm; ui.xMonths = ui.xMonths.includes(k) ? ui.xMonths.filter(x => x !== k) : ui.xMonths.concat(k); return render(); }
     if ((el = T('[data-at]'))) { ui.aType = el.dataset.at; return render(); }
     if ((el = T('[data-who]'))) { ui.who = el.dataset.who; return render(); }
     if ((el = T('[data-per]'))) { ui.per = el.dataset.per; return render(); }
