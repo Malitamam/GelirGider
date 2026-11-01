@@ -507,8 +507,8 @@ svg.dchart .today { fill: var(--surface); stroke: var(--primary); stroke-width: 
 .lc-bub.dn { transform: translate(-50%, 14px); } .lc-bub.dn.r { transform: translate(calc(-100% + 16px), 14px); } .lc-bub.dn.l { transform: translate(-16px, 14px); }
 .lc-bub small { display: block; opacity: .75; margin-top: 3px; }
 .lc-bub div { display: flex; justify-content: space-between; gap: 10px; margin-top: 2px; } .lc-bub div span { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-.icon-btn.gear { color: var(--primary-ink); }
-.icon-btn.gear[aria-current="page"], #setBtn[aria-current="page"] { background: var(--primary-soft); color: var(--primary-ink); }
+.icon-btn.gear { background: var(--surface-2); color: var(--ink-2); box-shadow: none; }
+.icon-btn.gear[aria-current="page"] { background: var(--ink-2); color: var(--surface); }
 .seg button svg.i { width: 15px; height: 15px; vertical-align: -2px; }
 .st-sec { gap: 10px; }
 .st-line { display: flex; align-items: center; gap: 10px; } .st-line > b { font-size: 14px; min-width: 86px; }
@@ -716,6 +716,7 @@ nav.tabs .tab[aria-current="page"] { color: var(--primary); }
         <span id="mLbl" class="num"></span>
         <button id="mNext" aria-label="Sonraki ay"></button>
       </div>
+      <button class="icon-btn gear" id="themeBtn" aria-label="Tema değiştir" title="Tema"></button>
       <button class="icon-btn gear" id="gearBtn" aria-label="Ayarlar" title="Ayarlar"></button>
     </div>
   </header>
@@ -1827,7 +1828,6 @@ nav.tabs .tab[aria-current="page"] { color: var(--primary); }
   function renderAyarlar() {
     const lb = db.lastBackup;
     return `<section class="card st-sec">
-        <div class="st-line"><b>Tema</b><div class="seg" style="--n:2" role="group" aria-label="Tema">${[['light', 'Açık'], ['dark', 'Koyu']].map(([v, l]) => `<button data-theme-set="${v}" aria-pressed="${theme === v}">${svg(v === 'dark' ? 'moon' : 'sun')} ${l}</button>`).join('')}</div></div>
         <form class="bud-form st-line" id="budgetForm"><b>Aylık limit</b><input id="budgetIn" class="num" inputmode="decimal" value="${db.budget || ''}" placeholder="1500" aria-label="Aylık harcama limiti (€)"><button>Kaydet</button></form>
       </section>
       <section class="card st-sec">
@@ -1899,6 +1899,9 @@ nav.tabs .tab[aria-current="page"] { color: var(--primary); }
   $('#mPrev').addEventListener('click', () => { ui.ym = ymAdd(ui.ym, -1); ui.editFx = ui.editIn = null; render(); });
   $('#mNext').addEventListener('click', () => { if (ui.ym < maxYm) { ui.ym = ymAdd(ui.ym, 1); ui.editFx = ui.editIn = null; render(); } });
   $('#fab').addEventListener('click', () => openSheet());
+  const themeIc = () => { $('#themeBtn').innerHTML = svg(theme === 'dark' ? 'sun' : 'moon'); };
+  themeIc();
+  $('#themeBtn').addEventListener('click', () => { setTheme(theme === 'dark' ? 'light' : 'dark'); themeIc(); render(); });
   $('#gearBtn').addEventListener('click', () => setTab(ui.tab === 'ayarlar' ? 'ozet' : 'ayarlar'));
 
   view.addEventListener('click', e => {
