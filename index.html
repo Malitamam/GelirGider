@@ -172,6 +172,8 @@ header.top { display: flex; align-items: center; justify-content: space-between;
 .got-form { display: flex; align-items: center; gap: 8px; padding: 6px 0 10px 30px; font-size: 13px; color: var(--ink-2); }
 .got-form input { width: 90px; border: 1px solid var(--line); border-radius: 10px; padding: 7px 9px; font: inherit; font-weight: 700; background: var(--surface); color: var(--ink); }
 .got-form button { border: 0; background: var(--in); color: #fff; font-weight: 700; border-radius: 10px; padding: 8px 12px; }
+.got-form button.gnx { background: var(--surface-2); color: var(--ink-2); font-weight: 600; padding: 8px 10px; white-space: nowrap; }
+.got-form button.gnx[aria-pressed="true"] { background: var(--primary-soft); color: var(--primary-ink); }
 .fx-day { font-weight: 700; font-size: 14.5px; color: var(--ink-2); text-align: right; }
 .fx-row .fx-main { display: flex; flex-direction: row; align-items: center; gap: 6px; min-width: 0; }
 .fx-row .fx-main > b { flex: 0 1 auto; min-width: 0; }
@@ -1186,6 +1188,14 @@ nav.tabs .tab[aria-current="page"] { color: var(--primary); }
     return html;
   }
 
+  // Ay geri açılınca kapanış yüzünden sonraki aya geçen kayıtlar geri gelir (elle "sonraki aya at" denenler ve 20'sinden sonraki maaş hariç)
+  const maasNext = t => t.type === 'in' && t.cat === 'maas' && +t.date.slice(8) >= 20;
+  function reopenMonth(m) {
+    const nx = ymAdd(m, 1); delete db.closed[m];
+    db.tx.forEach(t => { if (t.byClose === m || (t.ym === nx && ymOf(t.date) === m && !t.nxManual && !maasNext(t))) { delete t.ym; delete t.byClose; } });
+  }
+  // Bu ay kapatıldıysa uygulamanın "şimdiki" ayı sonraki aydır
+  const actYm = () => db.closed[curYm] ? ymAdd(curYm, 1) : curYm;
   const closeMax = ym => { const e = ymAdd(ym, 1) + '-01', last = iso(new Date(new Date(e) - 864e5)); return todayIso < last ? todayIso : last; };
   // Kapanış gününden sonra o aya girilmiş, henüz başka aya atılmamış kayıtlar (sabit giderler hariç)
   const afterClose = (ym, d) => db.tx.filter(t => !t.ym && ymOf(t.date) === ym && t.date > d);
@@ -1266,6 +1276,7 @@ nav.tabs .tab[aria-current="page"] { color: var(--primary); }
     const left = db.budget - vk, pct = Math.min(100, Math.max(0, vk / db.budget * 100));
     let day = '';
     if (ui.ym === curYm && left > 0) { const [Y, M] = ui.ym.split('-').map(Number); const rest = new Date(Y, M, 0).getDate() - +todayIso.slice(8) + 1; day = `<span class="d dc" data-daychart role="button" aria-label="Günlük harcama hakkı grafiği">günde ~${eur(left / rest)} ›</span>`; }
+    else if (ui.ym === actYm() && left > 0) { const [Y, M] = ui.ym.split('-').map(Number); const rest = Math.round((new Date(Y, M, 0) - new Date(+todayIso.slice(0, 4), +todayIso.slice(5, 7) - 1, +todayIso.slice(8))) / 864e5) + 1; day = `<span class="d">günde ~${eur(left / rest)}</span>`; }
     // Çeyrek işaretleri (¼ ½ ¾) ve bu ay için "bugüne kadar olması gereken" tempo çizgisi
     let pace = '';
     if (ui.ym === curYm) { const [Y, M] = ui.ym.split('-').map(Number); pace = `<u style="left:${+todayIso.slice(8) / new Date(Y, M, 0).getDate() * 100}%" title="Bugünün temposu"></u>`; }
@@ -1366,7 +1377,7 @@ nav.tabs .tab[aria-current="page"] { color: var(--primary); }
           <button class="chk sm" data-got="${f.id}" aria-pressed="${!!x}" aria-label="${esc(f.name)} geldi">${svg('check')}</button>
           <button class="fx-main" data-editin="${f.id}" aria-label="${esc(f.name)} düzenle"><span class="who ${payerOf(f)}">${PAYER[payerOf(f)][0]}</span><b>${esc(f.name)}</b></button>
           <b class="fx-amt num" style="color:${x ? 'var(--in-ink)' : 'var(--muted)'}">${amt ? money(amt) : '—'}</b>
-        </div>${ui.gotAsk === f.id ? `<form class="got-form" id="gotForm" data-id="${f.id}"><span>Gelen tutar</span><input id="gotAmt" class="num" inputmode="decimal" placeholder="€" value="${expIn(f, ui.ym) ? String(expIn(f, ui.ym)).replace('.', ',') : ''}"><button>Onayla</button></form>` : ''}${ui.editIn === f.id ? inForm(f) : ''}`;
+        </div>${ui.gotAsk === f.id ? `<form class="got-form" id="gotForm" data-id="${f.id}"><span>Gelen tutar</span><input id="gotAmt" class="num" inputmode="decimal" placeholder="€" value="${expIn(f, ui.ym) ? String(expIn(f, ui.ym)).replace('.', ',') : ''}">${f.cat === 'maas' ? `<button type="button" class="gnx" data-gotnx aria-pressed="${!!ui.gotNx}">→ ${ayaDat(ymAdd(ui.ym, 1))}</button>` : ''}<button>Onayla</button></form>` : ''}${ui.editIn === f.id ? inForm(f) : ''}`;
       }).join('') : `<div class="empty">Maaş gibi her ay gelen gelirlerini ekle.</div>`}</div>` : ''}
     </section>`;
   }
@@ -1423,11 +1434,12 @@ nav.tabs .tab[aria-current="page"] { color: var(--primary); }
       </div>
       <label class="fld">Tutar (€)<input id="fxAmt" inputmode="decimal" required placeholder="ör. 39,99" value="${f.amount === '' ? '' : String(f.amount).replace('.', ',')}"></label>
       <label class="fld">Ödeme günü<input id="fxDay" type="number" min="1" max="31" required placeholder="1–31" value="${f.day}"></label>
+      ${n ? `<label class="fld full">İlk ödeme ayı<input type="month" id="fxStart" value="${ui.ym}"></label>` : ''}
       ${!n && fixedState(f, ui.ym) ? (() => { const k = ui.ym + '|' + f.id, p = db.paid[k], o = (db.fxAmt || {})[k], v = p && p.amount !== f.amount ? p.amount : o; return `<label class="fld full">Sadece ${AYLAR[+ui.ym.slice(5) - 1]} için farklı tutar (€)<input id="fxOnce" inputmode="decimal" placeholder="aynı: ${money(f.amount)}" value="${v ? String(v).replace('.', ',') : ''}"></label>`; })() : ''}
       <div class="fld full">Son ödeme
         <div class="endrow"><label class="chkl"><input type="checkbox" id="fxNoEnd" ${f.end ? '' : 'checked'}> Süresiz</label><input type="month" id="fxEnd" value="${f.end || ''}" min="${curYm}" ${f.end ? '' : 'disabled'} aria-label="Son taksit ayı"></div>
       </div>
-      <div class="btns"><button type="submit" class="btn">${n ? 'Ekle' : 'Kaydet'}</button><button type="button" class="btn ghost" data-fxcancel>Vazgeç</button>${n ? '' : `<button type="button" class="btn danger" data-fxdel="${f.id}">${fxEndYm(f) >= f.start ? 'Bitir' : 'Sil'}</button>`}</div>
+      <div class="btns"><button type="submit" class="btn">${n ? 'Ekle' : 'Kaydet'}</button><button type="button" class="btn ghost" data-fxcancel>Vazgeç</button>${!n && f.manual && fixedState(f, ui.ym) ? `<button type="button" class="btn ghost" data-tick="${f.id}" data-ym="${ui.ym}">${fixedState(f, ui.ym).status === 'paid' ? 'Ödenmedi yap' : 'Ödendi'}</button>` : ''}${n ? '' : `<button type="button" class="btn danger" data-fxdel="${f.id}">${fxEndYm(f) >= f.start ? 'Bitir' : 'Sil'}</button>`}</div>
       ${!n && fxEndYm(f) >= f.start ? `<p class="hint">Tutarı değiştirmek bu aydan itibaren geçerli olur, geçmiş aylar değişmez. Bitir: ${AYLAR[+fxEndYm(f).slice(5) - 1]} ${fxEndYm(f).slice(0, 4)} sonrasında durur.</p>` : ''}
     </form>`;
   }
@@ -1538,6 +1550,8 @@ nav.tabs .tab[aria-current="page"] { color: var(--primary); }
     const dim = new Date(Y, M, 0).getDate();
     const lead = (new Date(Y, M - 1, 1).getDay() + 6) % 7;
     const mt = monthTx(ui.ym);
+    // Günlerde kayıtlar gerçek tarihinde görünür (başka aya atılmış olsalar bile; panelde "… atıldı" yazar)
+    const calTx = mt.filter(t => ymOf(t.date) === ui.ym).concat(db.tx.filter(t => t.ym && t.ym !== ui.ym && ymOf(t.date) === ui.ym));
     const fx = fixedItems();
     // Solda KW sütunu, sonra 7 gün
     let cells = '<div class="wd kwh">KW</div>' + ['Pzt', 'Sal', 'Çar', 'Per', 'Cum', 'Cmt', 'Paz'].map((w, i) => `<div class="wd ${i === 5 ? 'sat' : ''}">${w}</div>`).join('');
@@ -1548,7 +1562,7 @@ nav.tabs .tab[aria-current="page"] { color: var(--primary); }
     for (let d = 1; d <= dim; d++) {
       if (d > 1 && (lead + d - 1) % 7 === 0) cells += kwCell(d);
       const ds = ui.ym + '-' + pad(d);
-      const dt = mt.filter(t => t.date === ds);
+      const dt = calTx.filter(t => t.date === ds);
       const net = sum(dt, 'in') - sum(dt, 'out') - sum(dt, 'inv');
       const due = fx.filter(x => x.st.due === ds);
       const pin = due.length ? `<i class="pin"></i>` : '';
@@ -1559,7 +1573,7 @@ nav.tabs .tab[aria-current="page"] { color: var(--primary); }
     const gi = sum(mt, 'in'), gd = sum(mt, 'out');
     let panel = '';
     if (ui.selDay) {
-      const dt = sorted(mt.filter(t => t.date === ui.selDay));
+      const dt = sorted(calTx.filter(t => t.date === ui.selDay));
       const plan = fx.filter(x => x.st.due === ui.selDay && x.st.status === 'wait');
       const simple = t => { const c = catOf(t.type, t.cat), p = payerOf(t);
         return `<div class="lrow"><span class="who sm ${p}">${PAYER[p][0]}</span><span class="lc"><b>${esc(t.fx ? 'Sabit' : c.name)}</b>${t.note ? ` · ${esc(t.note)}` : ''}</span><b class="num" style="color:${t.type === 'in' ? 'var(--in-ink)' : t.type === 'inv' ? 'var(--inv)' : 'var(--ink)'}">${t.type === 'out' ? '−' : '+'}${eur(t.amount)}</b></div>`; };
@@ -1822,6 +1836,8 @@ nav.tabs .tab[aria-current="page"] { color: var(--primary); }
   function renderKategori() {
     const cats = db.cats[ui.kType];
     const count = id => db.tx.filter(t => t.type === ui.kType && t.cat === id).length;
+    // Sabit gelirde kullanılan gelir kategorisi ile Maaş ve Çocuk parası kaldırılamaz
+    const locked = id => count(id) || (ui.kType === 'in' && (id === 'maas' || id === 'cocuk' || db.income.some(f => f.cat === id)));
     return `<div class="seg type">
         <button data-kt="out" data-v="out" aria-pressed="${ui.kType === 'out'}">Gider</button>
         <button data-kt="in" data-v="in" aria-pressed="${ui.kType === 'in'}">Gelir</button>
@@ -1829,7 +1845,7 @@ nav.tabs .tab[aria-current="page"] { color: var(--primary); }
       </div>
       <section class="card"><div class="list">${cats.map(c => `<div class="row">${icoBox(c)}
           <div class="t"><b>${esc(c.name)}</b><small>${c.id === 'sabit' ? 'Özet ekranındaki listeden yönetilir' : count(c.id) ? count(c.id) + ' kayıt' : 'Henüz kullanılmadı'}</small></div>
-          <div>${count(c.id) || c.id === 'sabit' || cats.length <= 1 ? '' : `<button class="link" style="color:var(--out-ink)" data-rmcat="${c.id}">Kaldır</button>`}</div></div>`).join('')}</div>
+          <div>${locked(c.id) || c.id === 'sabit' || cats.length <= 1 ? '' : `<button class="link" style="color:var(--out-ink)" data-rmcat="${c.id}">Kaldır</button>`}</div></div>`).join('')}</div>
       </section>
       ${ui.kType === 'inv' ? `<section class="card">
         <div class="card-h"><h2>Mevcut yatırım bakiyesi</h2></div>
@@ -1951,17 +1967,21 @@ nav.tabs .tab[aria-current="page"] { color: var(--primary); }
     if (T('[data-transfers]')) return openTransfers();
     if ((el = T('[data-list]'))) { if (el.hasAttribute('data-lcat')) listBy = 'cat'; return openList(el.dataset.list); }
     if ((el = T('[data-kw]'))) { ui.openKw = ui.openKw === el.dataset.kw ? null : el.dataset.kw; return render(); }
-    if (T('[data-pw]')) { if (db.closed[ui.ym]) { const m = ui.ym; return withUndo(ayAcc(AYLAR[+m.slice(5) - 1]) + ' yeniden açtın', () => { delete db.closed[m]; db.tx.forEach(t => { if (t.byClose === m) { delete t.ym; delete t.byClose; } }); }); } ui.closing = !ui.closing; ui.closeDt = closeMax(ui.ym); render(); const c = document.querySelector('.close-card'); if (c) c.scrollIntoView({ block: 'center', behavior: 'smooth' }); return; }
+    if (T('[data-pw]')) { if (db.closed[ui.ym]) { const m = ui.ym; return withUndo(ayAcc(AYLAR[+m.slice(5) - 1]) + ' yeniden açtın', () => { reopenMonth(m); }); } ui.closing = !ui.closing; ui.closeDt = closeMax(ui.ym); render(); const c = document.querySelector('.close-card'); if (c) c.scrollIntoView({ block: 'center', behavior: 'smooth' }); return; }
     if (T('[data-closeask]')) { ui.closing = true; ui.closeDt = closeMax(ui.ym); render(); const c = document.querySelector('.close-card'); if (c) c.scrollIntoView({ block: 'center', behavior: 'smooth' }); return; }
     if (T('[data-closeno]')) { ui.closing = false; return render(); }
     if (T('[data-closeyes]')) { const m = ui.ym, d = ($('#closeDt') && $('#closeDt').value) || ui.closeDt; afterClose(m, d).forEach(t => { t.ym = ymAdd(m, 1); t.byClose = m; }); db.closed[m] = d; ui.closing = false; save(); ui.ym = ymAdd(m, 1); render(); window.scrollTo(0, 0); return toast(ayAcc(AYLAR[+m.slice(5) - 1]) + ' kapattın · yeni kayıtlar ' + ayaDat(ui.ym) + ' yazılıyor'); }
-    if (T('[data-reopen]')) { const m = ui.ym; return withUndo(ayAcc(AYLAR[+m.slice(5) - 1]) + ' yeniden açtın', () => { delete db.closed[m]; db.tx.forEach(t => { if (t.byClose === m) { delete t.ym; delete t.byClose; } }); }); }
+    if (T('[data-reopen]')) { const m = ui.ym; return withUndo(ayAcc(AYLAR[+m.slice(5) - 1]) + ' yeniden açtın', () => { reopenMonth(m); }); }
     if ((el = T('[data-got]'))) {
       const f = db.income.find(x => x.id === el.dataset.got), key = ui.ym + '|' + f.id;
       if (linkedIn(f, ui.ym).length) return toast(f.name + ' Hareketler\'de kayıtlı, oradan değiştir');
       if (db.got[key]) { delete db.got[key]; save(); render(); return toast(f.name + ': işaret kaldırıldı'); }
-      ui.gotAsk = ui.gotAsk === f.id ? null : f.id; render(); const a = $('#gotAmt'); if (a) { a.focus(); a.select(); } return;
+      ui.gotAsk = ui.gotAsk === f.id ? null : f.id;
+      // Elle girişteki kural: ayın 20'si ve sonrasında gelen maaş sonraki ayın geliridir
+      ui.gotNx = f.cat === 'maas' && ui.ym === curYm && +todayIso.slice(8) >= 20 && !db.got[ymAdd(ui.ym, 1) + '|' + f.id];
+      render(); const a = $('#gotAmt'); if (a) { a.focus(); a.select(); } return;
     }
+    if (T('[data-gotnx]')) { ui.gotNx = !ui.gotNx; const a = $('#gotAmt'), v = a && a.value; render(); const b = $('#gotAmt'); if (b && v != null) b.value = v; return; }
     if ((el = T('[data-editin]'))) { ui.editIn = ui.editIn === el.dataset.editin ? null : el.dataset.editin; ui.editFx = null; render(); return; }
     if (T('[data-incancel]')) { ui.editIn = null; return render(); }
     if ((el = T('[data-incat]'))) { el.parentNode.querySelectorAll('button').forEach(b => b.setAttribute('aria-pressed', b === el)); $('#inCat').value = el.dataset.incat; return; }
@@ -2123,8 +2143,9 @@ nav.tabs .tab[aria-current="page"] { color: var(--primary); }
     if (e.target.id === 'gotForm') {
       const id = e.target.dataset.id, f = db.income.find(x => x.id === id), v = parseAmt($('#gotAmt').value);
       if (!(v > 0)) return toast('Gelen tutarı yaz');
-      db.got[ui.ym + '|' + id] = { date: todayIso, amount: v }; ui.gotAsk = null;
-      save(); render(); return toast(f.name + ' geldi: ' + money(v) + ' · ' + AYLAR[+ui.ym.slice(5) - 1] + ' geliri');
+      const gy = ui.gotNx && f.cat === 'maas' ? ymAdd(ui.ym, 1) : ui.ym;
+      db.got[gy + '|' + id] = { date: todayIso, amount: v }; ui.gotAsk = null; ui.gotNx = false;
+      save(); render(); return toast(f.name + ' geldi: ' + money(v) + ' · ' + AYLAR[+gy.slice(5) - 1] + ' geliri');
     }
     if (e.target.id === 'inForm') {
       const name = $('#inName').value.trim(), amt = parseAmt($('#inAmt').value), cat = $('#inCat').value, payer = $('#fxPayer').value;
@@ -2160,7 +2181,7 @@ nav.tabs .tab[aria-current="page"] { color: var(--primary); }
           if (db.paid[k]) db.paid[k].amount = once > 0 ? once : amt;
         }
       }
-      else { const st0 = ui.ym < curYm ? ui.ym : curYm; db.fixed.push({ id: 'f' + Date.now(), name, amount: amt, day, end, every, anchor, payer: $('#fxPayer').value, manual: $('#fxManual').value === '1', start: anchor && anchor < st0 ? anchor : st0 }); }
+      else { const st0 = ($('#fxStart') && $('#fxStart').value) || ui.ym; db.fixed.push({ id: 'f' + Date.now(), name, amount: amt, day, end, every, anchor, payer: $('#fxPayer').value, manual: $('#fxManual').value === '1', start: anchor && anchor < st0 ? anchor : st0 }); }
       ui.editFx = null; save(); render(); return toast(id ? 'Kaydedildi' : 'Sabit gider eklendi');
     }
     if (e.target.id === 'budgetForm') {
@@ -2429,7 +2450,7 @@ nav.tabs .tab[aria-current="page"] { color: var(--primary); }
     db.tx.filter(t => t.note && t.date > ymAdd(curYm, -3)).forEach(t => { const k = t.type + '|' + t.cat + '|' + t.note; const m = favMap[k] = favMap[k] || { type: t.type, cat: t.cat, note: t.note, n: 0, amount: t.amount, date: '' }; m.n++; if (t.date >= m.date) { m.date = t.date; m.amount = t.amount; m.payer = t.payer; } });
     const favs = Object.values(favMap).filter(f => f.n > 1).sort((a, b) => b.n - a.n).slice(0, 8);
     // Kapatılmış ayın tarihine girilen yeni kayıt kendiliğinden sonraki aya yazılır (düğmeyle değiştirilebilir)
-    const autoNext = () => { if (!ed && st.nextAuto !== false) st.next = !!db.closed[ymOf(st.date)] || (st.type === 'in' && st.cat === 'maas' && +st.date.slice(8) >= 20); };
+    const autoNext = () => { if (!ed && st.nextAuto !== false) { const c = db.closed[ymOf(st.date)]; st.next = !!(c && st.date > c) || (st.type === 'in' && st.cat === 'maas' && +st.date.slice(8) >= 20); } };
     if (st.next === null) { st.next = false; autoNext(); }
     const prevFocus = document.activeElement;
     let drawn = false;
@@ -2549,7 +2570,7 @@ nav.tabs .tab[aria-current="page"] { color: var(--primary); }
         if (!st.cat) { st.err = 'Bir kategori seç.'; draw(); return; }
         const note = root.querySelector('#nt').value.trim();
         // "Sonraki aya at": kayıt, tarihi değişmeden bir sonraki ayın hesabına yazılır
-        const ym2 = st.next ? ymAdd(ymOf(st.date), 1) : null, nx = ym2 ? { ym: ym2 } : {};
+        const ym2 = st.next ? ymAdd(ymOf(st.date), 1) : null, nx = ym2 ? Object.assign({ ym: ym2 }, st.nextAuto === false ? { nxManual: true } : db.closed[ymOf(st.date)] && st.date > db.closed[ymOf(st.date)] && !(st.type === 'in' && st.cat === 'maas' && +st.date.slice(8) >= 20) ? { byClose: ymOf(st.date) } : {}) : {};
         // Ayrılan paylar (Sigara, Çocuk ekstra) ayrı kayıt olur, kalan tutar seçilen kategoriye yazılır
         const parts = ed || st.type !== 'out' ? [] : SPLITS.filter(([id]) => id !== st.cat && st.split[id]).map(([id, l]) => [id, l, parseAmt(st.splitAmt[id] || (root.querySelector(`[data-splitamt="${id}"]`) || {}).value || '')]);
         const pSum = parts.reduce((x, p) => x + p[2], 0);
@@ -2569,7 +2590,7 @@ nav.tabs .tab[aria-current="page"] { color: var(--primary); }
           save(); ui.ym = ym2 || ymOf(st.date); close(); render();
           return toast(`${catOf('out', st.cat).name} ${money(rest)}${gsV ? ` (GS ${money(gsV)})` : ''} · ` + parts.map(p => `${p[1]} ${money(p[2])}`).join(' · '));
         }
-        if (ed) { Object.assign(ed, { type: st.type, cat: st.cat, amount: cash, date: st.date, note, payer: st.payer }); if (ym2) ed.ym = ym2; else delete ed.ym; if (tm.tm) ed.tm = true; else delete ed.tm; delete ed.fuel; delete ed.gs; delete ed.gross; Object.assign(ed, fuelX); }
+        if (ed) { Object.assign(ed, { type: st.type, cat: st.cat, amount: cash, date: st.date, note, payer: st.payer }); if (ym2) { ed.ym = ym2; if (st.nextAuto === false) ed.nxManual = true; } else { delete ed.ym; delete ed.byClose; delete ed.nxManual; } if (tm.tm) ed.tm = true; else delete ed.tm; delete ed.fuel; delete ed.gs; delete ed.gross; Object.assign(ed, fuelX); }
         else db.tx.push(Object.assign({ id: 't' + Date.now(), ts: Date.now(), type: st.type, cat: st.cat, amount: cash, date: st.date, note, payer: st.payer }, nx, tm, fuelX));
         ui.last[st.type] = st.cat; ui.lastPayer = st.payer;
         save(); ui.ym = ym2 || ymOf(st.date); close(); render();
@@ -2590,6 +2611,7 @@ nav.tabs .tab[aria-current="page"] { color: var(--primary); }
   window.addEventListener('pagehide', seenNow);
   let hidAt = 0;
   document.addEventListener('visibilitychange', () => { if (document.hidden) { hidAt = Date.now(); seenNow(); } else { if (hidAt && Date.now() - hidAt > LOCK_MS) lockScreen(); seenNow(); } });
+  ui.ym = actYm();
   render();
 })();
 </script>
