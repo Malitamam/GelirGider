@@ -288,11 +288,12 @@ header.top { display: flex; align-items: center; justify-content: space-between;
 .cal .d[aria-pressed="true"] { background: var(--primary-soft) !important; }
 .cal .d.we, .cal .d.hol { background: var(--we); }
 .cal .d.we.has, .cal .d.hol.has { background: var(--we-has); }
-.cal .d.deh, .cal .d.deh.has { background: #fbe9a6; }
-.cal .d.lv, .cal .d.lv.has { background: #ffd9b8; }
+.calcard { overflow: hidden; }
+.cal .d.deh, .cal .d.deh.has { background: #fdd95c; }
+.cal .d.lv, .cal .d.lv.has { background: #ffc08a; }
 .cal .d.deh .n, .cal .d.lv .n { color: #3a2a12; }
-:root[data-theme="dark"] .cal .d.deh, :root[data-theme="dark"] .cal .d.deh.has { background: #4a3d12; }
-:root[data-theme="dark"] .cal .d.lv, :root[data-theme="dark"] .cal .d.lv.has { background: #5a3216; }
+:root[data-theme="dark"] .cal .d.deh, :root[data-theme="dark"] .cal .d.deh.has { background: #7a6214; }
+:root[data-theme="dark"] .cal .d.lv, :root[data-theme="dark"] .cal .d.lv.has { background: #8a4517; }
 :root[data-theme="dark"] .cal .d.deh .n, :root[data-theme="dark"] .cal .d.lv .n { color: var(--ink); }
 #mLbl { cursor: pointer; }
 .dp-h .dp-i { flex: none; width: 28px; height: 28px; border-radius: 50%; border: 1.5px solid var(--line); background: var(--surface-2); color: var(--muted); font: italic 800 14px Georgia, serif; display: grid; place-items: center; margin-left: auto; }
@@ -309,14 +310,14 @@ header.top { display: flex; align-items: center; justify-content: space-between;
 .ym-g i { font-style: normal; font-size: 7.5px; line-height: 12px; text-align: center; border-radius: 3px; color: var(--ink-2); font-variant-numeric: tabular-nums; }
 .ym-g i.we { color: var(--muted); }
 .ym-g i.trh { box-shadow: inset 0 -2px 0 #e5484d; }
-.ym-g i.deh { background: #fbe9a6; color: #3a2a12; }
-.ym-g i.lv { background: #ffd9b8; color: #3a2a12; }
+.ym-g i.deh { background: #fdd95c; color: #3a2a12; }
+.ym-g i.lv { background: #ffc08a; color: #3a2a12; }
 .ym-g i.today { background: var(--primary); color: #fff; }
-:root[data-theme="dark"] .ym-g i.deh { background: #4a3d12; color: var(--ink); }
-:root[data-theme="dark"] .ym-g i.lv { background: #5a3216; color: var(--ink); }
+:root[data-theme="dark"] .ym-g i.deh { background: #7a6214; color: var(--ink); }
+:root[data-theme="dark"] .ym-g i.lv { background: #8a4517; color: var(--ink); }
 .yv-keys { display: flex; flex-wrap: wrap; gap: 6px 12px; justify-content: center; font-size: 11.5px; color: var(--muted); font-weight: 600; }
 .yv-keys i { display: inline-block; width: 10px; height: 10px; border-radius: 3px; margin-right: 4px; vertical-align: -1px; }
-.yv-keys .k-de { background: #fbe9a6; } .yv-keys .k-lv { background: #ffd9b8; } .yv-keys .k-tr { box-shadow: inset 0 -2px 0 #e5484d; background: var(--surface-2); }
+.yv-keys .k-de { background: #fdd95c; } .yv-keys .k-lv { background: #ffc08a; } .yv-keys .k-tr { box-shadow: inset 0 -2px 0 #e5484d; background: var(--surface-2); }
 .cal .sat { position: relative; overflow: visible; }
 .cal .sat::before { content: ''; position: absolute; left: -2.5px; top: 2px; bottom: 2px; width: 1px; background: var(--line); }
 .cal .wd.sat::before { top: 4px; bottom: 4px; }
@@ -2028,14 +2029,29 @@ nav.tabs .tab[aria-current="page"] { color: var(--primary); }
   $('#mLbl').addEventListener('click', () => { if (ui.tab !== 'takvim') return; ui.yearView = !ui.yearView; ui.selDay = null; render(); });
   // Takvimde sola kaydır: sonraki ay, sağa kaydır: önceki ay
   let cs = null;
-  view.addEventListener('touchstart', e => { if (ui.tab !== 'takvim' || !e.target.closest('.calcard')) return; const t = e.touches[0]; cs = { x: t.clientX, y: t.clientY }; }, { passive: true });
-  view.addEventListener('touchend', e => {
-    if (!cs) return; const t = e.changedTouches[0], dx = t.clientX - cs.x, dy = t.clientY - cs.y; cs = null;
-    if (Math.abs(dx) < 50 || Math.abs(dx) < Math.abs(dy) * 1.5) return;
-    const step = ui.yearView ? 12 : 1, n = ymAdd(ui.ym, dx < 0 ? step : -step);
-    if (n > maxYm) return;
-    ui.ym = n; ui.selDay = null; ui.editFx = ui.editIn = null; render();
+  const calParts = () => [...document.querySelectorAll('.calcard > *')];
+  const calMove = (x, op, tr) => calParts().forEach(el => { el.style.transition = tr || 'none'; el.style.transform = x ? `translateX(${x})` : ''; el.style.opacity = op; });
+  view.addEventListener('touchstart', e => { if (ui.tab !== 'takvim' || !e.target.closest('.calcard')) return; const t = e.touches[0]; cs = { x: t.clientX, y: t.clientY, h: false, dx: 0 }; }, { passive: true });
+  view.addEventListener('touchmove', e => {
+    if (!cs) return; const t = e.touches[0], dx = t.clientX - cs.x, dy = t.clientY - cs.y;
+    if (!cs.h) { if (Math.abs(dy) > 12 && Math.abs(dy) > Math.abs(dx)) { cs = null; return; } if (Math.abs(dx) > 10) cs.h = true; else return; }
+    const step = ui.yearView ? 12 : 1, blocked = dx < 0 && ymAdd(ui.ym, step) > maxYm;
+    cs.dx = blocked ? dx / 4 : dx;
+    calMove(cs.dx + 'px', 1 - Math.min(.5, Math.abs(cs.dx) / 700));
   }, { passive: true });
+  const csEnd = () => {
+    if (!cs) return; const { h, dx } = cs; cs = null; if (!h) return;
+    const step = ui.yearView ? 12 : 1, n = ymAdd(ui.ym, dx < 0 ? step : -step);
+    if (Math.abs(dx) < 60 || n > maxYm) return calMove('', '', 'transform .2s ease-out, opacity .2s');
+    calMove(dx < 0 ? '-105%' : '105%', 0, 'transform .16s ease-in, opacity .16s');
+    setTimeout(() => {
+      ui.ym = n; ui.selDay = null; ui.editFx = ui.editIn = null; render();
+      calMove(dx < 0 ? '60%' : '-60%', 0);
+      requestAnimationFrame(() => requestAnimationFrame(() => calMove('', '', 'transform .2s ease-out, opacity .2s')));
+    }, 160);
+  };
+  view.addEventListener('touchend', csEnd, { passive: true });
+  view.addEventListener('touchcancel', csEnd, { passive: true });
   view.addEventListener('input', e => { if (e.target.id === 'qIn') { ui.q = e.target.value; render(); } });
   view.addEventListener('change', e => {
     if (e.target.id === 'closeDt' && e.target.value) { ui.closeDt = e.target.value; return render(); }
