@@ -288,7 +288,35 @@ header.top { display: flex; align-items: center; justify-content: space-between;
 .cal .d[aria-pressed="true"] { background: var(--primary-soft) !important; }
 .cal .d.we, .cal .d.hol { background: var(--we); }
 .cal .d.we.has, .cal .d.hol.has { background: var(--we-has); }
-.cal .d.deh { box-shadow: inset 0 0 0 1.5px #f5c518; }
+.cal .d.deh, .cal .d.deh.has { background: #fbe9a6; }
+.cal .d.lv, .cal .d.lv.has { background: #ffd9b8; }
+.cal .d.deh .n, .cal .d.lv .n { color: #3a2a12; }
+:root[data-theme="dark"] .cal .d.deh, :root[data-theme="dark"] .cal .d.deh.has { background: #4a3d12; }
+:root[data-theme="dark"] .cal .d.lv, :root[data-theme="dark"] .cal .d.lv.has { background: #5a3216; }
+:root[data-theme="dark"] .cal .d.deh .n, :root[data-theme="dark"] .cal .d.lv .n { color: var(--ink); }
+#mLbl { cursor: pointer; }
+.dp-h .dp-i { flex: none; width: 28px; height: 28px; border-radius: 50%; border: 1.5px solid var(--line); background: var(--surface-2); color: var(--muted); font: italic 800 14px Georgia, serif; display: grid; place-items: center; margin-left: auto; }
+.dp-h .dp-i[aria-pressed="true"] { background: #ff9a4d; border-color: #ff9a4d; color: #fff; }
+.dp-hol i.lv { background: #ff9a4d; }
+.yv-h { display: flex; align-items: center; justify-content: space-between; }
+.yv-h b { font-size: 18px; font-weight: 800; }
+.yv-h .icon-btn { box-shadow: none; background: var(--surface-2); width: 32px; height: 32px; }
+.ym-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; }
+.ym-m { border: 0; background: var(--surface-2); border-radius: 12px; padding: 6px 5px 7px; text-align: left; color: var(--ink); min-width: 0; }
+.ym-m.cur { box-shadow: inset 0 0 0 2px var(--primary); }
+.ym-m > b { display: block; font-size: 12px; font-weight: 800; padding: 0 2px 3px; }
+.ym-g { display: grid; grid-template-columns: repeat(7, 1fr); gap: 1px; }
+.ym-g i { font-style: normal; font-size: 7.5px; line-height: 12px; text-align: center; border-radius: 3px; color: var(--ink-2); font-variant-numeric: tabular-nums; }
+.ym-g i.we { color: var(--muted); }
+.ym-g i.trh { box-shadow: inset 0 -2px 0 #e5484d; }
+.ym-g i.deh { background: #fbe9a6; color: #3a2a12; }
+.ym-g i.lv { background: #ffd9b8; color: #3a2a12; }
+.ym-g i.today { background: var(--primary); color: #fff; }
+:root[data-theme="dark"] .ym-g i.deh { background: #4a3d12; color: var(--ink); }
+:root[data-theme="dark"] .ym-g i.lv { background: #5a3216; color: var(--ink); }
+.yv-keys { display: flex; flex-wrap: wrap; gap: 6px 12px; justify-content: center; font-size: 11.5px; color: var(--muted); font-weight: 600; }
+.yv-keys i { display: inline-block; width: 10px; height: 10px; border-radius: 3px; margin-right: 4px; vertical-align: -1px; }
+.yv-keys .k-de { background: #fbe9a6; } .yv-keys .k-lv { background: #ffd9b8; } .yv-keys .k-tr { box-shadow: inset 0 -2px 0 #e5484d; background: var(--surface-2); }
 .cal .sat { position: relative; overflow: visible; }
 .cal .sat::before { content: ''; position: absolute; left: -2.5px; top: 2px; bottom: 2px; width: 1px; background: var(--line); }
 .cal .wd.sat::before { top: 4px; bottom: 4px; }
@@ -1005,7 +1033,7 @@ nav.tabs .tab[aria-current="page"] { color: var(--primary); }
   }
   const save = () => { try { localStorage.setItem(KEY, JSON.stringify(db)); } catch (e) {} };
 
-  const ui = { who: 'all', lastPayer: 'p1', per: '6', from: ymAdd(curYm, -11), acat: 'all', restore: null, tab: 'ozet', ym: curYm, filter: 'all', q: '', aType: 'out', kType: 'out', editFx: null, editIn: null, gotAsk: null, closing: false, closeDt: '', editBudget: false, selDay: null, confirmClear: false, acats: [], fOpen: false, mOpen: false, fCats: [], fWho: [], fNoFx: false, xMonths: [], last: {} };
+  const ui = { who: 'all', lastPayer: 'p1', per: '6', from: ymAdd(curYm, -11), acat: 'all', restore: null, tab: 'ozet', ym: curYm, filter: 'all', q: '', aType: 'out', kType: 'out', editFx: null, editIn: null, gotAsk: null, closing: false, closeDt: '', editBudget: false, selDay: null, confirmClear: false, acats: [], yearView: false, fOpen: false, mOpen: false, fCats: [], fWho: [], fNoFx: false, xMonths: [], last: {} };
   try { const t = localStorage.getItem(KEY + '-tab'); if (t && t !== 'kategori' && t !== 'ayarlar') ui.tab = t; } catch (e) {}
 
   const catOf = (type, id) => db.cats[type].find(c => c.id === id) || { name: 'Silinmiş kategori', ic: 'dots', color: GRAY };
@@ -1444,7 +1472,37 @@ nav.tabs .tab[aria-current="page"] { color: var(--primary); }
     Object.entries(TR_DINI).forEach(([ds, n]) => { if (+ds.slice(0, 4) === y) add(ds, 'tr', n); });
     return (holCache[y] = h);
   }
+  // İzin günleri: db.leave[tarih] = true; iki izin günü arasındaki hafta sonu da izin sayılır
+  const isLeave = ds => {
+    const L = db.leave || {}; if (L[ds]) return true;
+    const [y, m, d] = ds.split('-').map(Number), dt = new Date(y, m - 1, d), wd = dt.getDay();
+    if (wd !== 0 && wd !== 6) return false;
+    const sh = n => { const t = new Date(dt); t.setDate(t.getDate() + n); return iso(t); };
+    return wd === 6 ? !!(L[sh(-1)] && L[sh(2)]) : !!(L[sh(-2)] && L[sh(1)]);
+  };
+  function yearView() {
+    const Y = +ui.ym.slice(0, 4), hol = holidays(Y);
+    let nLeave = 0;
+    const months = AYLAR.map((nm, i) => {
+      const ym = Y + '-' + pad(i + 1), dim = new Date(Y, i + 1, 0).getDate(), lead = (new Date(Y, i, 1).getDay() + 6) % 7;
+      let c = '';
+      for (let k = 0; k < lead; k++) c += '<i></i>';
+      for (let d = 1; d <= dim; d++) {
+        const ds = ym + '-' + pad(d), col = (lead + d - 1) % 7, hd = hol[ds] || [], lv = isLeave(ds);
+        if (lv && col < 5) nLeave++;
+        c += `<i class="${col >= 5 ? 'we' : ''} ${hd.some(x => x.who === 'de') ? 'deh' : ''} ${hd.some(x => x.who === 'tr') ? 'trh' : ''} ${lv ? 'lv' : ''} ${ds === todayIso ? 'today' : ''}">${d}</i>`;
+      }
+      return `<button class="ym-m ${ym === ui.ym ? 'cur' : ''}" data-pickym="${ym}"><b>${nm}</b><div class="ym-g">${c}</div></button>`;
+    }).join('');
+    return `<section class="card calcard">
+      <div class="yv-h"><button class="icon-btn" data-yv="-1" aria-label="Önceki yıl">${svg('left')}</button><b class="num">${Y}</b><button class="icon-btn" data-yv="1" aria-label="Sonraki yıl">${svg('right')}</button></div>
+      <div class="ym-grid">${months}</div>
+      <div class="yv-keys"><span><i class="k-de"></i>Bayern tatili</span><span><i class="k-tr"></i>TR tatili</span><span><i class="k-lv"></i>İzin · ${nLeave} iş günü</span></div>
+      <p class="hint" style="text-align:center">Bir aya dokununca o ay açılır.</p>
+    </section>`;
+  }
   function renderTakvim() {
+    if (ui.yearView) return yearView();
     if (ui.selDay && ymOf(ui.selDay) !== ui.ym) ui.selDay = null;
     const [Y, M] = ui.ym.split('-').map(Number);
     const dim = new Date(Y, M, 0).getDate();
@@ -1466,7 +1524,7 @@ nav.tabs .tab[aria-current="page"] { color: var(--primary); }
       const pin = due.length ? `<i class="pin"></i>` : '';
       const col = (lead + d - 1) % 7, hd = hol[ds] || [];
       const hdots = hd.some(x => x.who === 'tr') ? `<span class="hdots"><i class="tr"></i></span>` : '';
-      cells += `<button class="d ${col >= 5 ? 'we' : ''} ${col === 5 ? 'sat' : ''} ${hd.some(x => x.who === 'de') ? 'deh' : ''} ${hd.some(x => !/yarım/.test(x.name)) ? 'hol' : ''} ${dt.length ? 'has' : ''} ${ds === todayIso ? 'today' : ''} ${ds > todayIso ? 'future' : ''}" data-day="${ds}" aria-pressed="${ds === ui.selDay}" aria-label="${dm(ds)}${hd.length ? ', ' + esc(hd.map(x => x.name).join(', ')) : ''}">${pin}${hdots}<span class="n">${d}</span>${dt.length ? `<small class="${net >= 0 ? 'p' : 'm'}">${net >= 0 ? '+' : '−'}${short(Math.abs(net))}</small>` : ''}</button>`;
+      cells += `<button class="d ${col >= 5 ? 'we' : ''} ${col === 5 ? 'sat' : ''} ${hd.some(x => x.who === 'de') ? 'deh' : ''} ${hd.some(x => !/yarım/.test(x.name)) ? 'hol' : ''} ${isLeave(ds) ? 'lv' : ''} ${dt.length ? 'has' : ''} ${ds === todayIso ? 'today' : ''} ${ds > todayIso ? 'future' : ''}" data-day="${ds}" aria-pressed="${ds === ui.selDay}" aria-label="${dm(ds)}${hd.length ? ', ' + esc(hd.map(x => x.name).join(', ')) : ''}">${pin}${hdots}<span class="n">${d}</span>${dt.length ? `<small class="${net >= 0 ? 'p' : 'm'}">${net >= 0 ? '+' : '−'}${short(Math.abs(net))}</small>` : ''}</button>`;
     }
     const gi = sum(mt, 'in'), gd = sum(mt, 'out');
     let panel = '';
@@ -1476,7 +1534,8 @@ nav.tabs .tab[aria-current="page"] { color: var(--primary); }
       const simple = t => { const c = catOf(t.type, t.cat), p = payerOf(t);
         return `<div class="lrow"><span class="who sm ${p}">${PAYER[p][0]}</span><span class="lc"><b>${esc(t.fx ? 'Sabit' : c.name)}</b>${t.note ? ` · ${esc(t.note)}` : ''}</span><b class="num" style="color:${t.type === 'in' ? 'var(--in-ink)' : t.type === 'inv' ? 'var(--inv)' : 'var(--ink)'}">${t.type === 'out' ? '−' : '+'}${eur(t.amount)}</b></div>`; };
       panel = `<div class="daypanel" role="region" aria-label="${dayLabel(ui.selDay)}">
-        <div class="dp-h"><b>${dayLabel(ui.selDay)}</b>${dt.length ? `<small class="num">Gelir <b style="color:var(--in-ink)">${eur(sum(dt, 'in'))}</b> · Gider <b>${eur(sum(dt, 'out'))}</b></small>` : ''}</div>
+        <div class="dp-h"><b>${dayLabel(ui.selDay)}</b>${dt.length ? `<small class="num">Gelir <b style="color:var(--in-ink)">${eur(sum(dt, 'in'))}</b> · Gider <b>${eur(sum(dt, 'out'))}</b></small>` : '<span></span>'}<button class="dp-i" data-leave="${ui.selDay}" aria-pressed="${!!(db.leave || {})[ui.selDay]}" aria-label="İzinli gün olarak işaretle" title="İzinli">i</button></div>
+        ${isLeave(ui.selDay) ? `<div class="dp-hol"><i class="lv"></i>${(db.leave || {})[ui.selDay] ? 'İzinli gün' : 'İki izin günü arasındaki hafta sonu'}</div>` : ''}
         ${(holidays(+ui.selDay.slice(0, 4))[ui.selDay] || []).map(x => `<div class="dp-hol"><i class="${x.who}"></i>${x.who === 'de' ? 'Almanya (Bayern)' : 'Türkiye'}: ${esc(x.name)}</div>`).join('')}
         <div class="dp-list">${dt.length ? dt.map(t => t.fx || t.fi ? simple(t) : rowHtml(t)).join('') : ''}
         ${plan.length ? plan.map(x => `<div class="lrow"><span class="who sm ${payerOf(x.f)}">${PAYER[payerOf(x.f)][0]}</span><span class="lc"><b>${esc(x.f.name)}</b> · planlı</span><b class="num" style="color:var(--muted)">${eur(x.st.amount)}</b></div>`).join('') : ''}
@@ -1921,6 +1980,9 @@ nav.tabs .tab[aria-current="page"] { color: var(--primary); }
       if (el.dataset.restore === 'no' || !obj) return render();
       return withUndo('Yedek yüklendi', () => { db = privacyMig(migratePlan(migrateIncome(migrateFixed(bakeryNextToMarket(addBakery(migrateCats(ensureIncome(obj)))))))); });
     }
+    if ((el = T('[data-leave]'))) { const d = el.dataset.leave; db.leave = db.leave || {}; if (db.leave[d]) delete db.leave[d]; else db.leave[d] = true; save(); return render(); }
+    if ((el = T('[data-pickym]'))) { ui.ym = el.dataset.pickym; ui.yearView = false; ui.selDay = null; return render(); }
+    if ((el = T('[data-yv]'))) { const n = ymAdd(ui.ym, 12 * +el.dataset.yv); if (n <= maxYm) ui.ym = n; return render(); }
     if ((el = T('[data-day]'))) { ui.selDay = ui.selDay === el.dataset.day ? null : el.dataset.day; return render(); }
     if ((el = T('[data-edit]'))) { const t = db.tx.find(x => x.id === el.dataset.edit); if (t) openSheet({ tx: t }); return; }
     if ((el = T('[data-fxrow]'))) { const id = el.dataset.fxrow; setTab('ozet'); ui.editFx = id; render(); const fc = $('#fixedCard'); if (fc) fc.scrollIntoView({ block: 'center' }); return; }
@@ -1953,6 +2015,24 @@ nav.tabs .tab[aria-current="page"] { color: var(--primary); }
   view.addEventListener('pointercancel', swEnd);
   view.addEventListener('click', e => { if (swMoved) { swMoved = false; e.stopImmediatePropagation(); e.preventDefault(); } }, true);
 
+  // Takvim: panel dışına dokununca kapanır
+  document.addEventListener('click', e => {
+    if (ui.tab !== 'takvim' || !ui.selDay) return;
+    if (e.target.closest('.daypanel, [data-day], .sheet, #mPrev, #mNext')) return;
+    ui.selDay = null; render();
+  });
+  // Ay adına dokununca yıl görünümü
+  $('#mLbl').addEventListener('click', () => { if (ui.tab !== 'takvim') return; ui.yearView = !ui.yearView; ui.selDay = null; render(); });
+  // Takvimde sola kaydır: sonraki ay, sağa kaydır: önceki ay
+  let cs = null;
+  view.addEventListener('touchstart', e => { if (ui.tab !== 'takvim' || !e.target.closest('.calcard')) return; const t = e.touches[0]; cs = { x: t.clientX, y: t.clientY }; }, { passive: true });
+  view.addEventListener('touchend', e => {
+    if (!cs) return; const t = e.changedTouches[0], dx = t.clientX - cs.x, dy = t.clientY - cs.y; cs = null;
+    if (Math.abs(dx) < 50 || Math.abs(dx) < Math.abs(dy) * 1.5) return;
+    const step = ui.yearView ? 12 : 1, n = ymAdd(ui.ym, dx < 0 ? step : -step);
+    if (n > maxYm) return;
+    ui.ym = n; ui.selDay = null; ui.editFx = ui.editIn = null; render();
+  }, { passive: true });
   view.addEventListener('input', e => { if (e.target.id === 'qIn') { ui.q = e.target.value; render(); } });
   view.addEventListener('change', e => {
     if (e.target.id === 'closeDt' && e.target.value) { ui.closeDt = e.target.value; return render(); }
