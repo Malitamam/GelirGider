@@ -1453,7 +1453,7 @@ nav.tabs .tab[aria-current="page"] { color: var(--primary); }
       <label class="fld">İlk taksit ayı<input id="krFirst" type="month" required value="${l.first}"></label>
       <label class="fld">Ödeme günü<input id="krDay" type="number" min="1" max="31" value="${l.day}"></label>
       <label class="fld">Ücretsiz erken ödeme (%)<input id="krFree" inputmode="decimal" value="${v(l.freePct)}"></label>
-      <label class="fld">Erken kapatma ücreti (%)<input id="krFee" inputmode="decimal" value="${v(l.fee)}"></label>
+      <label class="fld">Erken kapatma ücreti (%, son yıl yarısı)<input id="krFee" inputmode="decimal" value="${v(l.fee)}"></label>
       <div class="btns"><button class="btn">${n ? 'Ekle' : 'Kaydet'}</button><button type="button" class="btn ghost" data-krcancel>Vazgeç</button>${n ? '' : `<button type="button" class="btn danger" data-krdel="${l.id}">Sil</button>`}</div>
     </form>`;
   }
@@ -1464,12 +1464,14 @@ nav.tabs .tab[aria-current="page"] { color: var(--primary); }
     const totFz = S(rows, 'fz');
     // Erken kapatma: k. taksitten sonra kalan borç + ücret (ücretsiz pay hariç)
     const n = rows.length, at = Math.min(Math.max(1, krUi.at), n - 1 || 1);
-    const close = k => { const r = rows[k - 1], fz0 = S(rows.slice(0, k), 'fz'), feeBase = r.bal * (1 - (l.freePct || 0) / 100), fee = feeBase * (l.fee || 0) / 100; return { r, fee, pay: r.bal + fee, cost: fz0 + fee, save: totFz - fz0 - fee }; };
+    // Sözleşme kuralı: ücretsiz pay ancak 12. taksitten sonra; kalan süre 1 yıldan uzunsa ücret %fee, değilse yarısı
+    const freeAt = k => k >= 12 ? (l.freePct || 0) / 100 : 0, feeAt = k => (l.fee || 0) / 100 * (rows.length - k > 12 ? 1 : 0.5);
+    const close = k => { const r = rows[k - 1], fz0 = S(rows.slice(0, k), 'fz'), feeBase = r.bal * (1 - freeAt(k)), fee = feeBase * feeAt(k); return { r, fee, pay: r.bal + fee, cost: fz0 + fee, save: totFz - fz0 - fee }; };
     const c = close(at);
     // Ara ödeme: seçilen ayda X € ödenirse (ücretsiz pay aşılırsa ücret) — A) taksit aynı, vade kısalır  B) vade aynı, taksit düşer
     const left = n - at, futFz = S(rows.slice(at), 'fz');
     const ex = Math.min(c.r.bal, krUi.extra > 0 ? krUi.extra : Math.round(c.r.bal / 2));
-    const exFee = Math.max(0, ex - c.r.bal * (l.freePct || 0) / 100) * (l.fee || 0) / 100;
+    const exFee = Math.max(0, ex - c.r.bal * freeAt(at)) * feeAt(at);
     const nb = c.r.bal - ex;
     const optA = (() => { let b = nb, m = 0, fz = 0; while (b > 0.005 && m < 600) { const f = b * P.i; fz += f; b = b + f - P.inst; m++; } return { m, save: futFz - fz - exFee }; })();
     const newInst = left > 0 && nb > 0 ? annuity(nb, P.i, left) : 0, optB = { inst: newInst, save: futFz - (newInst * left - nb) - exFee };
@@ -1484,7 +1486,7 @@ nav.tabs .tab[aria-current="page"] { color: var(--primary); }
     return `<div class="kr-det">
       <div class="kr-dh"><button class="link" data-kropen="">‹ Kredilerim</button><button class="link" data-krform="${l.id}">Düzenle</button></div>
       <h4>${esc(l.name)}</h4>
-      <small class="kr-sub num">${eur(l.amount)} · ${rows.length} ay · taksit ${money(P.inst)} · efektif %${P.eff.toFixed(2).replace('.', ',')}</small>
+      <small class="kr-sub num">${eur(l.amount)} · ${rows.length} ay · taksit ${money(P.inst)} · efektif %${(l.inst > 0 && l.rate > 0 ? l.rate : P.eff).toFixed(2).replace('.', ',')} · toplam faiz ${money(S(rows, 'fz'))}</small>
       ${late.length ? `<div class="kr-late">${late.length} taksit ödenmedi görünüyor: ${late.map(r => AY_K[+r.ym.slice(5) - 1] + ' ' + r.ym.slice(2, 4)).join(', ')}</div>` : ''}
       <div class="stats"><div><span>Ödenen</span><b class="num">${eur(S(paid, 'pay'))}</b><small>${paid.length}/${rows.length} taksit</small></div><div><span>Kalan borç</span><b class="num">${eur(last)}</b><small>anapara</small></div><div><span>Kalan faiz</span><b class="num">${eur(totFz - S(paid, 'fz'))}</b><small>toplam ${eur(totFz)}</small></div></div>
       <div class="kr-sum"><span>Şimdiye kadar ödenen</span><span>Anapara <b class="num">${money(S(paid, 'ap'))}</b></span><span>Faiz <b class="num">${money(S(paid, 'fz'))}</b></span></div>
@@ -1495,7 +1497,7 @@ nav.tabs .tab[aria-current="page"] { color: var(--primary); }
         <div class="kr-opts one">
           <div><span>Tamamını kapat</span><b class="num">${money(c.pay)}</b><small>ücret ${money(c.fee)} · kazanç ${money(c.save)}</small></div>
         </div>
-        <div class="kr-extra"><label class="fld">Ara ödeme tutarı (€) <small>%${l.freePct || 0}'ye kadar ücretsiz</small><input id="krExtra" inputmode="decimal" value="${String(Math.round(ex * 100) / 100).replace('.', ',')}"></label>
+        <div class="kr-extra"><label class="fld">Ara ödeme tutarı (€) <small>${freeAt(at) ? `kalan borcun %${l.freePct}'sine kadar ücretsiz` : 'ücretsiz pay 12. taksitten sonra açılır'} · ücret %${String(Math.round(feeAt(at) * 1000) / 10).replace('.', ',')}</small><input id="krExtra" inputmode="decimal" value="${String(Math.round(ex * 100) / 100).replace('.', ',')}"></label>
           <div class="kr-opts">
             <div><span>Taksit aynı kalsın</span><b class="num">${optA.m} ay</b><small>${left} ay yerine · kazanç ${money(optA.save)}</small></div>
             <div><span>Vade aynı kalsın</span><b class="num">${money(optB.inst)}/ay</b><small>${money(P.inst)} yerine · kazanç ${money(optB.save)}</small></div>
