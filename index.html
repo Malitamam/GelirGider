@@ -1560,7 +1560,7 @@ nav.tabs .tab[aria-current="page"] { color: var(--primary); }
       if (!l.name || !(l.amount > 0) || !(l.months >= 1) || !l.first) return toast('Ad, tutar, vade ve ilk taksit ayı gerekli');
       if (!l.inst && !l.rate) return toast('Taksit ya da faiz oranından birini yaz');
       db.loans = db.loans || []; const id = e.target.dataset.id;
-      if (id) Object.assign(db.loans.find(x => x.id === id), l); else { l.id = 'kr' + Date.now(); l.paid = {}; db.loans.push(l); krUi.open = l.id; }
+      if (id) Object.assign(db.loans.find(x => x.id === id), l); else { l.id = 'kr' + Date.now().toString(36) + Math.random().toString(36).slice(2, 6); l.paid = {}; db.loans.push(l); krUi.open = l.id; }
       krUi.form = null; save(); redraw(); toast(id ? 'Kaydedildi' : 'Kredi eklendi');
     };
     draw(false);
