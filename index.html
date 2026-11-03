@@ -414,6 +414,39 @@ nav.tabs .tab[aria-current="page"] span.pi { background: var(--primary-soft); }
 .hb-bar i { display: block; height: 100%; border-radius: 6px; }
 .hb-row b { text-align: right; font-weight: 800; }
 .hb-row em { text-align: right; font-style: normal; color: var(--muted); font-size: 12px; font-weight: 700; }
+.hero .krb { position: absolute; z-index: 2; top: 58px; right: 58px; width: 36px; height: 36px; box-shadow: none; background: var(--surface-2); color: var(--ink-2); font-size: 15px; font-weight: 800; }
+.hero .krb.alert::after { content: ''; position: absolute; top: 1px; right: 1px; width: 10px; height: 10px; border-radius: 50%; background: #e5484d; border: 2px solid var(--surface); }
+.kr-form { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; background: var(--surface-2); border-radius: 16px; padding: 12px; }
+.kr-form .full, .kr-form .btns, #krSimForm .btn { grid-column: 1 / -1; }
+#krSimForm { grid-template-columns: 1fr 1fr 1fr; }
+.kr-form .btns { display: flex; gap: 8px; } .kr-form .btns .danger { margin-left: auto; }
+.kr-form select { border: 1px solid var(--line); background: var(--surface); border-radius: 12px; padding: 10px 12px; font-size: 15px; color: var(--ink); width: 100%; font-weight: 500; }
+.kr-card { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 4px 10px; text-align: left; border: 0; background: var(--surface-2); border-radius: 16px; padding: 12px 14px; color: var(--ink); width: 100%; }
+.kr-card b { font-weight: 800; } .kr-card small { display: block; color: var(--muted); font-size: 12px; } .kr-card .r { text-align: right; }
+.kr-card .bar { grid-column: 1 / -1; height: 6px; border-radius: 4px; background: var(--surface); overflow: hidden; } .kr-card .bar i { display: block; height: 100%; background: var(--in); }
+.kr-card.late { box-shadow: inset 0 0 0 1.5px #e5484d; } .kr-card.late small { color: #e5484d; }
+.kr-det { display: flex; flex-direction: column; gap: 10px; }
+.kr-dh { display: flex; justify-content: space-between; } .kr-det h4 { margin: 0; font-size: 18px; font-weight: 800; } .kr-sub { color: var(--muted); font-size: 12.5px; margin-top: -6px; }
+.kr-late { background: #fde8e8; color: #b42318; border-radius: 12px; padding: 8px 12px; font-size: 13px; font-weight: 700; }
+:root[data-theme="dark"] .kr-late { background: #3a1a1a; color: #ff8a80; }
+.kr-det .stats small { display: block; font-size: 11px; color: var(--muted); }
+.kr-sum { display: flex; justify-content: space-between; gap: 8px; font-size: 12.5px; color: var(--muted); padding: 0 4px; flex-wrap: wrap; } .kr-sum b { color: var(--ink); }
+.kr-box { background: var(--surface-2); border-radius: 16px; padding: 12px; display: flex; flex-direction: column; gap: 8px; }
+.kr-box input[type=range] { width: 100%; accent-color: var(--primary); }
+.kr-box svg { width: 100%; height: auto; } .kr-box svg text { font-size: 9.5px; fill: var(--muted); }
+.kr-at { font-size: 13px; font-weight: 700; text-align: center; }
+.kr-opts { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+.kr-opts div { background: var(--surface); border-radius: 12px; padding: 9px 10px; min-width: 0; } .kr-opts span { display: block; font-size: 11.5px; color: var(--muted); font-weight: 600; } .kr-opts b { display: block; font-size: 16px; font-weight: 800; } .kr-opts small { display: block; font-size: 11px; color: var(--muted); }
+.kr-tab, .kr-cmp { display: flex; flex-direction: column; font-size: 12px; }
+.kr-tab > div { display: grid; grid-template-columns: 20px 44px repeat(4, minmax(0, 1fr)) 24px; gap: 4px; align-items: center; padding: 5px 0; border-top: 1px solid var(--line); }
+.kr-tab > div > span:nth-child(n+3) { text-align: right; }
+.kr-tab .h, .kr-cmp .h { border: 0; color: var(--muted); font-size: 10.5px; font-weight: 700; }
+.kr-tab .paid { color: var(--muted); } .kr-tab .late { color: #e5484d; font-weight: 700; } .kr-tab .t { font-weight: 800; }
+.kr-tab i { font-style: normal; text-align: center; font-weight: 800; } .kr-tab .paid i { color: var(--in-ink); }
+.kr-tick { width: 22px; height: 22px; border-radius: 6px; border: 1.5px solid var(--line); background: var(--surface); color: var(--in-ink); font-weight: 800; font-size: 12px; padding: 0; }
+.kr-tick[aria-pressed="true"] { background: var(--in-soft, #dcfce7); border-color: transparent; } .kr-tab .late .kr-tick { border-color: #e5484d; color: #e5484d; }
+.kr-cmp > div { display: grid; grid-template-columns: 48px repeat(3, minmax(0, 1fr)); gap: 6px; padding: 6px 4px; border-top: 1px solid var(--line); } .kr-cmp > div > span:not(:first-child) { text-align: right; }
+.kr-cmp .on { background: var(--primary-soft); border-radius: 8px; font-weight: 800; }
 .tr-add { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 6px; }
 .tr-add .sp { justify-content: center; padding: 7px 4px; white-space: nowrap; }
 .tr-add .sp b { font-weight: 800; }
@@ -1170,6 +1203,7 @@ nav.tabs .tab[aria-current="page"] { color: var(--primary); }
     html += `<section class="card hero">
       ${isC || ui.ym <= curYm ? `<button class="icon-btn pw ${isC ? 'on' : ''}" data-pw aria-label="${pwL}" title="${pwL}">${svg('power')}</button>` : ''}
       <button class="icon-btn trb" data-transfers aria-label="Transferler" title="Transferler">⇄</button>
+      <button class="icon-btn krb ${loansLate() ? 'alert' : ''}" data-kredi aria-label="Krediler${loansLate() ? ' (ödenmemiş taksit var)' : ''}" title="Krediler">K</button>
       <div>
         <div class="lbl">${mName} ayında kalan</div>
         <div class="big num ${net < 0 ? 'neg' : ''}">${net < 0 ? '−' : ''}${eur(Math.abs(net))}</div>
@@ -1363,6 +1397,171 @@ nav.tabs .tab[aria-current="page"] { color: var(--primary); }
       db.transfers = db.transfers || [];
       db.transfers.push({ id: 'tr' + Date.now(), ts: Date.now(), date: d, dir, amount: v, note: root.querySelector('#trNote').value.trim() });
       trUi.add = null; trUi.open = ymOf(d); save(); draw(true); toast(TRD[dir][0] + ' ' + money(v) + ' kaydedildi');
+    };
+    draw(false);
+  }
+
+  /* ---------- Krediler ---------- */
+  // Kredi bilgileri sadece telefonda (db.loans). Taksit verildiyse aylık faiz taksitten çözülür.
+  const krUi = { tab: 'my', open: null, form: null, view: 'm', at: 12, sim: { a: 20000, r: 6.9, n: 48 } };
+  const annuity = (P, i, n) => i ? P * i / (1 - Math.pow(1 + i, -n)) : P / n;
+  function loanRate(l) {
+    if (l.inst > 0) {
+      if (l.inst * l.months <= l.amount) return 0;
+      let lo = 0, hi = 0.1;
+      for (let k = 0; k < 80; k++) { const m = (lo + hi) / 2; if (annuity(l.amount, m, l.months) > l.inst) hi = m; else lo = m; }
+      return (lo + hi) / 2;
+    }
+    return l.rate ? Math.pow(1 + l.rate / 100, 1 / 12) - 1 : 0;
+  }
+  function loanPlan(l) {
+    const i = loanRate(l), inst = l.inst > 0 ? l.inst : Math.round(annuity(l.amount, i, l.months) * 100) / 100;
+    let bal = l.amount; const rows = [];
+    for (let k = 1; k <= l.months && bal > 0.005; k++) {
+      const ym = ymAdd(l.first, k - 1), fz = Math.round(bal * i * 100) / 100;
+      let ap = Math.round((inst - fz) * 100) / 100; if (k === l.months || ap > bal) ap = Math.round(bal * 100) / 100;
+      bal = Math.round((bal - ap) * 100) / 100;
+      rows.push({ k, ym, pay: Math.round((ap + fz) * 100) / 100, fz, ap, bal, st: loanSt(l, ym) });
+    }
+    return { i, inst, eff: (Math.pow(1 + i, 12) - 1) * 100, rows };
+  }
+  function loanSt(l, ym) {
+    const f = l.fx && db.fixed.find(x => x.id === l.fx);
+    if (f) { const st = fixedState(f, ym); if (st) return st.status === 'paid' || st.status === 'auto' ? 'paid' : st.status; }
+    if ((l.paid || {})[ym]) return 'paid';
+    const [Y, M] = ym.split('-').map(Number), due = ym + '-' + pad(Math.min(l.day || 1, new Date(Y, M, 0).getDate()));
+    return due < todayIso ? 'late' : 'wait';
+  }
+  const loansLate = () => (db.loans || []).some(l => loanPlan(l).rows.some(r => r.st === 'late'));
+  function krForm(l) {
+    const n = !l; l = l || { name: '', amount: '', months: '', inst: '', rate: '', first: ymAdd(curYm, 1), day: 1, fx: '', freePct: 50, fee: 1 };
+    const fxOpt = db.fixed.filter(f => !f.end || f.end >= curYm);
+    const v = x => x === '' || x == null ? '' : String(x).replace('.', ',');
+    return `<form class="kr-form" id="krForm" data-id="${n ? '' : l.id}">
+      <label class="fld full">Ad<input id="krName" maxlength="30" required placeholder="ör. Araba kredisi" value="${esc(l.name)}"></label>
+      <label class="fld full">Sabit giderle bağla<select id="krFx"><option value="">Bağlama (✓ burada konur)</option>${fxOpt.map(f => `<option value="${f.id}" ${l.fx === f.id ? 'selected' : ''}>${esc(f.name)} · ${eur(f.amount)}</option>`).join('')}</select></label>
+      <label class="fld">Kredi tutarı (€)<input id="krAmt" inputmode="decimal" required value="${v(l.amount)}"></label>
+      <label class="fld">Vade (ay)<input id="krN" type="number" min="1" max="480" required value="${l.months}"></label>
+      <label class="fld">Taksit (€)<input id="krInst" inputmode="decimal" placeholder="boşsa hesaplanır" value="${v(l.inst)}"></label>
+      <label class="fld">Efektif faiz (%)<input id="krRate" inputmode="decimal" placeholder="taksit yoksa" value="${v(l.rate)}"></label>
+      <label class="fld">İlk taksit ayı<input id="krFirst" type="month" required value="${l.first}"></label>
+      <label class="fld">Ödeme günü<input id="krDay" type="number" min="1" max="31" value="${l.day}"></label>
+      <label class="fld">Ücretsiz erken ödeme (%)<input id="krFree" inputmode="decimal" value="${v(l.freePct)}"></label>
+      <label class="fld">Erken kapatma ücreti (%)<input id="krFee" inputmode="decimal" value="${v(l.fee)}"></label>
+      <div class="btns"><button class="btn">${n ? 'Ekle' : 'Kaydet'}</button><button type="button" class="btn ghost" data-krcancel>Vazgeç</button>${n ? '' : `<button type="button" class="btn danger" data-krdel="${l.id}">Sil</button>`}</div>
+    </form>`;
+  }
+  function krDetail(l) {
+    const P = loanPlan(l), rows = P.rows, paid = rows.filter(r => r.st === 'paid'), late = rows.filter(r => r.st === 'late');
+    const S = (a, k) => a.reduce((x, r) => x + r[k], 0);
+    const last = paid.length ? paid[paid.length - 1].bal : l.amount;
+    const totFz = S(rows, 'fz');
+    // Erken kapatma: k. taksitten sonra kalan borç + ücret (ücretsiz pay hariç)
+    const n = rows.length, at = Math.min(Math.max(1, krUi.at), n - 1 || 1);
+    const close = k => { const r = rows[k - 1], fz0 = S(rows.slice(0, k), 'fz'), feeBase = r.bal * (1 - (l.freePct || 0) / 100), fee = feeBase * (l.fee || 0) / 100; return { r, fee, pay: r.bal + fee, cost: fz0 + fee, save: totFz - fz0 - fee }; };
+    const c = close(at);
+    // Yarısını öde: kalan borcun yarısı (ücretsiz pay içinde) ödenirse aynı taksitle kaç ay kalır
+    const half = (() => { let b = c.r.bal / 2, m = 0, fz = 0; while (b > 0.005 && m < 600) { const f = b * P.i; fz += f; b = b + f - P.inst; m++; } return { m, fz, save: S(rows.slice(at), 'fz') - fz }; })();
+    const W = 340, H = 120, L = 6, T = 10, B = 18, ch = H - T - B, sl = (W - 2 * L) / Math.max(1, n - 1);
+    const pts = []; for (let k = 1; k < n; k++) pts.push([k, close(k).cost]);
+    const mx = Math.max(totFz, ...pts.map(p => p[1])) || 1, Y = v => T + ch - v / mx * ch, X = k => L + (k - 1) * sl;
+    let g = `<line x1="${L}" x2="${W - L}" y1="${Y(totFz)}" y2="${Y(totFz)}" stroke="var(--muted)" stroke-dasharray="3 3"/><text x="${W - L}" y="${Y(totFz) - 3}" text-anchor="end">sonuna kadar ${short(totFz)}</text>`;
+    g += `<polyline fill="none" stroke="var(--primary)" stroke-width="2" points="${pts.map(([k, v]) => X(k) + ',' + Y(v)).join(' ')}"/>`;
+    g += `<circle cx="${X(at)}" cy="${Y(c.cost)}" r="4.5" fill="var(--primary)" stroke="var(--surface)" stroke-width="2"/>`;
+    [1, Math.ceil(n / 2), n - 1].forEach(k => g += `<text x="${X(k)}" y="${H - 4}" text-anchor="${k === 1 ? 'start' : k === n - 1 ? 'end' : 'middle'}">${AY_K[+rows[k - 1].ym.slice(5) - 1]} ${rows[k - 1].ym.slice(2, 4)}</text>`);
+    const cum = krUi.view === 'c'; let cf = 0, ca = 0;
+    return `<div class="kr-det">
+      <div class="kr-dh"><button class="link" data-kropen="">‹ Kredilerim</button><button class="link" data-krform="${l.id}">Düzenle</button></div>
+      <h4>${esc(l.name)}</h4>
+      <small class="kr-sub num">${eur(l.amount)} · ${rows.length} ay · taksit ${money(P.inst)} · efektif %${P.eff.toFixed(2).replace('.', ',')}</small>
+      ${late.length ? `<div class="kr-late">${late.length} taksit ödenmedi görünüyor: ${late.map(r => AY_K[+r.ym.slice(5) - 1] + ' ' + r.ym.slice(2, 4)).join(', ')}</div>` : ''}
+      <div class="stats"><div><span>Ödenen</span><b class="num">${eur(S(paid, 'pay'))}</b><small>${paid.length}/${rows.length} taksit</small></div><div><span>Kalan borç</span><b class="num">${eur(last)}</b><small>anapara</small></div><div><span>Kalan faiz</span><b class="num">${eur(totFz - S(paid, 'fz'))}</b><small>toplam ${eur(totFz)}</small></div></div>
+      <div class="kr-sum"><span>Şimdiye kadar ödenen</span><span>Anapara <b class="num">${money(S(paid, 'ap'))}</b></span><span>Faiz <b class="num">${money(S(paid, 'fz'))}</b></span></div>
+      <section class="kr-box"><b>Erken kapatma</b>
+        <input type="range" id="krAt" min="1" max="${Math.max(1, n - 1)}" value="${at}" aria-label="Kaçıncı taksitten sonra">
+        <div class="kr-at num">${at}. taksitten sonra · ${AYLAR[+c.r.ym.slice(5) - 1]} ${c.r.ym.slice(0, 4)}</div>
+        <svg viewBox="0 0 ${W} ${H}" role="img" aria-label="Kapatma ayına göre toplam faiz">${g}</svg>
+        <div class="kr-opts">
+          <div><span>Tamamını kapat</span><b class="num">${money(c.pay)}</b><small>ücret ${money(c.fee)} · kazanç ${money(c.save)}</small></div>
+          <div><span>Yarısını öde (%${l.freePct || 0} ücretsiz)</span><b class="num">${money(c.r.bal / 2)}</b><small>${half.m} ay kalır (${rows.length - at} yerine) · kazanç ${money(half.save)}</small></div>
+        </div>
+        <p class="hint">Çizgi: o ay kapatırsan toplam ödeyeceğin faiz + ücret. Kesikli çizgi: krediyi sonuna kadar ödersen.</p>
+      </section>
+      <div class="seg" style="--n:2"><button data-krview="m" aria-pressed="${!cum}">Aylık</button><button data-krview="c" aria-pressed="${cum}">Kümülatif</button></div>
+      <div class="kr-tab"><div class="h"><span>#</span><span>Ay</span><span>Taksit</span><span>Faiz</span><span>Anapara</span><span>Kalan</span><span></span></div>
+        ${rows.map(r => { cf += r.fz; ca += r.ap; return `<div class="${r.st}"><span>${r.k}</span><span>${AY_K[+r.ym.slice(5) - 1]} ${r.ym.slice(2, 4)}</span><span class="num">${short(cum ? cf + ca : r.pay)}</span><span class="num">${short(cum ? cf : r.fz)}</span><span class="num">${short(cum ? ca : r.ap)}</span><span class="num">${short(r.bal)}</span>${l.fx ? `<i>${r.st === 'paid' ? '✓' : r.st === 'late' ? '!' : ''}</i>` : `<button class="kr-tick" data-krtick="${r.ym}" aria-pressed="${r.st === 'paid'}" aria-label="${r.k}. taksit ödendi">${r.st === 'paid' ? '✓' : r.st === 'late' ? '!' : ''}</button>`}</div>`; }).join('')}
+        <div class="t"><span></span><span>Toplam</span><span class="num">${short(S(rows, 'pay'))}</span><span class="num">${short(totFz)}</span><span class="num">${short(S(rows, 'ap'))}</span><span></span><span></span></div>
+      </div>
+      <p class="hint">${l.fx ? 'Ödendi işaretleri bağlı sabit giderden gelir. Sabit gideri “Ben ödüyorum” yaparsan ödemediğin taksit kırmızı görünür.' : 'Ödediğin taksitin sağındaki kutuya dokun. Günü geçen ve işaretlenmeyen taksit kırmızı olur.'}</p>
+    </div>`;
+  }
+  function krSim() {
+    const s = krUi.sim, i = Math.pow(1 + s.r / 100, 1 / 12) - 1, inst = annuity(s.a, i, s.n), tf = inst * s.n - s.a;
+    const v = x => String(x).replace('.', ',');
+    return `<form class="kr-form" id="krSimForm">
+      <label class="fld">Tutar (€)<input id="ksA" inputmode="decimal" value="${v(s.a)}"></label>
+      <label class="fld">Efektif faiz (%)<input id="ksR" inputmode="decimal" value="${v(s.r)}"></label>
+      <label class="fld">Vade (ay)<input id="ksN" type="number" min="1" max="480" value="${s.n}"></label>
+      <button class="btn">Hesapla</button>
+    </form>
+    <div class="stats"><div><span>Aylık taksit</span><b class="num">${money(inst)}</b></div><div><span>Toplam faiz</span><b class="num">${eur(tf)}</b></div><div><span>Aylık faiz maliyeti</span><b class="num">${money(tf / s.n)}</b></div></div>
+    <div class="kr-cmp"><div class="h"><span>Vade</span><span>Taksit</span><span>Toplam faiz</span><span>Aylık maliyet</span></div>
+      ${[12, 24, 36, 48, 60, 72, 84].map(n => { const t = annuity(s.a, i, n), f = t * n - s.a; return `<div class="${n === s.n ? 'on' : ''}"><span>${n} ay</span><span class="num">${money(t)}</span><span class="num">${eur(f)}</span><span class="num">${money(f / n)}</span></div>`; }).join('')}
+    </div>
+    <button class="btn ghost" data-krsave>Bu krediyi Kredilerim'e ekle</button>`;
+  }
+  function openKredi() {
+    const root = $('#listRoot');
+    const draw = keep => {
+      const old = root.querySelector('.lsheet'), sc = old ? old.scrollTop : 0;
+      const loans = db.loans || [], l = loans.find(x => x.id === krUi.open);
+      let body;
+      if (krUi.tab === 'sim') body = krSim();
+      else if (krUi.form) body = krForm(krUi.form === 'new' ? null : loans.find(x => x.id === krUi.form));
+      else if (l) body = krDetail(l);
+      else body = `${loans.length ? loans.map(x => { const P = loanPlan(x), pd = P.rows.filter(r => r.st === 'paid'), lt = P.rows.some(r => r.st === 'late'), bal = pd.length ? pd[pd.length - 1].bal : x.amount;
+          return `<button class="kr-card ${lt ? 'late' : ''}" data-kropen="${x.id}"><div><b>${esc(x.name)}</b><small class="num">${pd.length}/${P.rows.length} taksit · ${money(P.inst)}/ay${lt ? ' · ödenmemiş taksit var' : ''}</small></div><div class="r"><b class="num">${eur(bal)}</b><small>kalan borç</small></div><div class="bar"><i style="width:${Math.round(pd.length / P.rows.length * 100)}%"></i></div></button>`; }).join('')
+        : '<div class="empty">Henüz kredi yok. Aşağıdan ekle.</div>'}
+        <button class="btn ghost" data-krform="new">+ Kredi ekle</button>`;
+      root.innerHTML = `<div class="scrim" data-lclose></div>
+        <div class="sheet${keep ? '' : ' anim'} lsheet" role="dialog" aria-label="Krediler">
+          <div class="sheet-h"><h3>Krediler</h3><button class="icon-btn" data-lclose aria-label="Kapat">${svg('x')}</button></div>
+          <div class="seg" style="--n:2"><button data-krtab="my" aria-pressed="${krUi.tab === 'my'}">Kredilerim</button><button data-krtab="sim" aria-pressed="${krUi.tab === 'sim'}">Simülatör</button></div>
+          ${body}
+        </div>`;
+      if (keep) root.querySelector('.lsheet').scrollTop = sc;
+    };
+    const redraw = () => { draw(true); render(); };
+    root.onclick = e => {
+      const T = q => e.target.closest(q); let el;
+      if (T('[data-lclose]')) { root.innerHTML = ''; root.onclick = root.onsubmit = root.oninput = root.onchange = null; return; }
+      if ((el = T('[data-krtab]'))) { krUi.tab = el.dataset.krtab; krUi.form = null; return draw(true); }
+      if ((el = T('[data-kropen]'))) { krUi.open = el.dataset.kropen || null; krUi.form = null; const l = (db.loans || []).find(x => x.id === krUi.open); if (l) { const pd = loanPlan(l).rows.filter(r => r.st === 'paid').length; krUi.at = Math.max(1, pd || 12); } draw(true); root.querySelector('.lsheet').scrollTop = 0; return; }
+      if ((el = T('[data-krform]'))) { krUi.form = el.dataset.krform; return draw(true); }
+      if (T('[data-krcancel]')) { krUi.form = null; return draw(true); }
+      if ((el = T('[data-krdel]'))) { const id = el.dataset.krdel, prev = db.loans.slice(); db.loans = db.loans.filter(x => x.id !== id); krUi.form = krUi.open = null; save(); redraw(); return toast('Kredi silindi', () => { db.loans = prev; save(); redraw(); }); }
+      if ((el = T('[data-krview]'))) { krUi.view = el.dataset.krview; return draw(true); }
+      if ((el = T('[data-krtick]'))) { const l = db.loans.find(x => x.id === krUi.open), ym = el.dataset.krtick; l.paid = l.paid || {}; if (l.paid[ym]) delete l.paid[ym]; else l.paid[ym] = todayIso; save(); return redraw(); }
+      if (T('[data-krsave]')) { const s = krUi.sim; krUi.tab = 'my'; krUi.form = 'new'; draw(true); root.querySelector('#krAmt').value = String(s.a).replace('.', ','); root.querySelector('#krN').value = s.n; root.querySelector('#krRate').value = String(s.r).replace('.', ','); return; }
+    };
+    root.oninput = e => { if (e.target.id === 'krAt') { const old = e.target; krUi.at = +old.value; draw(true); const nr = root.querySelector('#krAt'); if (nr) nr.replaceWith(old); } };
+    root.onchange = e => {
+      if (e.target.id !== 'krFx' || !e.target.value) return;
+      const f = db.fixed.find(x => x.id === e.target.value), q = s => root.querySelector(s); if (!f) return;
+      if (!q('#krName').value) q('#krName').value = f.name;
+      q('#krInst').value = String(f.amount).replace('.', ','); q('#krDay').value = f.day; if (f.start) q('#krFirst').value = f.start;
+      if (f.end && f.start) q('#krN').value = ymDiff(f.end, f.start) + 1;
+    };
+    root.onsubmit = e => {
+      e.preventDefault(); const q = s => root.querySelector(s);
+      if (e.target.id === 'krSimForm') { const a = parseAmt(q('#ksA').value), r = parseAmt(q('#ksR').value), n = Math.round(+q('#ksN').value); if (!(a > 0) || !(r >= 0) || !(n >= 1)) return toast('Tutar, faiz ve vadeyi yaz'); krUi.sim = { a, r, n }; return draw(true); }
+      if (e.target.id !== 'krForm') return;
+      const l = { name: q('#krName').value.trim(), fx: q('#krFx').value, amount: parseAmt(q('#krAmt').value), months: Math.round(+q('#krN').value), inst: parseAmt(q('#krInst').value) || 0, rate: parseAmt(q('#krRate').value) || 0, first: q('#krFirst').value, day: Math.min(31, Math.max(1, Math.round(+q('#krDay').value) || 1)), freePct: parseAmt(q('#krFree').value) || 0, fee: parseAmt(q('#krFee').value) || 0 };
+      if (!l.name || !(l.amount > 0) || !(l.months >= 1) || !l.first) return toast('Ad, tutar, vade ve ilk taksit ayı gerekli');
+      if (!l.inst && !l.rate) return toast('Taksit ya da faiz oranından birini yaz');
+      db.loans = db.loans || []; const id = e.target.dataset.id;
+      if (id) Object.assign(db.loans.find(x => x.id === id), l); else { l.id = 'kr' + Date.now(); l.paid = {}; db.loans.push(l); krUi.open = l.id; }
+      krUi.form = null; save(); redraw(); toast(id ? 'Kaydedildi' : 'Kredi eklendi');
     };
     draw(false);
   }
@@ -1972,6 +2171,7 @@ nav.tabs .tab[aria-current="page"] { color: var(--primary); }
       return withUndo('Örnek kayıtlar silindi', () => { db = { catV: 4, fxV: 1, inV: 1, planV: 1, privV: 1, people: db.people, cats: JSON.parse(JSON.stringify(DEFAULT_CATS)), tx: [], paid: {}, fixed: [], income: [], got: {}, closed: {}, transfers: db.transfers || [], budget: db.budget, bgV: 1, invBase: db.invBase, sample: false }; });
     }
     if (T('[data-transfers]')) return openTransfers();
+    if (T('[data-kredi]')) return openKredi();
     if ((el = T('[data-list]'))) { if (el.hasAttribute('data-lcat')) listBy = 'cat'; return openList(el.dataset.list); }
     if ((el = T('[data-kw]'))) { ui.openKw = ui.openKw === el.dataset.kw ? null : el.dataset.kw; return render(); }
     if (T('[data-pw]')) { if (db.closed[ui.ym]) { const m = ui.ym; return withUndo(ayAcc(AYLAR[+m.slice(5) - 1]) + ' yeniden açtın', () => { reopenMonth(m); }); } ui.closing = !ui.closing; ui.closeDt = closeMax(ui.ym); render(); const c = document.querySelector('.close-card'); if (c) c.scrollIntoView({ block: 'center', behavior: 'smooth' }); return; }
