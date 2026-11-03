@@ -415,6 +415,15 @@ nav.tabs .tab[aria-current="page"] span.pi { background: var(--primary-soft); }
 .hb-row b { text-align: right; font-weight: 800; }
 .hb-row em { text-align: right; font-style: normal; color: var(--muted); font-size: 12px; font-weight: 700; }
 .hero .krb { position: absolute; z-index: 2; top: 58px; right: 58px; width: 36px; height: 36px; box-shadow: none; background: var(--surface-2); color: var(--ink-2); font-size: 15px; font-weight: 800; }
+.hero .trk { position: absolute; z-index: 2; top: 58px; right: 102px; width: 36px; height: 36px; box-shadow: none; background: var(--surface-2); color: var(--ink-2); font-size: 13px; font-weight: 800; letter-spacing: -.02em; }
+.tn-form { display: grid; grid-template-columns: 1fr; gap: 8px; background: var(--surface-2); border-radius: 14px; padding: 10px; }
+.tn-form input, .tn-form textarea { border: 1px solid var(--line); background: var(--surface); border-radius: 10px; padding: 9px 10px; font: inherit; font-size: 14.5px; color: var(--ink); width: 100%; resize: vertical; }
+.tn-form .btns { display: flex; gap: 8px; } .tn-form .btns .danger { margin-left: auto; }
+.tn-list { display: flex; flex-direction: column; gap: 6px; }
+.tn-y { font-size: 12px; font-weight: 800; color: var(--muted); padding: 8px 2px 0; letter-spacing: .04em; }
+.tn-item { display: grid; grid-template-columns: 52px minmax(0, 1fr); gap: 10px; text-align: left; border: 0; background: var(--surface-2); border-radius: 12px; padding: 10px 12px; color: var(--ink); font: inherit; font-size: 14px; }
+.tn-d { font-weight: 800; color: var(--primary-ink); font-size: 13px; } .tn-t { line-height: 1.4; overflow-wrap: anywhere; }
+.lsheet .stats small { display: block; font-size: 11px; color: var(--muted); }
 .hero .krb.alert::after { content: ''; position: absolute; top: 1px; right: 1px; width: 10px; height: 10px; border-radius: 50%; background: #e5484d; border: 2px solid var(--surface); }
 .kr-form { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; background: var(--surface-2); border-radius: 16px; padding: 12px; }
 .kr-form .full, .kr-form .btns, #krSimForm .btn { grid-column: 1 / -1; }
@@ -1236,10 +1245,11 @@ nav.tabs .tab[aria-current="page"] { color: var(--primary); }
     html += `<section class="card hero">
       ${isC || ui.ym <= curYm ? `<button class="icon-btn pw ${isC ? 'on' : ''}" data-pw aria-label="${pwL}" title="${pwL}">${svg('power')}</button>` : ''}
       <button class="icon-btn trb" data-transfers aria-label="Transferler" title="Transferler">⇄</button>
+      <button class="icon-btn trk" data-trpage aria-label="Türkiye" title="Türkiye">TR</button>
       <button class="icon-btn krb ${loansLate() ? 'alert' : ''}" data-kredi aria-label="Krediler${loansLate() ? ' (ödenmemiş taksit var)' : ''}" title="Krediler">K</button>
       <div>
         <div class="lbl">${mName} ayında kalan</div>
-        <div class="big num ${net < 0 ? 'neg' : ''}">${net < 0 ? '−' : ''}${eur(Math.abs(net))}</div>
+        ${(() => { const t = (net < 0 ? '−' : '') + eur(Math.abs(net)), fs = t.length >= 8 ? 30 : t.length >= 7 ? 34 : 0; return `<div class="big num ${net < 0 ? 'neg' : ''}"${fs ? ` style="font-size:${fs}px"` : ''}>${t}</div>`; })()}
         ${waitSum ? `<div class="after num ${net - waitSum < 0 ? 'neg' : ''}">${net - waitSum < 0 ? '−' : ''}${eur(Math.abs(net - waitSum))} <span>(−${eur(waitSum)})</span></div>` : ''}
         ${budgetLine(mt.filter(t => t.type === 'out' && (t.payer || 'p1') === 'p1').reduce((a, t) => a + t.amount, 0))}
       </div>
@@ -1503,6 +1513,57 @@ nav.tabs .tab[aria-current="page"] { color: var(--primary); }
     draw(false);
   }
 
+
+  /* ---------- Türkiye (TR) ---------- */
+  // T1: TR sayfası; Notlar (tarihli tarihçe, db.trNotes) ve Hesap (Türkiye'ye giden havaleler) sekmeleri
+  const tuUi = { tab: 'not', edit: null, add: false };
+  function openTR() {
+    const root = $('#listRoot');
+    const draw = keep => {
+      const old = root.querySelector('.lsheet'), sc = old ? old.scrollTop : 0;
+      const notes = (db.trNotes || []).slice().sort((a, b) => b.date.localeCompare(a.date) || b.ts - a.ts);
+      const nForm = n => `<form class="tn-form" id="tnForm" data-id="${n ? n.id : ''}"><input type="date" id="tnDate" value="${n ? n.date : todayIso}" aria-label="Tarih"><textarea id="tnText" rows="3" maxlength="1000" placeholder="ör. Evi gördük, tapu için randevu aldık" aria-label="Not">${n ? esc(n.text) : ''}</textarea><div class="btns"><button class="btn">${n ? 'Kaydet' : 'Ekle'}</button><button type="button" class="btn ghost" data-tncancel>Vazgeç</button>${n ? `<button type="button" class="btn danger" data-tndel="${n.id}">Sil</button>` : ''}</div></form>`;
+      let body;
+      if (tuUi.tab === 'not') {
+        let lastY = '';
+        body = `${tuUi.add ? nForm(null) : `<button class="btn ghost" data-tnadd>+ Not ekle</button>`}
+          <div class="tn-list">${notes.length ? notes.map(n => { const y = n.date.slice(0, 4), hy = y !== lastY ? `<div class="tn-y">${y}</div>` : ''; lastY = y;
+            return hy + (tuUi.edit === n.id ? nForm(n) : `<button class="tn-item" data-tnedit="${n.id}"><span class="tn-d num">${+n.date.slice(8)} ${AY_K[+n.date.slice(5, 7) - 1]}</span><span class="tn-t">${esc(n.text).replace(/\n/g, '<br>')}</span></button>`); }).join('')
+            : '<div class="empty">Henüz not yok. "Not ekle" ile ilk notu yaz.</div>'}</div>`;
+      } else {
+        const tr = (db.transfers || []).filter(t => t.dir === 'tr').sort((a, b) => b.date.localeCompare(a.date));
+        const yrs = [...new Set(tr.map(t => t.date.slice(0, 4)))], tot = tr.reduce((a, t) => a + t.amount, 0);
+        body = `<div class="stats"><div><span>Türkiye'ye giden</span><b class="num">${eur(tot)}</b><small>toplam</small></div>${yrs.slice(0, 2).map(y => `<div><span>${y}</span><b class="num">${eur(tr.filter(t => t.date.slice(0, 4) === y).reduce((a, t) => a + t.amount, 0))}</b></div>`).join('')}</div>
+          <div class="tn-list">${tr.length ? tr.map(t => `<div class="lrow tr-row"><span class="ld num">${dm(t.date)}${t.date.slice(0, 4) !== curYm.slice(0, 4) ? ' ' + t.date.slice(2, 4) : ''}</span><span class="tr-ic" style="color:var(--primary-ink)">✈</span><span class="lc">${t.note ? esc(t.note) : 'Havale'}</span><b class="num">${eur(t.amount)}</b></div>`).join('') : '<div class="empty">Türkiye\'ye havale yok. ⇄ Transferler\'den "✈ Türkiye" ile eklenir.</div>'}</div>
+          <p class="hint">Türkiye'den gelen kira ve TL hesabı bir sonraki pakette buraya gelecek.</p>`;
+      }
+      root.innerHTML = `<div class="scrim" data-lclose></div>
+        <div class="sheet${keep ? '' : ' anim'} lsheet" role="dialog" aria-label="Türkiye">
+          <div class="sheet-h"><h3>🇹🇷 Türkiye</h3><button class="icon-btn" data-lclose aria-label="Kapat">${svg('x')}</button></div>
+          <div class="seg" style="--n:2"><button data-tutab="not" aria-pressed="${tuUi.tab === 'not'}">Notlar</button><button data-tutab="hesap" aria-pressed="${tuUi.tab === 'hesap'}">Hesap</button></div>
+          ${body}
+        </div>`;
+      if (keep) root.querySelector('.lsheet').scrollTop = sc;
+    };
+    root.onclick = e => {
+      const T = q => e.target.closest(q); let el;
+      if (T('[data-lclose]')) { root.innerHTML = ''; root.onclick = root.onsubmit = null; tuUi.add = false; tuUi.edit = null; return; }
+      if ((el = T('[data-tutab]'))) { tuUi.tab = el.dataset.tutab; tuUi.add = false; tuUi.edit = null; return draw(true); }
+      if (T('[data-tnadd]')) { tuUi.add = true; tuUi.edit = null; draw(true); const t = root.querySelector('#tnText'); if (t) t.focus(); return; }
+      if (T('[data-tncancel]')) { tuUi.add = false; tuUi.edit = null; return draw(true); }
+      if ((el = T('[data-tnedit]'))) { tuUi.edit = el.dataset.tnedit; tuUi.add = false; return draw(true); }
+      if ((el = T('[data-tndel]'))) { const id = el.dataset.tndel, prev = db.trNotes.slice(); db.trNotes = db.trNotes.filter(n => n.id !== id); tuUi.edit = null; save(); draw(true); return toast('Not silindi', () => { db.trNotes = prev; save(); draw(true); }); }
+    };
+    root.onsubmit = e => {
+      e.preventDefault(); if (e.target.id !== 'tnForm') return;
+      const text = root.querySelector('#tnText').value.trim(), date = root.querySelector('#tnDate').value || todayIso, id = e.target.dataset.id;
+      if (!text) return toast('Notu yaz');
+      db.trNotes = db.trNotes || [];
+      if (id) Object.assign(db.trNotes.find(n => n.id === id), { text, date }); else db.trNotes.push({ id: 'tn' + Date.now().toString(36) + Math.random().toString(36).slice(2, 5), ts: Date.now(), date, text });
+      tuUi.add = false; tuUi.edit = null; save(); draw(true); toast(id ? 'Not kaydedildi' : 'Not eklendi');
+    };
+    draw(false);
+  }
   /* ---------- Krediler ---------- */
   // Kredi bilgileri sadece telefonda (db.loans). Taksit verildiyse aylık faiz taksitten çözülür.
   const krUi = { tab: 'my', open: null, form: null, view: 'm', at: 12, extra: null, sim: { a: 20000, r: 6.9, n: 48 } };
@@ -2314,6 +2375,7 @@ nav.tabs .tab[aria-current="page"] { color: var(--primary); }
     }
     if (T('[data-transfers]')) return openTransfers();
     if (T('[data-kredi]')) return openKredi();
+    if (T('[data-trpage]')) return openTR();
     if ((el = T('[data-sendhide]'))) { const k = el.dataset.sendhide; db.sendCalc = db.sendCalc || {}; db.sendCalc[k] = Object.assign(db.sendCalc[k] || {}, { hide: true }); ui.sendFor = null; ui.sendEdit = false; save(); return render(); }
     if (T('[data-balhide]')) { db.balHide = db.balHide || {}; if (!ui.balOpen) db.balHide[curYm] = true; ui.balOpen = false; ui.balEdit = false; save(); return render(); }
     if (T('[data-baledit]')) { ui.balEdit = true; render(); const i = $('#balForm input'); if (i) i.focus(); return; }
