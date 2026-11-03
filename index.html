@@ -446,6 +446,12 @@ nav.tabs .tab[aria-current="page"] span.pi { background: var(--primary-soft); }
 .kr-tick { width: 22px; height: 22px; border-radius: 6px; border: 1.5px solid var(--line); background: var(--surface); color: var(--in-ink); font-weight: 800; font-size: 12px; padding: 0; }
 .kr-tick[aria-pressed="true"] { background: var(--in-soft, #dcfce7); border-color: transparent; } .kr-tab .late .kr-tick { border-color: #e5484d; color: #e5484d; }
 .kr-cmp > div { display: grid; grid-template-columns: 48px repeat(3, minmax(0, 1fr)); gap: 6px; padding: 6px 4px; border-top: 1px solid var(--line); } .kr-cmp > div > span:not(:first-child) { text-align: right; }
+.kr-opts.one { grid-template-columns: 1fr; }
+.kr-extra { display: flex; flex-direction: column; gap: 8px; border-top: 1px solid var(--line); padding-top: 10px; }
+.kr-extra .fld small { font-weight: 600; color: var(--muted); }
+.kr-fee { font-size: 11.5px; color: var(--muted); }
+.kr-ok { color: var(--in-ink); font-weight: 800; }
+.kr-tab > div { grid-template-columns: 20px 54px repeat(4, minmax(0, 1fr)) 24px !important; }
 .kr-cmp .on { background: var(--primary-soft); border-radius: 8px; font-weight: 800; }
 .tr-add { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 6px; }
 .tr-add .sp { justify-content: center; padding: 7px 4px; white-space: nowrap; }
@@ -1403,7 +1409,7 @@ nav.tabs .tab[aria-current="page"] { color: var(--primary); }
 
   /* ---------- Krediler ---------- */
   // Kredi bilgileri sadece telefonda (db.loans). Taksit verildiyse aylık faiz taksitten çözülür.
-  const krUi = { tab: 'my', open: null, form: null, view: 'm', at: 12, sim: { a: 20000, r: 6.9, n: 48 } };
+  const krUi = { tab: 'my', open: null, form: null, view: 'm', at: 12, extra: null, sim: { a: 20000, r: 6.9, n: 48 } };
   const annuity = (P, i, n) => i ? P * i / (1 - Math.pow(1 + i, -n)) : P / n;
   function loanRate(l) {
     if (l.inst > 0) {
@@ -1460,8 +1466,13 @@ nav.tabs .tab[aria-current="page"] { color: var(--primary); }
     const n = rows.length, at = Math.min(Math.max(1, krUi.at), n - 1 || 1);
     const close = k => { const r = rows[k - 1], fz0 = S(rows.slice(0, k), 'fz'), feeBase = r.bal * (1 - (l.freePct || 0) / 100), fee = feeBase * (l.fee || 0) / 100; return { r, fee, pay: r.bal + fee, cost: fz0 + fee, save: totFz - fz0 - fee }; };
     const c = close(at);
-    // Yarısını öde: kalan borcun yarısı (ücretsiz pay içinde) ödenirse aynı taksitle kaç ay kalır
-    const half = (() => { let b = c.r.bal / 2, m = 0, fz = 0; while (b > 0.005 && m < 600) { const f = b * P.i; fz += f; b = b + f - P.inst; m++; } return { m, fz, save: S(rows.slice(at), 'fz') - fz }; })();
+    // Ara ödeme: seçilen ayda X € ödenirse (ücretsiz pay aşılırsa ücret) — A) taksit aynı, vade kısalır  B) vade aynı, taksit düşer
+    const left = n - at, futFz = S(rows.slice(at), 'fz');
+    const ex = Math.min(c.r.bal, krUi.extra > 0 ? krUi.extra : Math.round(c.r.bal / 2));
+    const exFee = Math.max(0, ex - c.r.bal * (l.freePct || 0) / 100) * (l.fee || 0) / 100;
+    const nb = c.r.bal - ex;
+    const optA = (() => { let b = nb, m = 0, fz = 0; while (b > 0.005 && m < 600) { const f = b * P.i; fz += f; b = b + f - P.inst; m++; } return { m, save: futFz - fz - exFee }; })();
+    const newInst = left > 0 && nb > 0 ? annuity(nb, P.i, left) : 0, optB = { inst: newInst, save: futFz - (newInst * left - nb) - exFee };
     const W = 340, H = 120, L = 6, T = 10, B = 18, ch = H - T - B, sl = (W - 2 * L) / Math.max(1, n - 1);
     const pts = []; for (let k = 1; k < n; k++) pts.push([k, close(k).cost]);
     const mx = Math.max(totFz, ...pts.map(p => p[1])) || 1, Y = v => T + ch - v / mx * ch, X = k => L + (k - 1) * sl;
@@ -1481,15 +1492,19 @@ nav.tabs .tab[aria-current="page"] { color: var(--primary); }
         <input type="range" id="krAt" min="1" max="${Math.max(1, n - 1)}" value="${at}" aria-label="Kaçıncı taksitten sonra">
         <div class="kr-at num">${at}. taksitten sonra · ${AYLAR[+c.r.ym.slice(5) - 1]} ${c.r.ym.slice(0, 4)}</div>
         <svg viewBox="0 0 ${W} ${H}" role="img" aria-label="Kapatma ayına göre toplam faiz">${g}</svg>
-        <div class="kr-opts">
+        <div class="kr-opts one">
           <div><span>Tamamını kapat</span><b class="num">${money(c.pay)}</b><small>ücret ${money(c.fee)} · kazanç ${money(c.save)}</small></div>
-          <div><span>Yarısını öde (%${l.freePct || 0} ücretsiz)</span><b class="num">${money(c.r.bal / 2)}</b><small>${half.m} ay kalır (${rows.length - at} yerine) · kazanç ${money(half.save)}</small></div>
         </div>
+        <div class="kr-extra"><label class="fld">Ara ödeme tutarı (€) <small>%${l.freePct || 0}'ye kadar ücretsiz</small><input id="krExtra" inputmode="decimal" value="${String(Math.round(ex * 100) / 100).replace('.', ',')}"></label>
+          <div class="kr-opts">
+            <div><span>Taksit aynı kalsın</span><b class="num">${optA.m} ay</b><small>${left} ay yerine · kazanç ${money(optA.save)}</small></div>
+            <div><span>Vade aynı kalsın</span><b class="num">${money(optB.inst)}/ay</b><small>${money(P.inst)} yerine · kazanç ${money(optB.save)}</small></div>
+          </div>${exFee > 0.005 ? `<small class="kr-fee">Ücretsiz payı aşan kısım için ücret: ${money(exFee)}</small>` : ''}</div>
         <p class="hint">Çizgi: o ay kapatırsan toplam ödeyeceğin faiz + ücret. Kesikli çizgi: krediyi sonuna kadar ödersen.</p>
       </section>
       <div class="seg" style="--n:2"><button data-krview="m" aria-pressed="${!cum}">Aylık</button><button data-krview="c" aria-pressed="${cum}">Kümülatif</button></div>
       <div class="kr-tab"><div class="h"><span>#</span><span>Ay</span><span>Taksit</span><span>Faiz</span><span>Anapara</span><span>Kalan</span><span></span></div>
-        ${rows.map(r => { cf += r.fz; ca += r.ap; return `<div class="${r.st}"><span>${r.k}</span><span>${AY_K[+r.ym.slice(5) - 1]} ${r.ym.slice(2, 4)}</span><span class="num">${short(cum ? cf + ca : r.pay)}</span><span class="num">${short(cum ? cf : r.fz)}</span><span class="num">${short(cum ? ca : r.ap)}</span><span class="num">${short(r.bal)}</span>${l.fx ? `<i>${r.st === 'paid' ? '✓' : r.st === 'late' ? '!' : ''}</i>` : `<button class="kr-tick" data-krtick="${r.ym}" aria-pressed="${r.st === 'paid'}" aria-label="${r.k}. taksit ödendi">${r.st === 'paid' ? '✓' : r.st === 'late' ? '!' : ''}</button>`}</div>`; }).join('')}
+        ${rows.map(r => { cf += r.fz; ca += r.ap; return `<div class="${r.st}"><span>${r.k}</span><span>${AY_K[+r.ym.slice(5) - 1]} ${r.ym.slice(2, 4)}${r.st === 'paid' ? ' <b class="kr-ok">✓</b>' : ''}</span><span class="num">${short(cum ? cf + ca : r.pay)}</span><span class="num">${short(cum ? cf : r.fz)}</span><span class="num">${short(cum ? ca : r.ap)}</span><span class="num">${short(r.bal)}</span>${l.fx ? `<i>${r.st === 'late' ? '!' : ''}</i>` : `<button class="kr-tick" data-krtick="${r.ym}" aria-pressed="${r.st === 'paid'}" aria-label="${r.k}. taksit ödendi">${r.st === 'paid' ? '✓' : r.st === 'late' ? '!' : ''}</button>`}</div>`; }).join('')}
         <div class="t"><span></span><span>Toplam</span><span class="num">${short(S(rows, 'pay'))}</span><span class="num">${short(totFz)}</span><span class="num">${short(S(rows, 'ap'))}</span><span></span><span></span></div>
       </div>
       <p class="hint">${l.fx ? 'Ödendi işaretleri bağlı sabit giderden gelir. Sabit gideri “Ben ödüyorum” yaparsan ödemediğin taksit kırmızı görünür.' : 'Ödediğin taksitin sağındaki kutuya dokun. Günü geçen ve işaretlenmeyen taksit kırmızı olur.'}</p>
@@ -1536,7 +1551,7 @@ nav.tabs .tab[aria-current="page"] { color: var(--primary); }
       const T = q => e.target.closest(q); let el;
       if (T('[data-lclose]')) { root.innerHTML = ''; root.onclick = root.onsubmit = root.oninput = root.onchange = null; return; }
       if ((el = T('[data-krtab]'))) { krUi.tab = el.dataset.krtab; krUi.form = null; return draw(true); }
-      if ((el = T('[data-kropen]'))) { krUi.open = el.dataset.kropen || null; krUi.form = null; const l = (db.loans || []).find(x => x.id === krUi.open); if (l) { const pd = loanPlan(l).rows.filter(r => r.st === 'paid').length; krUi.at = Math.max(1, pd || 12); } draw(true); root.querySelector('.lsheet').scrollTop = 0; return; }
+      if ((el = T('[data-kropen]'))) { krUi.extra = null; krUi.open = el.dataset.kropen || null; krUi.form = null; const l = (db.loans || []).find(x => x.id === krUi.open); if (l) { const pd = loanPlan(l).rows.filter(r => r.st === 'paid').length; krUi.at = Math.max(1, pd || 12); } draw(true); root.querySelector('.lsheet').scrollTop = 0; return; }
       if ((el = T('[data-krform]'))) { krUi.form = el.dataset.krform; return draw(true); }
       if (T('[data-krcancel]')) { krUi.form = null; return draw(true); }
       if ((el = T('[data-krdel]'))) { const id = el.dataset.krdel, prev = db.loans.slice(); db.loans = db.loans.filter(x => x.id !== id); krUi.form = krUi.open = null; save(); redraw(); return toast('Kredi silindi', () => { db.loans = prev; save(); redraw(); }); }
@@ -1546,6 +1561,7 @@ nav.tabs .tab[aria-current="page"] { color: var(--primary); }
     };
     root.oninput = e => { if (e.target.id === 'krAt') { const old = e.target; krUi.at = +old.value; draw(true); const nr = root.querySelector('#krAt'); if (nr) nr.replaceWith(old); } };
     root.onchange = e => {
+      if (e.target.id === 'krExtra') { const v = parseAmt(e.target.value); krUi.extra = v > 0 ? v : null; return draw(true); }
       if (e.target.id !== 'krFx' || !e.target.value) return;
       const f = db.fixed.find(x => x.id === e.target.value), q = s => root.querySelector(s); if (!f) return;
       if (!q('#krName').value) q('#krName').value = f.name;
