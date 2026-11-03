@@ -705,7 +705,12 @@ nav.tabs .tab[aria-current="page"] { color: var(--primary); }
 .closed-note button { border: 0; background: var(--surface); color: var(--ink-2); font-weight: 700; font-size: 12px; border-radius: 8px; padding: 6px 10px; white-space: nowrap; }
 .close-card { border: 2px solid var(--primary); }
 .sendc { gap: 10px; }
-.tr-calc { width: 100%; }
+.tr-calcs { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; } .tr-calc { width: 100%; padding: 9px 6px; font-size: 13px; }
+.balc { gap: 10px; }
+.bal-f { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; } .bal-f .btn { grid-column: 1 / -1; } .bal-f .fld > span { display: flex; align-items: center; }
+.bal-tab { display: flex; flex-direction: column; font-size: 12.5px; }
+.bal-tab > div { display: grid; grid-template-columns: 52px repeat(var(--bn, 4), minmax(0, 1fr)); gap: 6px; padding: 5px 0; border-top: 1px solid var(--line); }
+.bal-tab > div > span:not(:first-child) { text-align: right; } .bal-tab .h { border: 0; color: var(--muted); font-size: 11px; font-weight: 700; } .bal-tab .up { color: var(--in-ink); }
 .sc-h { display: flex; align-items: center; justify-content: space-between; } .sc-h b { font-size: 15.5px; font-weight: 800; }
 .sc-x { border: 0; background: var(--surface-2); width: 28px; height: 28px; border-radius: 50%; display: grid; place-items: center; color: var(--muted); } .sc-x svg.i { width: 14px; height: 14px; }
 .sc-f { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 8px; align-items: end; }
@@ -1220,6 +1225,7 @@ nav.tabs .tab[aria-current="page"] { color: var(--primary); }
 
     html += remindCard();
     html += sendCard();
+    html += balCard();
     const isC = !!db.closed[ui.ym], pwL = ayAcc(mName) + (isC ? ' yeniden aç' : ' kapat');
     html += `<section class="card hero">
       ${isC || ui.ym <= curYm ? `<button class="icon-btn pw ${isC ? 'on' : ''}" data-pw aria-label="${pwL}" title="${pwL}">${svg('power')}</button>` : ''}
@@ -1326,6 +1332,27 @@ nav.tabs .tab[aria-current="page"] { color: var(--primary); }
       <div class="sc-btns">${send > 0 && !c.done ? `<button class="btn" data-sendok="${T}">Gönderdim · transfere yaz</button>` : ''}${c.done ? `<span class="sc-done">✓ ${dm(c.done)} transfere yazıldı</span>` : ''}<button class="btn ghost" data-sendedit>Bakiyeyi değiştir</button></div>
     </section>`;
   }
+
+  // C2 Ay sonu bakiyeleri: ayın son 6 günü (maaştan önce) iki hesabın güncel parası elle girilir; db.balances[ay] = { p1, p2, date }
+  function balCard() {
+    if (ui.ym !== curYm) return '';
+    db.balances = db.balances || {};
+    const [Y, M] = curYm.split('-').map(Number), dim = new Date(Y, M, 0).getDate(), day = +todayIso.slice(8);
+    const cur = db.balances[curYm], hid = (db.balHide || {})[curYm];
+    if (!ui.balOpen && (day <= dim - 6 || (cur && !ui.balEdit) || hid)) return '';
+    const ppl = PEOPLE(), tot = b => ppl.reduce((a, p) => a + (+b[p] || 0), 0);
+    const hist = Object.keys(db.balances).sort().reverse().slice(0, 6);
+    const form = !cur || ui.balEdit;
+    return `<section class="card balc">
+      <div class="sc-h"><b>🏦 Ay sonu bakiyeleri · ${AYLAR[M - 1]}</b><button class="sc-x" data-balhide aria-label="Kapat">${svg('x')}</button></div>
+      ${form ? `<form id="balForm" class="bal-f">${ppl.map(p => `<label class="fld"><span><span class="who sm ${p}">${esc(PAYER[p][0])}</span>${esc(PAYER[p])} hesabı (€)</span><input id="bal_${p}" inputmode="decimal" value="${cur && cur[p] != null ? String(cur[p]).replace('.', ',') : ''}" placeholder="0"></label>`).join('')}<button class="btn">Kaydet</button></form>
+        <small class="sc-note">Maaş gelmeden önce bankadaki güncel tutarları yaz.</small>` : ''}
+      ${hist.length ? `<div class="bal-tab" style="--bn:${ppl.length + 2}"><div class="h"><span>Ay</span>${ppl.map(p => `<span>${esc(PAYER[p])}</span>`).join('')}<span>Toplam</span><span>Fark</span></div>
+        ${hist.map((ym, k) => { const b = db.balances[ym], prev = db.balances[ymAdd(ym, -1)], d = prev ? tot(b) - tot(prev) : null;
+          return `<div><span>${AY_K[+ym.slice(5) - 1]} ${ym.slice(2, 4)}</span>${ppl.map(p => `<span class="num">${b[p] != null ? short(b[p]) : '–'}</span>`).join('')}<span class="num"><b>${short(tot(b))}</b></span><span class="num ${d > 0 ? 'up' : ''}">${d == null ? '–' : (d >= 0 ? '+' : '−') + short(Math.abs(d))}</span></div>`; }).join('')}</div>
+        ${cur && !form ? `<button class="btn ghost" data-baledit>Bu ayı değiştir</button>` : ''}` : ''}
+    </section>`;
+  }
   function remindCard() {
     if (ui.ym !== curYm) return '';
     const rows = [];
@@ -1430,7 +1457,7 @@ nav.tabs .tab[aria-current="page"] { color: var(--primary); }
       root.innerHTML = `<div class="scrim" data-lclose></div>
         <div class="sheet${keepScroll ? '' : ' anim'} lsheet" role="dialog" aria-label="Transferler">
           <div class="sheet-h"><h3>Transferler</h3><button class="icon-btn" data-lclose aria-label="Kapat">${svg('x')}</button></div>
-          <button class="btn ghost tr-calc" data-sendcalc>💶 Ne kadar göndermeliyim?</button>
+          <div class="tr-calcs"><button class="btn ghost tr-calc" data-sendcalc>💶 Ne kadar göndermeliyim?</button><button class="btn ghost tr-calc" data-balopen>🏦 Ay sonu bakiyeleri</button></div>
           <div class="tr-add">${Object.entries(TRD).map(([d, [l, ic]]) => `<button class="sp" data-tradd="${d}" aria-pressed="${trUi.add === d}"><b>${ic}</b>${l}</button>`).join('')}</div>
           ${trUi.add ? `<form class="tr-form" id="trForm" data-dir="${trUi.add}">
             <input type="date" id="trDate" value="${todayIso}" aria-label="Tarih">
@@ -1452,6 +1479,7 @@ nav.tabs .tab[aria-current="page"] { color: var(--primary); }
     root.onclick = e => {
       const T = q => e.target.closest(q); let el;
       if (T('[data-lclose]')) { root.innerHTML = ''; root.onclick = root.onsubmit = null; return; }
+      if (T('[data-balopen]')) { root.innerHTML = ''; root.onclick = root.onsubmit = null; ui.balOpen = true; ui.balEdit = false; if (ui.tab !== 'ozet') setTab('ozet'); ui.ym = curYm; render(); const c = $('.balc'); if (c) c.scrollIntoView({ block: 'center' }); return; }
       if (T('[data-sendcalc]')) { root.innerHTML = ''; root.onclick = root.onsubmit = null; ui.sendFor = +todayIso.slice(8) >= 20 ? ymAdd(curYm, 1) : curYm; ui.sendEdit = false; if (ui.tab !== 'ozet') setTab('ozet'); ui.ym = curYm; render(); const c = $('.sendc'); if (c) c.scrollIntoView({ block: 'center' }); return; }
       if ((el = T('[data-tradd]'))) { trUi.add = trUi.add === el.dataset.tradd ? null : el.dataset.tradd; draw(true); const a = root.querySelector('#trAmt'); if (a) a.focus(); return; }
       if ((el = T('[data-trm]'))) { trUi.open = trUi.open === el.dataset.trm ? null : el.dataset.trm; return draw(true); }
@@ -2252,6 +2280,8 @@ nav.tabs .tab[aria-current="page"] { color: var(--primary); }
     if (T('[data-transfers]')) return openTransfers();
     if (T('[data-kredi]')) return openKredi();
     if ((el = T('[data-sendhide]'))) { const k = el.dataset.sendhide; db.sendCalc = db.sendCalc || {}; db.sendCalc[k] = Object.assign(db.sendCalc[k] || {}, { hide: true }); ui.sendFor = null; ui.sendEdit = false; save(); return render(); }
+    if (T('[data-balhide]')) { db.balHide = db.balHide || {}; if (!ui.balOpen) db.balHide[curYm] = true; ui.balOpen = false; ui.balEdit = false; save(); return render(); }
+    if (T('[data-baledit]')) { ui.balEdit = true; render(); const i = $('#balForm input'); if (i) i.focus(); return; }
     if (T('[data-sendedit]')) { ui.sendEdit = true; render(); const b = $('#sendBal'); if (b) b.focus(); return; }
     if ((el = T('[data-sendok]'))) {
       const k = el.dataset.sendok, c = db.sendCalc[k], keep = db.keep == null ? 1500 : db.keep, v = Math.round((c.bal - sendItems(k).reduce((a, x) => a + x.amount, 0) - keep) * 100) / 100;
@@ -2433,6 +2463,14 @@ nav.tabs .tab[aria-current="page"] { color: var(--primary); }
       if ($('#pinNew2').value.trim() !== v) { $('#pinNew2').value = ''; return toast('İki PIN aynı değil, tekrar yaz'); }
       pinHash(v).then(h => { try { localStorage.setItem(PINK, h); localStorage.setItem(PINK + 'At', Date.now()); sessionStorage.setItem(PINK + 'Ok', '1'); } catch (er) {} render(); toast('PIN kaydedildi. Uygulama açılırken sorulacak'); });
       return;
+    }
+    if (e.target.id === 'balForm') {
+      const b = { date: todayIso }; let any = false;
+      PEOPLE().forEach(p => { const el = $('#bal_' + p); const raw = el ? el.value.trim() : ''; if (raw === '') return; const v = parseAmt(raw); if (isFinite(v)) { b[p] = v; any = true; } });
+      if (!any) return toast('En az bir hesabın tutarını yaz');
+      db.balances = db.balances || {}; const prev = db.balances[ymAdd(curYm, -1)]; db.balances[curYm] = b; ui.balEdit = false; save(); render();
+      const tot = x => PEOPLE().reduce((a, p) => a + (+x[p] || 0), 0);
+      return toast('Kaydedildi · toplam ' + money(tot(b)) + (prev ? ' (' + (tot(b) >= tot(prev) ? '+' : '−') + money(Math.abs(tot(b) - tot(prev))) + ')' : ''));
     }
     if (e.target.id === 'sendForm') {
       const v = parseAmt($('#sendBal').value), T = e.target.dataset.ym; if (!(v >= 0)) return toast('Hesabındaki tutarı yaz');
