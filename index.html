@@ -707,6 +707,12 @@ nav.tabs .tab[aria-current="page"] { color: var(--primary); }
 .sendc { gap: 10px; }
 .tr-calcs { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; } .tr-calc { width: 100%; padding: 9px 6px; font-size: 13px; }
 .balc { gap: 10px; }
+.mcard { gap: 8px; }
+.mc-m { border-top: 1px solid var(--line); padding-top: 8px; display: flex; flex-direction: column; gap: 4px; font-size: 13px; }
+.mc-h { display: flex; justify-content: space-between; } .mc-h b { font-weight: 800; } .mc-h span { color: var(--ink-2); font-weight: 700; } .mcard .up { color: var(--in-ink) !important; }
+.mc-r { display: grid; grid-template-columns: 62px repeat(auto-fit, minmax(0, 1fr)); gap: 6px; align-items: center; color: var(--muted); }
+.mc-r > span:not(:first-child) { display: flex; align-items: center; gap: 2px; color: var(--ink); } .mc-r b { font-weight: 700; }
+.mc-b { grid-column: 2 / -1; } .mc-b em { font-style: normal; color: var(--ink-2); }
 .bal-f { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; } .bal-f .btn { grid-column: 1 / -1; } .bal-f .fld > span { display: flex; align-items: center; }
 .bal-tab { display: flex; flex-direction: column; font-size: 12.5px; }
 .bal-tab > div { display: grid; grid-template-columns: 52px repeat(var(--bn, 4), minmax(0, 1fr)); gap: 6px; padding: 5px 0; border-top: 1px solid var(--line); }
@@ -1373,6 +1379,7 @@ nav.tabs .tab[aria-current="page"] { color: var(--primary); }
   // Açılır/kapanır kartlar (varsayılan kapalı); seçim telefonda hatırlanır
   let fold = {}; try { fold = JSON.parse(localStorage.getItem(KEY + '-fold')) || {}; } catch (e) {}
   if (fold.ad === undefined) fold.ad = true;
+  if (fold.mc === undefined) fold.mc = true;
   const isOpen = k => fold[k] === true;
   const foldH = (k, title, small) => `<button class="fold-h" data-fold="${k}" aria-expanded="${isOpen(k)}"><h2>${title}<span class="chev">${svg(isOpen(k) ? 'chevU' : 'chevD')}</span></h2>${small}</button>`;
   // Sütun grafik: kategoriler yan yana, üstte tutar
@@ -1928,6 +1935,33 @@ nav.tabs .tab[aria-current="page"] { color: var(--primary); }
   }
 
   /* ---------- Analiz ---------- */
+
+  // C3 Aylık hane özeti: kim ne getirdi, kim ne harcadı, ay sonu bakiyeleri nasıl değişti (kişi filtresinden bağımsız)
+  function monthsCard() {
+    const w = ui.who; ui.who = 'all';
+    const end = ui.ym > curYm ? curYm : ui.ym, ppl = PEOPLE(), bals = db.balances || {}, btot = b => ppl.reduce((a, p) => a + (+b[p] || 0), 0);
+    const rows = [];
+    for (let k = 0; k < 6; k++) {
+      const ym = ymAdd(end, -k), mt = monthTx(ym);
+      const by = (type, p) => mt.filter(t => t.type === type && payerOf(t) === p).reduce((a, t) => a + t.amount, 0);
+      const inn = ppl.map(p => by('in', p)), out = ppl.map(p => by('out', p)), gi = inn.reduce((a, v) => a + v, 0), gd = out.reduce((a, v) => a + v, 0);
+      if (!gi && !gd && !bals[ym]) continue;
+      rows.push({ ym, inn, out, gi, gd, bal: bals[ym] ? btot(bals[ym]) : null, pb: bals[ymAdd(ym, -1)] ? btot(bals[ymAdd(ym, -1)]) : null });
+    }
+    ui.who = w;
+    if (!rows.length) return '';
+    const who = p => `<span class="who sm ${p}">${esc(PAYER[p][0])}</span>`;
+    return `<section class="card mcard">
+      <div class="card-h">${foldH('mc', 'Aylık özet', '<small>Kim getirdi, kim harcadı, hesaplar</small>')}</div>
+      ${isOpen('mc') ? rows.map(r => { const net = r.gi - r.gd, d = r.bal != null && r.pb != null ? r.bal - r.pb : null;
+        return `<div class="mc-m">
+          <div class="mc-h"><b>${AYLAR[+r.ym.slice(5) - 1]} ${r.ym.slice(0, 4)}</b><span class="num ${net >= 0 ? 'up' : ''}">Artan ${net >= 0 ? '+' : '−'}${eur(Math.abs(net))}</span></div>
+          <div class="mc-r"><span>Getirdi</span>${ppl.map((p, i) => `<span>${who(p)}<b class="num">${eur(r.inn[i])}</b></span>`).join('')}</div>
+          <div class="mc-r"><span>Harcadı</span>${ppl.map((p, i) => `<span>${who(p)}<b class="num">${eur(r.out[i])}</b></span>`).join('')}</div>
+          ${r.bal != null ? `<div class="mc-r"><span>Hesaplar</span><span class="mc-b num">${r.pb != null ? eur(r.pb) + ' → ' : ''}<b>${eur(r.bal)}</b>${d != null ? ` <em class="${d >= 0 ? 'up' : ''}">(${d >= 0 ? '+' : '−'}${eur(Math.abs(d))})</em>` : ''}</span></div>` : ''}
+        </div>`; }).join('') + '<p class="hint">Artan: gelir eksi gider, yatırım gider sayılmaz. Hesaplar: ay sonunda girdiğin bakiyelerin toplamı.</p>' : ''}
+    </section>`;
+  }
   function niceMax(v) {
     if (v <= 0) return 1000;
     const p = Math.pow(10, Math.floor(Math.log10(v)));
@@ -2018,6 +2052,7 @@ nav.tabs .tab[aria-current="page"] { color: var(--primary); }
         <div class="card-h"><h2>Son 6 ay</h2><div class="keys"><span><i class="dot" style="background:var(--in)"></i>Gelir</span><span><i class="dot" style="background:var(--out)"></i>Gider</span></div></div>
         ${b.svg}
       </section>
+      ${monthsCard()}
       ${catAnalysis()}
       ${ins.length ? `<section class="card"><div class="card-h"><h2>Bu ay kısaca</h2></div><ul class="insights">${ins.slice(0, 3).map(([i, col, t]) => `<li><i style="background:color-mix(in srgb, ${col} 14%, transparent);color:${col}">${svg(i)}</i><span>${t}</span></li>`).join('')}</ul></section>` : ''}`;
   }
