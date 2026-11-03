@@ -704,6 +704,20 @@ nav.tabs .tab[aria-current="page"] { color: var(--primary); }
 .closed-note span { flex: 1; }
 .closed-note button { border: 0; background: var(--surface); color: var(--ink-2); font-weight: 700; font-size: 12px; border-radius: 8px; padding: 6px 10px; white-space: nowrap; }
 .close-card { border: 2px solid var(--primary); }
+.sendc { gap: 10px; }
+.tr-calc { width: 100%; }
+.sc-h { display: flex; align-items: center; justify-content: space-between; } .sc-h b { font-size: 15.5px; font-weight: 800; }
+.sc-x { border: 0; background: var(--surface-2); width: 28px; height: 28px; border-radius: 50%; display: grid; place-items: center; color: var(--muted); } .sc-x svg.i { width: 14px; height: 14px; }
+.sc-f { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 8px; align-items: end; }
+.sc-note { color: var(--muted); font-size: 12px; }
+.sc-res { background: var(--in-soft, #dcfce7); border-radius: 14px; padding: 10px 14px; display: flex; flex-direction: column; }
+.sc-res.neg { background: var(--surface-2); } .sc-res.neg b { color: var(--ink); }
+.sc-res span { font-size: 12.5px; color: var(--ink-2); font-weight: 600; } .sc-res b { font-size: 26px; font-weight: 800; color: var(--in-ink); } .sc-res small { color: var(--ink-2); font-size: 12px; }
+.sc-list { display: flex; flex-direction: column; font-size: 13px; }
+.sc-row { display: flex; justify-content: space-between; align-items: center; gap: 10px; padding: 5px 0; border-top: 1px solid var(--line); }
+.sc-row:first-child { border: 0; font-weight: 700; } .sc-row.m b { color: var(--ink-2); font-weight: 600; } .sc-row small { color: var(--muted); margin-left: 4px; }
+.sc-keep { display: flex; align-items: center; gap: 2px; color: var(--ink-2); } .sc-keep input { width: 74px; text-align: right; border: 1px solid var(--line); background: var(--surface); border-radius: 8px; padding: 4px 6px; font: inherit; color: var(--ink); }
+.sc-btns { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; } .sc-done { color: var(--in-ink); font-weight: 700; font-size: 13px; }
 .remind { display: flex; flex-direction: column; gap: 6px; }
 .rm-row { display: flex; align-items: center; gap: 10px; background: var(--warn-soft); color: var(--warn); border-radius: 14px; padding: 8px 8px 8px 12px; }
 .rm-row.late { background: var(--out-soft); color: var(--out-ink); }
@@ -1205,6 +1219,7 @@ nav.tabs .tab[aria-current="page"] { color: var(--primary); }
     </div>`;
 
     html += remindCard();
+    html += sendCard();
     const isC = !!db.closed[ui.ym], pwL = ayAcc(mName) + (isC ? ' yeniden aç' : ' kapat');
     html += `<section class="card hero">
       ${isC || ui.ym <= curYm ? `<button class="icon-btn pw ${isC ? 'on' : ''}" data-pw aria-label="${pwL}" title="${pwL}">${svg('power')}</button>` : ''}
@@ -1267,6 +1282,50 @@ nav.tabs .tab[aria-current="page"] { color: var(--primary); }
   }
 
   // Elle ödenen sabit giderler: vadeye 2 gün kala, vade günü ve gecikince Özet'in üstünde hatırlatılır (bu ay ve geçen ay)
+
+  // C1 Maaş günü: maaş gelince "hesabında ne kadar var?" sorulur; eşe gönderilecek = bakiye − kesin gidenler − harcama payı
+  function lastSalary() {
+    const from = (() => { const d = new Date(today); d.setDate(d.getDate() - 6); return iso(d); })();
+    let best = null;
+    db.income.filter(f => f.cat === 'maas' && payerOf(f) === 'p1').forEach(f => Object.keys(db.got).forEach(k => {
+      if (!k.endsWith('|' + f.id)) return; const g = db.got[k];
+      if (g.date && g.date >= from && g.date <= todayIso && (!best || g.date > best.date)) best = { date: g.date, ym: k.slice(0, 7), amount: g.amount };
+    }));
+    db.tx.filter(t => t.type === 'in' && t.cat === 'maas' && (t.payer || 'p1') === 'p1' && t.date >= from && t.date <= todayIso)
+      .forEach(t => { if (!best || t.date > best.date) best = { date: t.date, ym: txYm(t), amount: t.amount }; });
+    return best;
+  }
+  function sendItems(T) {
+    const items = [], months = T > curYm ? [curYm, T] : [T];
+    months.forEach(M => {
+      db.fixed.forEach(f => { const st = fixedState(f, M); if (!st || (st.status !== 'wait' && st.status !== 'late')) return; const p = PEOPLE().includes(st.payer) ? st.payer : payerOf(f); if (p !== 'p1') return; items.push({ name: f.name, due: st.due, amount: st.amount }); });
+      (db.loans || []).filter(l => !l.fx).forEach(l => { const r = loanPlan(l).rows.find(x => x.ym === M); if (r && r.st !== 'paid') items.push({ name: l.name, due: M + '-' + pad(l.day || 1), amount: r.pay }); });
+    });
+    return items.sort((a, b) => a.due.localeCompare(b.due));
+  }
+  function sendCard() {
+    if (ui.ym !== curYm) return '';
+    db.sendCalc = db.sendCalc || {};
+    const sal = lastSalary(), T = ui.sendFor || (sal && sal.ym);
+    if (!T) return '';
+    const c = db.sendCalc[T];
+    if (!ui.sendFor && c && (c.done || c.hide)) return '';
+    const keep = db.keep == null ? 1500 : db.keep, items = sendItems(T), fx = items.reduce((a, x) => a + x.amount, 0), mN = AYLAR[+T.slice(5) - 1];
+    const head = `<div class="sc-h"><b>💶 ${sal && !ui.sendFor ? 'Maaşın geldi' : 'Ne kadar göndermeliyim?'}</b><button class="sc-x" data-sendhide="${T}" aria-label="Kapat">${svg('x')}</button></div>`;
+    if (!c || ui.sendEdit) return `<section class="card sendc">${head}
+      <form id="sendForm" data-ym="${T}" class="sc-f"><label class="fld">Hesabında şu an ne kadar var? (€)<input id="sendBal" inputmode="decimal" required placeholder="ör. 4950" value="${c ? String(c.bal).replace('.', ',') : ''}"></label><button class="btn">Hesapla</button></form>
+      <small class="sc-note">${mN} için: kesin gidenler ${money(fx)} + harcama payı ${money(keep)} ayrılır, kalanı eşine gönderilir.</small></section>`;
+    const send = c.bal - fx - keep;
+    return `<section class="card sendc">${head}
+      <div class="sc-res ${send < 0 ? 'neg' : ''}"><span>Gönderilecek · ${esc(PAYER.p2)}</span><b class="num">${send > 0 ? money(send) : '€0'}</b>${send < 0 ? `<small>Hesapta ${money(-send)} eksik kalıyor</small>` : ''}</div>
+      <div class="sc-list">
+        <div class="sc-row"><span>Hesabındaki para</span><b class="num">${money(c.bal)}</b></div>
+        ${items.map(x => `<div class="sc-row m"><span>${esc(x.name)} <small>${dm(x.due)}</small></span><b class="num">−${money(x.amount)}</b></div>`).join('')}
+        <div class="sc-row m"><span>Harcama payı (market, her şey)</span><span class="sc-keep">−<input id="sendKeep" class="num" inputmode="decimal" value="${String(keep).replace('.', ',')}" aria-label="Harcama payı"></span></div>
+      </div>
+      <div class="sc-btns">${send > 0 && !c.done ? `<button class="btn" data-sendok="${T}">Gönderdim · transfere yaz</button>` : ''}${c.done ? `<span class="sc-done">✓ ${dm(c.done)} transfere yazıldı</span>` : ''}<button class="btn ghost" data-sendedit>Bakiyeyi değiştir</button></div>
+    </section>`;
+  }
   function remindCard() {
     if (ui.ym !== curYm) return '';
     const rows = [];
@@ -1371,6 +1430,7 @@ nav.tabs .tab[aria-current="page"] { color: var(--primary); }
       root.innerHTML = `<div class="scrim" data-lclose></div>
         <div class="sheet${keepScroll ? '' : ' anim'} lsheet" role="dialog" aria-label="Transferler">
           <div class="sheet-h"><h3>Transferler</h3><button class="icon-btn" data-lclose aria-label="Kapat">${svg('x')}</button></div>
+          <button class="btn ghost tr-calc" data-sendcalc>💶 Ne kadar göndermeliyim?</button>
           <div class="tr-add">${Object.entries(TRD).map(([d, [l, ic]]) => `<button class="sp" data-tradd="${d}" aria-pressed="${trUi.add === d}"><b>${ic}</b>${l}</button>`).join('')}</div>
           ${trUi.add ? `<form class="tr-form" id="trForm" data-dir="${trUi.add}">
             <input type="date" id="trDate" value="${todayIso}" aria-label="Tarih">
@@ -1392,6 +1452,7 @@ nav.tabs .tab[aria-current="page"] { color: var(--primary); }
     root.onclick = e => {
       const T = q => e.target.closest(q); let el;
       if (T('[data-lclose]')) { root.innerHTML = ''; root.onclick = root.onsubmit = null; return; }
+      if (T('[data-sendcalc]')) { root.innerHTML = ''; root.onclick = root.onsubmit = null; ui.sendFor = +todayIso.slice(8) >= 20 ? ymAdd(curYm, 1) : curYm; ui.sendEdit = false; if (ui.tab !== 'ozet') setTab('ozet'); ui.ym = curYm; render(); const c = $('.sendc'); if (c) c.scrollIntoView({ block: 'center' }); return; }
       if ((el = T('[data-tradd]'))) { trUi.add = trUi.add === el.dataset.tradd ? null : el.dataset.tradd; draw(true); const a = root.querySelector('#trAmt'); if (a) a.focus(); return; }
       if ((el = T('[data-trm]'))) { trUi.open = trUi.open === el.dataset.trm ? null : el.dataset.trm; return draw(true); }
       if ((el = T('[data-trdel]'))) { const id = el.dataset.trdel, prev = db.transfers.slice(); db.transfers = db.transfers.filter(t => t.id !== id); save(); draw(true); return toast('Transfer silindi', () => { db.transfers = prev; save(); draw(true); }); }
@@ -2190,6 +2251,13 @@ nav.tabs .tab[aria-current="page"] { color: var(--primary); }
     }
     if (T('[data-transfers]')) return openTransfers();
     if (T('[data-kredi]')) return openKredi();
+    if ((el = T('[data-sendhide]'))) { const k = el.dataset.sendhide; db.sendCalc = db.sendCalc || {}; db.sendCalc[k] = Object.assign(db.sendCalc[k] || {}, { hide: true }); ui.sendFor = null; ui.sendEdit = false; save(); return render(); }
+    if (T('[data-sendedit]')) { ui.sendEdit = true; render(); const b = $('#sendBal'); if (b) b.focus(); return; }
+    if ((el = T('[data-sendok]'))) {
+      const k = el.dataset.sendok, c = db.sendCalc[k], keep = db.keep == null ? 1500 : db.keep, v = Math.round((c.bal - sendItems(k).reduce((a, x) => a + x.amount, 0) - keep) * 100) / 100;
+      ui.sendFor = null;
+      return withUndo(money(v) + ' transfer yazıldı (→ ' + PAYER.p2 + ')', () => { db.transfers = db.transfers || []; db.transfers.push({ id: 'tr' + Date.now(), ts: Date.now(), date: todayIso, dir: 'p2', amount: v, note: AYLAR[+k.slice(5) - 1] + ' maaş hesabı' }); db.sendCalc[k].done = todayIso; db.sendCalc[k].sent = v; });
+    }
     if ((el = T('[data-list]'))) { if (el.hasAttribute('data-lcat')) listBy = 'cat'; return openList(el.dataset.list); }
     if ((el = T('[data-kw]'))) { ui.openKw = ui.openKw === el.dataset.kw ? null : el.dataset.kw; return render(); }
     if (T('[data-pw]')) { if (db.closed[ui.ym]) { const m = ui.ym; return withUndo(ayAcc(AYLAR[+m.slice(5) - 1]) + ' yeniden açtın', () => { reopenMonth(m); }); } ui.closing = !ui.closing; ui.closeDt = closeMax(ui.ym); render(); const c = document.querySelector('.close-card'); if (c) c.scrollIntoView({ block: 'center', behavior: 'smooth' }); return; }
@@ -2331,6 +2399,7 @@ nav.tabs .tab[aria-current="page"] { color: var(--primary); }
   };
   view.addEventListener('touchend', csEnd, { passive: true });
   view.addEventListener('touchcancel', csEnd, { passive: true });
+  view.addEventListener('change', e => { if (e.target.id === 'sendKeep') { const v = parseAmt(e.target.value); db.keep = v >= 0 ? v : 1500; save(); render(); } });
   view.addEventListener('input', e => { if (e.target.id === 'qIn') { ui.q = e.target.value; render(); } });
   view.addEventListener('change', e => {
     if (e.target.id === 'closeDt' && e.target.value) { ui.closeDt = e.target.value; return render(); }
@@ -2364,6 +2433,10 @@ nav.tabs .tab[aria-current="page"] { color: var(--primary); }
       if ($('#pinNew2').value.trim() !== v) { $('#pinNew2').value = ''; return toast('İki PIN aynı değil, tekrar yaz'); }
       pinHash(v).then(h => { try { localStorage.setItem(PINK, h); localStorage.setItem(PINK + 'At', Date.now()); sessionStorage.setItem(PINK + 'Ok', '1'); } catch (er) {} render(); toast('PIN kaydedildi. Uygulama açılırken sorulacak'); });
       return;
+    }
+    if (e.target.id === 'sendForm') {
+      const v = parseAmt($('#sendBal').value), T = e.target.dataset.ym; if (!(v >= 0)) return toast('Hesabındaki tutarı yaz');
+      db.sendCalc = db.sendCalc || {}; db.sendCalc[T] = Object.assign(db.sendCalc[T] || {}, { bal: v, date: todayIso }); ui.sendEdit = false; save(); return render();
     }
     if (e.target.id === 'gotForm') {
       const id = e.target.dataset.id, f = db.income.find(x => x.id === id), v = parseAmt($('#gotAmt').value);
