@@ -428,6 +428,29 @@ nav.tabs .tab[aria-current="page"] span.pi { background: var(--primary-soft); }
 .tn-item { display: grid; grid-template-columns: 52px minmax(0, 1fr); gap: 10px; text-align: left; border: 0; background: var(--surface-2); border-radius: 12px; padding: 10px 12px; color: var(--ink); font: inherit; font-size: 14px; }
 .tu-h { font-size: 13.5px; font-weight: 800; margin: 6px 2px -2px; color: var(--ink); } .tu-h small { font-weight: 600; color: var(--muted); font-size: 11.5px; margin-left: 4px; }
 .tu-yh { display: flex; justify-content: space-between; }
+.tu-h { margin-top: 12px; }
+.yc { display: flex; gap: 6px; flex-wrap: wrap; }
+.yc span { display: inline-flex; align-items: baseline; gap: 5px; background: var(--surface-2); border-radius: 999px; padding: 4px 10px; font-size: 12.5px; }
+.yc small { color: var(--muted); font-weight: 600; font-size: 11px; } .yc b { font-weight: 800; }
+.tu-more { border: 0; background: none; color: var(--primary-ink); font: inherit; font-weight: 700; font-size: 12.5px; padding: 2px; text-align: left; }
+.as-h { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 6px; }
+.as-h div { background: var(--surface-2); border-radius: 12px; padding: 7px 9px; min-width: 0; }
+.as-h span, .as-h small { display: block; font-size: 11px; color: var(--muted); font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.as-h b { display: block; font-size: 14.5px; font-weight: 800; white-space: nowrap; }
+.as-sum { display: flex; flex-wrap: wrap; align-items: baseline; gap: 4px 8px; font-size: 13px; } .as-sum span { color: var(--muted); font-weight: 600; } .as-sum small { width: 100%; color: var(--muted); font-size: 11.5px; }
+.as-sum em, .tt em { font-style: normal; } .as-sum em.up { color: var(--in-ink); }
+.as-px { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; font-size: 11.5px; color: var(--muted); } .as-px > span { flex: 1 1 0; min-width: 0; } .as-px small { display: block; font-size: 11px; } .as-px .btn-s { padding: 4px 10px; font-size: 12px; }
+.as-mh { display: flex; flex-direction: column; gap: 1px; } .as-mh b { font-size: 13.5px; } .as-mh small { color: var(--muted); font-size: 11.5px; }
+.as-m { display: grid; grid-template-columns: 92px minmax(0, 1fr) minmax(0, 1fr); gap: 6px; align-items: center; font-size: 13px; font-weight: 700; }
+#pxForm .as-m { grid-template-columns: 110px minmax(0, 1fr); }
+.tin-form input[type=date] { min-width: 0; }
+.tt { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; }
+.tt div { background: var(--surface-2); border-radius: 12px; padding: 8px 10px; min-width: 0; } .tt span, .tt small { display: block; font-size: 11px; color: var(--muted); font-weight: 600; } .tt b { display: block; font-size: 16px; font-weight: 800; white-space: nowrap; }
+.tt .all { grid-column: 1 / -1; display: flex; justify-content: space-between; align-items: baseline; background: var(--primary-soft, var(--surface-2)); } .tt .all span { font-size: 13px; color: var(--ink); } .tt .all b { font-size: 19px; }
+.kc { display: flex; flex-direction: column; gap: 4px; background: var(--surface-2); border-radius: 14px; padding: 10px 12px; }
+.kc-r { display: flex; justify-content: space-between; font-size: 13px; color: var(--ink-2); } .kc-r.big { font-size: 14.5px; color: var(--ink); font-weight: 800; border-top: 1px solid var(--line); padding-top: 5px; }
+.kc-t { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 6px; margin-top: 4px; }
+.kc-t button { border: 0; border-radius: 10px; background: var(--surface); box-shadow: inset 0 0 0 1px var(--line); padding: 6px 4px; font: inherit; color: var(--ink); } .kc-t small { display: block; font-size: 11px; color: var(--muted); } .kc-t b { font-size: 13.5px; font-weight: 800; }
 .tin-add { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
 .tr-row.tin-item { width: 100%; background: none; border-left: 0; border-right: 0; border-bottom: 0; text-align: left; font: inherit; font-size: 13px; color: var(--ink); grid-template-columns: 46px 16px minmax(0, 1fr) auto; }
 .tin-amt { color: var(--in-ink, var(--primary-ink)); }
@@ -1533,7 +1556,57 @@ nav.tabs .tab[aria-current="page"] { color: var(--primary); }
 
   /* ---------- Türkiye (TR) ---------- */
   // T1: TR sayfası; Notlar (tarihli tarihçe, db.trNotes) ve Hesap (Türkiye'ye giden havaleler) sekmeleri
-  const tuUi = { tab: 'not', edit: null, add: false, inEdit: null, inAdd: null };
+  const tuUi = { tab: 'hesap', edit: null, add: false, inEdit: null, inAdd: null, asEdit: null, asAdd: null, pxEdit: false, open: {}, busy: false };
+  // T3/T4: Türkiye birikimleri (db.trAssets {id,ts,date,kind altin|eur|usd,tl,qty}) ve fiyatlar (db.trPx, son bilinen)
+  const AS = { altin: { ic: '🥇', ad: 'Altın', u: 'g' }, eur: { ic: '€', ad: 'Euro', u: '€' }, usd: { ic: '$', ad: 'Dolar', u: '$' } };
+  const pxOf = k => { const p = db.trPx; return p ? (k === 'altin' ? p.gTry : k === 'eur' ? p.eurTry : p.usdTry) : 0; };
+  const qtyFmt = (k, v) => (k === 'altin' ? v.toLocaleString('tr-TR', { maximumFractionDigits: 2 }) + ' g' : Math.round(v).toLocaleString('tr-TR') + ' ' + AS[k].u);
+  async function trFetchPx(force) {
+    const px = db.trPx;
+    if (!force && px && px.src === 'api' && Date.now() - px.ts < 6 * 3600e3) return false;
+    if (navigator.onLine === false) return false;
+    for (const u of ['https://cdn.jsdelivr.net/npm/@fawazahmed0/currency-api@latest/v1/currencies/eur.min.json', 'https://latest.currency-api.pages.dev/v1/currencies/eur.min.json']) {
+      try {
+        const ctl = new AbortController(), tm = setTimeout(() => ctl.abort(), 8000);
+        const r = await fetch(u, { signal: ctl.signal, cache: 'no-store' }); clearTimeout(tm);
+        if (!r.ok) continue;
+        const j = await r.json(), c = j && j.eur;
+        if (!(c && c.try > 0 && c.usd > 0 && c.xau > 0)) continue;
+        db.trPx = { ts: Date.now(), date: j.date || todayIso, eurTry: c.try, usdTry: c.try / c.usd, gTry: c.try / c.xau / 31.1034768, src: 'api' };
+        save(); return true;
+      } catch (e) { /* çevrimdışı ya da kaynak yok: son bilinen fiyat kalır */ }
+    }
+    return false;
+  }
+  function trHold() {
+    const h = { altin: { q: 0, tl: 0 }, eur: { q: 0, tl: 0 }, usd: { q: 0, tl: 0 } };
+    (db.trAssets || []).forEach(a => { if (h[a.kind]) { h[a.kind].q += a.qty || 0; h[a.kind].tl += a.tl || 0; } });
+    const has = !!db.trPx; let valTl = 0;
+    Object.keys(h).forEach(k => { h[k].val = has ? h[k].q * pxOf(k) : 0; valTl += h[k].val; });
+    const cost = Object.values(h).reduce((a, x) => a + x.tl, 0);
+    return { h, has, valTl, valEur: has ? valTl / db.trPx.eurTry : 0, cost };
+  }
+  // T5: Almanya (son ay sonu bakiyeleri) + Türkiye birikimi; kredi kapasitesi: yeni taksit ≤ aylık artanın yarısı − mevcut taksitler
+  function trTotals() {
+    const bals = db.balances || {}, ppl = PEOPLE(), bk = Object.keys(bals).filter(k => ppl.some(p => +bals[k][p])).sort().pop();
+    const de = bk ? ppl.reduce((a, p) => a + (+bals[bk][p] || 0), 0) : null;
+    const w = ui.who; ui.who = 'all';
+    const loans = db.loans || [], plans = loans.map(l => ({ l, P: loanPlan(l) }));
+    const ms = [];
+    for (let k = 1; k <= 12 && ms.length < 3; k++) {
+      const ym = ymAdd(curYm, -k), mt = monthTx(ym);
+      const gi = mt.filter(t => t.type === 'in').reduce((a, t) => a + t.amount, 0), gd = mt.filter(t => t.type === 'out').reduce((a, t) => a + t.amount, 0);
+      if (!gi && !gd) continue;
+      const back = plans.filter(x => x.l.fx).reduce((a, x) => a + x.P.rows.filter(r => r.ym === ym).reduce((b, r) => b + r.pay, 0), 0);
+      ms.push({ ym, net: gi - gd + back });
+    }
+    ui.who = w;
+    const avg = ms.length ? ms.reduce((a, m) => a + m.net, 0) / ms.length : null;
+    const cur = plans.reduce((a, x) => { const last = x.P.rows[x.P.rows.length - 1]; return last && last.ym >= curYm ? a + x.P.inst : a; }, 0);
+    const cap = avg == null ? null : Math.max(0, avg / 2 - cur);
+    return { de, bk, avg, n: ms.length, cur, cap };
+  }
+
   function openTR() {
     const root = $('#listRoot');
     const draw = keep => {
@@ -1548,46 +1621,106 @@ nav.tabs .tab[aria-current="page"] { color: var(--primary); }
             return hy + (tuUi.edit === n.id ? nForm(n) : `<button class="tn-item" data-tnedit="${n.id}"><span class="tn-d num">${+n.date.slice(8)} ${AY_K[+n.date.slice(5, 7) - 1]}</span><span class="tn-t">${esc(n.text).replace(/\n/g, '<br>')}</span></button>`); }).join('')
             : '<div class="empty">Henüz not yok. "Not ekle" ile ilk notu yaz.</div>'}</div>`;
       } else {
-        // T2: Türkiye'den gelen TL (kira vb., db.trIn) ve Türkiye'ye giden € havaleler; yıllık + toplam
-        const sumY = (arr, y) => arr.filter(t => t.date.slice(0, 4) === y).reduce((a, t) => a + t.amount, 0);
-        const yrsOf = arr => [...new Set(arr.map(t => t.date.slice(0, 4)))];
-        const tin = (db.trIn || []).slice().sort((a, b) => b.date.localeCompare(a.date) || b.ts - a.ts);
-        const tr = (db.transfers || []).filter(t => t.dir === 'tr').sort((a, b) => b.date.localeCompare(a.date));
+        // Hesap: Türkiye gelirleri (TL, db.trIn), birikim durumu (T3/T4), Türkiye'ye giden (€), Toplam (T5)
+        const sumY = (arr, y, f = t => t.amount) => arr.filter(t => t.date.slice(0, 4) === y).reduce((a, t) => a + f(t), 0);
         const thisY = curYm.slice(0, 4), lastY = String(+thisY - 1);
+        const chips = (arr, fm, f = t => t.amount) => `<div class="yc"><span><small>Toplam</small><b class="num">${fm(arr.reduce((a, t) => a + f(t), 0))}</b></span><span><small>${thisY}</small><b class="num">${fm(sumY(arr, thisY, f))}</b></span><span><small>${lastY}</small><b class="num">${fm(sumY(arr, lastY, f))}</b></span></div>`;
+        const grouped = (arr, fm, row, f = t => t.amount) => { let ly = ''; return arr.map(t => { const y = t.date.slice(0, 4), h = y !== ly ? `<div class="tn-y tu-yh"><span>${y}</span><span class="num">${fm(sumY(arr, y, f))}</span></div>` : ''; ly = y; return h + row(t); }).join(''); };
+        const fold = (key, n, inner) => n ? `<button class="tu-more" data-tuopen="${key}">${tuUi.open[key] ? '▾' : '▸'} Kayıtlar (${n})</button>${tuUi.open[key] ? `<div class="tn-list">${inner()}</div>` : ''}` : '';
+        // gelirler
+        const tin = (db.trIn || []).slice().sort((a, b) => b.date.localeCompare(a.date) || b.ts - a.ts);
         const lastRent = tin.find(t => t.kind === 'kira'), rentThisMonth = tin.some(t => t.kind === 'kira' && t.date.slice(0, 7) === curYm);
         const iForm = (n, pre) => { const k = n ? n.kind : (pre && pre.kind) || 'kira';
           return `<form class="tn-form tin-form" id="tinForm" data-id="${n ? n.id : ''}">
-            <div class="tin-kind" role="radiogroup"><button type="button" data-tinkind="kira" aria-pressed="${k === 'kira'}">🏠 Kira</button><button type="button" data-tinkind="diger" aria-pressed="${k !== 'kira'}">₺ Diğer gelir</button></div>
+            <div class="tin-kind"><button type="button" data-tinkind="kira" aria-pressed="${k === 'kira'}">🏠 Kira</button><button type="button" data-tinkind="diger" aria-pressed="${k !== 'kira'}">₺ Diğer gelir</button></div>
             <div class="tin-row"><input type="text" inputmode="decimal" id="tinAmt" placeholder="Tutar (TL)" aria-label="Tutar (TL)" value="${n ? short(n.amount) : pre && pre.amount ? short(pre.amount) : ''}"><input type="date" id="tinDate" value="${n ? n.date : todayIso}" aria-label="Tarih"></div>
             <input type="text" id="tinNote" maxlength="80" placeholder="Not (isteğe bağlı), ör. Ekim kirası" aria-label="Not" value="${n && n.note ? esc(n.note) : ''}">
             <div class="btns"><button class="btn">${n ? 'Kaydet' : 'Ekle'}</button><button type="button" class="btn ghost" data-tincancel>Vazgeç</button>${n ? `<button type="button" class="btn danger" data-tindel="${n.id}">Sil</button>` : ''}</div></form>`; };
-        const stat3 = (arr, f) => `<div class="stats"><div><span>Toplam</span><b class="num">${f(arr.reduce((a, t) => a + t.amount, 0))}</b><small>${arr.length} kayıt</small></div><div><span>${thisY}</span><b class="num">${f(sumY(arr, thisY))}</b><small>bu yıl</small></div><div><span>${lastY}</span><b class="num">${f(sumY(arr, lastY))}</b><small>geçen yıl</small></div></div>`;
-        const grouped = (arr, f, row) => { let ly = ''; return arr.map(t => { const y = t.date.slice(0, 4), h = y !== ly ? `<div class="tn-y tu-yh"><span>${y}</span><span class="num">${f(sumY(arr, y))}</span></div>` : ''; ly = y; return h + row(t); }).join(''); };
         const inRow = t => tuUi.inEdit === t.id ? iForm(t) : `<button class="lrow tr-row tin-item" data-tinedit="${t.id}"><span class="ld num">${dm(t.date)}</span><span class="tr-ic">${t.kind === 'kira' ? '🏠' : '₺'}</span><span class="lc">${t.note ? esc(t.note) : t.kind === 'kira' ? 'Kira' : 'Gelir'}</span><b class="num tin-amt">+${tl(t.amount)}</b></button>`;
+        // birikim
+        const as = (db.trAssets || []).slice().sort((a, b) => b.date.localeCompare(a.date) || b.ts - a.ts), H = trHold(), px = db.trPx;
+        const lastTl = k => { const a = as.find(x => x.kind === k && x.tl > 0); return a ? a.tl : ''; };
+        const qv = (k, q) => q ? (k === 'altin' ? String(Math.round(q * 100) / 100).replace('.', ',') : short(q)) : '';
+        const aForm = n => { const k = n ? n.kind : 'altin';
+          return `<form class="tn-form tin-form" id="asForm" data-id="${n ? n.id : ''}">
+            <div class="tin-kind">${Object.keys(AS).map(x => `<button type="button" data-askind="${x}" aria-pressed="${x === k}">${AS[x].ic} ${AS[x].ad}</button>`).join('')}</div>
+            <div class="tin-row"><input type="text" inputmode="decimal" id="asTl" placeholder="Ödenen (TL)" aria-label="Ödenen TL" value="${n && n.tl ? short(n.tl) : ''}"><input type="text" inputmode="decimal" id="asQty" placeholder="Alınan (${AS[k].u})" aria-label="Alınan miktar" value="${n ? qv(k, n.qty) : ''}"></div>
+            <input type="date" id="asDate" value="${n ? n.date : todayIso}" aria-label="Tarih">
+            <div class="btns"><button class="btn">${n ? 'Kaydet' : 'Ekle'}</button><button type="button" class="btn ghost" data-ascancel>Vazgeç</button>${n ? `<button type="button" class="btn danger" data-asdel="${n.id}">Sil</button>` : ''}</div></form>`; };
+        const mForm = () => `<form class="tn-form tin-form" id="asMonth">
+            <div class="as-mh"><b>Bu ayın alımı</b><small>${px ? 'Miktar güncel fiyatla dolar, değiştirebilirsin' : 'Miktarları yaz'}</small></div>
+            ${Object.keys(AS).map(k => `<div class="as-m"><span>${AS[k].ic} ${AS[k].ad}</span><input type="text" inputmode="decimal" data-mtl="${k}" placeholder="TL" aria-label="${AS[k].ad} TL" value="${lastTl(k) ? short(lastTl(k)) : ''}"><input type="text" inputmode="decimal" data-mq="${k}" placeholder="${AS[k].u}" aria-label="${AS[k].ad} miktar" value="${lastTl(k) && pxOf(k) ? qv(k, lastTl(k) / pxOf(k)) : ''}"></div>`).join('')}
+            <input type="date" id="asMDate" value="${todayIso}" aria-label="Tarih">
+            <div class="btns"><button class="btn">Kaydet</button><button type="button" class="btn ghost" data-ascancel>Vazgeç</button></div></form>`;
+        const asRow = a => tuUi.asEdit === a.id ? aForm(a) : `<button class="lrow tr-row tin-item" data-asedit="${a.id}"><span class="ld num">${dm(a.date)}</span><span class="tr-ic">${AS[a.kind].ic}</span><span class="lc">${a.tl ? tl(a.tl) + ' → ' : ''}${qtyFmt(a.kind, a.qty)}</span><b class="num">${px ? tl(a.qty * pxOf(a.kind)) : ''}</b></button>`;
+        const pxAge = px ? (px.src === 'api' ? (Date.now() - px.ts < 864e5 ? 'bugün ' + new Date(px.ts).toTimeString().slice(0, 5) : dm(iso(new Date(px.ts)))) : 'elle girildi, ' + dm(iso(new Date(px.ts)))) : '';
+        const pxForm = `<form class="tn-form tin-form" id="pxForm"><div class="as-mh"><b>Fiyatları elle gir</b><small>1 birimin TL fiyatı</small></div>
+            <div class="as-m"><span>🥇 Gram altın</span><input type="text" inputmode="decimal" id="pxG" value="${px ? short(px.gTry) : ''}" aria-label="Gram altın TL"></div>
+            <div class="as-m"><span>€ Euro</span><input type="text" inputmode="decimal" id="pxE" value="${px ? String(Math.round(px.eurTry * 100) / 100).replace('.', ',') : ''}" aria-label="Euro TL"></div>
+            <div class="as-m"><span>$ Dolar</span><input type="text" inputmode="decimal" id="pxU" value="${px ? String(Math.round(px.usdTry * 100) / 100).replace('.', ',') : ''}" aria-label="Dolar TL"></div>
+            <div class="btns"><button class="btn">Kaydet</button><button type="button" class="btn ghost" data-pxcancel>Vazgeç</button></div></form>`;
+        const hold = `<div class="as-h">${Object.keys(AS).map(k => `<div><span>${AS[k].ic} ${AS[k].ad}</span><b class="num">${qtyFmt(k, H.h[k].q)}</b><small class="num">${H.has && H.h[k].q ? '≈ ' + tl(H.h[k].val) : ''}</small></div>`).join('')}</div>
+          ${as.length ? `<div class="as-sum"><span>Değeri</span><b class="num">${H.has ? '≈ ' + tl(H.valTl) + ' · ' + eur(H.valEur) : 'fiyat yok'}</b>${H.cost ? `<small class="num">Ödenen ${tl(H.cost)}${H.has ? ` · <em class="${H.valTl >= H.cost ? 'up' : ''}">${H.valTl >= H.cost ? '+' : '−'}${tl(Math.abs(H.valTl - H.cost))}</em>` : ''}</small>` : ''}</div>` : ''}
+          <div class="as-px">${px ? `<span class="num">Altın ${tl(px.gTry)}/g · € ${(Math.round(px.eurTry * 100) / 100).toLocaleString('tr-TR')} ₺ · $ ${(Math.round(px.usdTry * 100) / 100).toLocaleString('tr-TR')} ₺<small>${pxAge}</small></span>` : `<span>${tuUi.busy ? 'Fiyatlar alınıyor…' : 'Fiyat yok (internet yok ya da alınamadı)'}</span>`}<button class="btn-s" data-pxload ${tuUi.busy ? 'disabled' : ''}>↻</button><button class="btn-s" data-pxedit>Elle</button></div>`;
+        // giden
+        const tr = (db.transfers || []).filter(t => t.dir === 'tr').sort((a, b) => b.date.localeCompare(a.date));
         const outRow = t => `<div class="lrow tr-row"><span class="ld num">${dm(t.date)}</span><span class="tr-ic" style="color:var(--primary-ink)">✈</span><span class="lc">${t.note ? esc(t.note) : 'Havale'}</span><b class="num">${eur(t.amount)}</b></div>`;
-        body = `<div class="tu-h">⬇ Türkiye'den gelen <small>TL · kira ve diğer</small></div>
-          ${stat3(tin, tl)}
-          ${tuUi.inAdd ? iForm(null, tuUi.inAdd) : `<div class="tin-add"><button class="btn ghost" data-tinadd>+ Gelir ekle</button>${lastRent && !rentThisMonth ? `<button class="btn-s pri" data-tinrent>🏠 Bu ayın kirası · ${tl(lastRent.amount)}</button>` : ''}</div>`}
-          <div class="tn-list">${tin.length ? grouped(tin, tl, inRow) : '<div class="empty">Henüz gelir yok. Kira gibi Türkiye\'deki gelirleri TL olarak buraya ekle.</div>'}</div>
-          <div class="tu-h">⬆ Türkiye'ye giden <small>€ · ⇄ Transferler'den</small></div>
-          ${stat3(tr, eur)}
-          <div class="tn-list">${tr.length ? grouped(tr, eur, outRow) : '<div class="empty">Türkiye\'ye havale yok. ⇄ Transferler\'den "✈ Türkiye" ile eklenir.</div>'}</div>`;
+        // toplam
+        const Tt = trTotals(), trE = H.has ? H.valEur : 0, all = (Tt.de || 0) + trE;
+        const sim = krUi.sim, si = Math.pow(1 + sim.r / 100, 1 / 12) - 1, pv = (m, n) => si ? m * (1 - Math.pow(1 + si, -n)) / si : m * n;
+        const total = `<div class="tt">
+            <div><span>🇩🇪 Almanya hesapları</span><b class="num">${Tt.de != null ? eur(Tt.de) : '–'}</b><small>${Tt.bk ? AYLAR[+Tt.bk.slice(5) - 1] + ' sonu bakiyeleri' : '⇄ → Ay sonu bakiyeleri ile gir'}</small></div>
+            <div><span>🇹🇷 Türkiye birikimi</span><b class="num">${H.has ? eur(trE) : as.length ? '–' : eur(0)}</b><small>${H.has ? '≈ ' + tl(H.valTl) : as.length ? 'fiyat yok' : ''}</small></div>
+            <div class="all"><span>Toplam</span><b class="num">${eur(all)}</b></div></div>
+          <div class="kc"><div class="as-mh"><b>Ne kadar kredi çekilebilir?</b><small>Kural: yeni taksit ≤ aylık artanın yarısı − mevcut taksitler</small></div>
+            ${Tt.avg == null ? '<p class="hint">Hesap için en az bir aylık gelir/gider kaydı gerekli.</p>' : `
+            <div class="kc-r"><span>Aylık artan (son ${Tt.n} ay ort.)</span><b class="num">${eur(Tt.avg)}</b></div>
+            <div class="kc-r"><span>Yarısı</span><b class="num">${eur(Tt.avg / 2)}</b></div>
+            <div class="kc-r"><span>Mevcut kredi taksitleri</span><b class="num">−${eur(Tt.cur)}</b></div>
+            <div class="kc-r big"><span>Yeni taksit en fazla</span><b class="num">${eur(Tt.cap)}/ay</b></div>
+            ${Tt.cap > 0 ? `<div class="kc-t">${[36, 48, 60].map(n => `<button data-kcsim="${n}"><small>${n} ay</small><b class="num">≈ ${eur(Math.floor(pv(Tt.cap, n) / 500) * 500)}</b></button>`).join('')}</div><p class="hint">Efektif %${String(sim.r).replace('.', ',')} faizle (Simülatör'deki oran). Dokununca Simülatör'de açılır.</p>` : '<p class="hint">Şu an yeni taksit için yer yok.</p>'}`}
+          </div>`;
+        body = `<div class="tu-h">🏠 Türkiye gelirleri <small>TL</small></div>
+          ${chips(tin, tl)}
+          ${tuUi.inAdd ? iForm(null, tuUi.inAdd) : `<div class="tin-add"><button class="btn-s" data-tinadd>+ Gelir ekle</button>${lastRent && !rentThisMonth ? `<button class="btn-s pri" data-tinrent>🏠 Bu ayın kirası · ${tl(lastRent.amount)}</button>` : ''}</div>`}
+          ${tin.length ? fold('in', tin.length, () => grouped(tin, tl, inRow)) : ''}
+          <div class="tu-h">🥇 Türkiye birikim durumu</div>
+          ${hold}
+          ${tuUi.pxEdit ? pxForm : ''}
+          ${tuUi.asAdd === 'one' ? aForm(null) : tuUi.asAdd === 'month' ? mForm() : `<div class="tin-add"><button class="btn-s" data-asadd>+ Alım ekle</button><button class="btn-s pri" data-asmonth>Bu ayın alımı</button></div>`}
+          ${fold('as', as.length, () => grouped(as, tl, asRow, a => a.tl || 0))}
+          <div class="tu-h">✈ Türkiye'ye giden <small>€ · ⇄ Transferler'den</small></div>
+          ${chips(tr, eur)}
+          ${tr.length ? fold('out', tr.length, () => grouped(tr, eur, outRow)) : '<p class="hint">Henüz yok. ⇄ Transferler\'den "✈ Türkiye" ile eklenir.</p>'}
+          <div class="tu-h">Σ Toplam</div>
+          ${total}`;
       }
       root.innerHTML = `<div class="scrim" data-lclose></div>
         <div class="sheet${keep ? '' : ' anim'} lsheet" role="dialog" aria-label="Türkiye">
           <div class="sheet-h"><h3>🇹🇷 Türkiye</h3><button class="icon-btn" data-lclose aria-label="Kapat">${svg('x')}</button></div>
-          <div class="seg" style="--n:2"><button data-tutab="not" aria-pressed="${tuUi.tab === 'not'}">Notlar</button><button data-tutab="hesap" aria-pressed="${tuUi.tab === 'hesap'}">Hesap</button></div>
+          <div class="seg" style="--n:2"><button data-tutab="hesap" aria-pressed="${tuUi.tab === 'hesap'}">Hesap</button><button data-tutab="not" aria-pressed="${tuUi.tab === 'not'}">Notlar</button></div>
           ${body}
         </div>`;
       if (keep) root.querySelector('.lsheet').scrollTop = sc;
     };
     root.onclick = e => {
       const T = q => e.target.closest(q); let el;
-      if (T('[data-lclose]')) { root.innerHTML = ''; root.onclick = root.onsubmit = null; tuUi.add = false; tuUi.edit = null; tuUi.inAdd = tuUi.inEdit = null; return; }
-      if ((el = T('[data-tutab]'))) { tuUi.tab = el.dataset.tutab; tuUi.add = false; tuUi.edit = null; tuUi.inAdd = tuUi.inEdit = null; return draw(true); }
+      if (T('[data-lclose]')) { root.innerHTML = ''; root.onclick = root.onsubmit = root.oninput = null; tuUi.add = false; tuUi.edit = null; tuUi.inAdd = tuUi.inEdit = tuUi.asAdd = tuUi.asEdit = null; tuUi.pxEdit = false; return; }
+      if ((el = T('[data-tutab]'))) { tuUi.tab = el.dataset.tutab; tuUi.add = false; tuUi.edit = null; tuUi.inAdd = tuUi.inEdit = tuUi.asAdd = tuUi.asEdit = null; tuUi.pxEdit = false; if (tuUi.tab === 'hesap') loadPx(false); return draw(true); }
       if (T('[data-tnadd]')) { tuUi.add = true; tuUi.edit = null; draw(true); const t = root.querySelector('#tnText'); if (t) t.focus(); return; }
       if (T('[data-tncancel]')) { tuUi.add = false; tuUi.edit = null; return draw(true); }
       if ((el = T('[data-tnedit]'))) { tuUi.edit = el.dataset.tnedit; tuUi.add = false; return draw(true); }
+      if ((el = T('[data-tuopen]'))) { const k = el.dataset.tuopen; tuUi.open[k] = !tuUi.open[k]; return draw(true); }
+      if (T('[data-asadd]')) { tuUi.asAdd = 'one'; tuUi.asEdit = null; return draw(true); }
+      if (T('[data-asmonth]')) { tuUi.asAdd = 'month'; tuUi.asEdit = null; return draw(true); }
+      if (T('[data-ascancel]')) { tuUi.asAdd = null; tuUi.asEdit = null; return draw(true); }
+      if ((el = T('[data-asedit]'))) { tuUi.asEdit = el.dataset.asedit; tuUi.asAdd = null; return draw(true); }
+      if ((el = T('[data-askind]'))) { root.querySelectorAll('[data-askind]').forEach(b => b.setAttribute('aria-pressed', b === el)); const q = root.querySelector('#asQty'); q.placeholder = 'Alınan (' + AS[el.dataset.askind].u + ')'; q.dataset.auto = '1'; autoQty(); return; }
+      if ((el = T('[data-asdel]'))) { const id = el.dataset.asdel, prev = db.trAssets.slice(); db.trAssets = db.trAssets.filter(n => n.id !== id); tuUi.asEdit = null; save(); draw(true); return toast('Alım silindi', () => { db.trAssets = prev; save(); draw(true); }); }
+      if (T('[data-pxedit]')) { tuUi.pxEdit = !tuUi.pxEdit; return draw(true); }
+      if (T('[data-pxcancel]')) { tuUi.pxEdit = false; return draw(true); }
+      if (T('[data-pxload]')) { loadPx(true); return; }
+      if ((el = T('[data-kcsim]'))) { const n = +el.dataset.kcsim, m = trTotals().cap, si = Math.pow(1 + krUi.sim.r / 100, 1 / 12) - 1; krUi.sim.n = n; krUi.sim.a = Math.floor((si ? m * (1 - Math.pow(1 + si, -n)) / si : m * n) / 500) * 500; krUi.tab = 'sim'; krUi.open = null; krUi.form = null; tuUi.open = {}; root.oninput = null; return openKredi(); }
       if (T('[data-tinadd]')) { tuUi.inAdd = { kind: 'kira' }; tuUi.inEdit = null; draw(true); const t = root.querySelector('#tinAmt'); if (t) t.focus(); return; }
       if (T('[data-tinrent]')) { const r = (db.trIn || []).filter(t => t.kind === 'kira').sort((a, b) => b.date.localeCompare(a.date))[0]; tuUi.inAdd = { kind: 'kira', amount: r.amount }; tuUi.inEdit = null; return draw(true); }
       if ((el = T('[data-tinkind]'))) { root.querySelectorAll('[data-tinkind]').forEach(b => b.setAttribute('aria-pressed', b === el)); return; }
@@ -1598,6 +1731,27 @@ nav.tabs .tab[aria-current="page"] { color: var(--primary); }
     };
     root.onsubmit = e => {
       e.preventDefault();
+      const num = sel => { const v = parseAmt(String(sel).replace(/₺|TL|g|\$|€/gi, '')); return v > 0 ? v : 0; };
+      if (e.target.id === 'asForm') {
+        const kind = root.querySelector('[data-askind][aria-pressed="true"]').dataset.askind, tlv = num(root.querySelector('#asTl').value), qty = num(root.querySelector('#asQty').value), date = root.querySelector('#asDate').value || todayIso, id = e.target.dataset.id;
+        if (!(qty > 0)) return toast('Alınan miktarı yaz');
+        db.trAssets = db.trAssets || [];
+        if (id) Object.assign(db.trAssets.find(a => a.id === id), { kind, tl: tlv, qty, date }); else db.trAssets.push({ id: 'as' + Date.now().toString(36) + Math.random().toString(36).slice(2, 5), ts: Date.now(), date, kind, tl: tlv, qty });
+        tuUi.asAdd = null; tuUi.asEdit = null; save(); draw(true); return toast(id ? 'Alım kaydedildi' : AS[kind].ad + ' eklendi · ' + qtyFmt(kind, qty));
+      }
+      if (e.target.id === 'asMonth') {
+        const date = root.querySelector('#asMDate').value || todayIso, add = [];
+        Object.keys(AS).forEach(k => { const tlv = num(root.querySelector(`[data-mtl="${k}"]`).value), q = num(root.querySelector(`[data-mq="${k}"]`).value); if (q > 0) add.push({ kind: k, tl: tlv, qty: q }); });
+        if (!add.length) return toast('En az bir miktar yaz');
+        db.trAssets = db.trAssets || [];
+        add.forEach((a, n) => db.trAssets.push({ id: 'as' + Date.now().toString(36) + n + Math.random().toString(36).slice(2, 5), ts: Date.now() + n, date, ...a }));
+        tuUi.asAdd = null; save(); draw(true); return toast(add.length + ' alım eklendi');
+      }
+      if (e.target.id === 'pxForm') {
+        const g = num(root.querySelector('#pxG').value), eu = num(root.querySelector('#pxE').value), us = num(root.querySelector('#pxU').value);
+        if (!(g > 0 && eu > 0 && us > 0)) return toast('Üç fiyatı da yaz');
+        db.trPx = { ts: Date.now(), date: todayIso, gTry: g, eurTry: eu, usdTry: us, src: 'el' }; tuUi.pxEdit = false; save(); draw(true); return toast('Fiyatlar kaydedildi');
+      }
       if (e.target.id === 'tinForm') {
         const amount = parseAmt(root.querySelector('#tinAmt').value.replace(/₺|TL/gi, '')), date = root.querySelector('#tinDate').value || todayIso, id = e.target.dataset.id;
         const kind = root.querySelector('[data-tinkind="kira"]').getAttribute('aria-pressed') === 'true' ? 'kira' : 'diger', note = root.querySelector('#tinNote').value.trim();
@@ -1613,7 +1767,22 @@ nav.tabs .tab[aria-current="page"] { color: var(--primary); }
       if (id) Object.assign(db.trNotes.find(n => n.id === id), { text, date }); else db.trNotes.push({ id: 'tn' + Date.now().toString(36) + Math.random().toString(36).slice(2, 5), ts: Date.now(), date, text });
       tuUi.add = false; tuUi.edit = null; save(); draw(true); toast(id ? 'Not kaydedildi' : 'Not eklendi');
     };
+    // Ödenen TL yazılınca miktar güncel fiyattan dolar (elle değiştirilmediyse)
+    const autoQty = () => {
+      const f = root.querySelector('#asForm'); if (!f) return;
+      const k = f.querySelector('[data-askind][aria-pressed="true"]').dataset.askind, q = f.querySelector('#asQty'), t = parseAmt(f.querySelector('#asTl').value.replace(/₺|TL/gi, ''));
+      if (q.value && !q.dataset.auto) return;
+      if (t > 0 && pxOf(k)) { const v = t / pxOf(k); q.value = k === 'altin' ? String(Math.round(v * 100) / 100).replace('.', ',') : short(v); q.dataset.auto = '1'; }
+    };
+    root.oninput = e => {
+      const t = e.target;
+      if (t.id === 'asTl') autoQty();
+      else if (t.id === 'asQty') delete t.dataset.auto;
+      else if (t.dataset.mtl) { const k = t.dataset.mtl, q = root.querySelector(`[data-mq="${k}"]`), v = parseAmt(t.value); if (v > 0 && pxOf(k)) q.value = k === 'altin' ? String(Math.round(v / pxOf(k) * 100) / 100).replace('.', ',') : short(v / pxOf(k)); }
+    };
+    const loadPx = force => { if (tuUi.busy) return; tuUi.busy = true; if (force) draw(true); trFetchPx(force).then(ok => { tuUi.busy = false; if (!root.querySelector('.lsheet[aria-label="Türkiye"]')) return; draw(true); if (force) toast(ok ? 'Fiyatlar güncellendi' : db.trPx ? 'Alınamadı, son bilinen fiyat kullanılıyor' : 'Fiyatlar alınamadı'); }); };
     draw(false);
+    if (tuUi.tab === 'hesap') loadPx(false);
   }
   /* ---------- Krediler ---------- */
   // Kredi bilgileri sadece telefonda (db.loans). Taksit verildiyse aylık faiz taksitten çözülür.
