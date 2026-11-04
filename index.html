@@ -201,8 +201,12 @@ header.top { display: flex; align-items: center; justify-content: space-between;
 .fx-row.done { position: relative; }
 .fx-row.done .fx-main b, .fx-row.done .fx-day { color: var(--muted) !important; opacity: .8; }
 .fx-row.done::after { content: ''; position: absolute; left: 0; right: 0; top: 50%; height: 1px; background: var(--muted); opacity: .7; pointer-events: none; }
+.fx-skip { font-size: 12.5px; color: var(--muted); display: flex; flex-wrap: wrap; gap: 6px; align-items: center; padding-top: 6px; }
+.fx-skip button { border: 0; background: var(--surface-2); color: var(--ink-2); border-radius: 99px; padding: 4px 10px; font-size: 12.5px; font-weight: 700; }
 .fx-form { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; background: var(--surface-2); border-radius: 16px; padding: 12px; margin: 4px 0 8px; }
 .fld { display: flex; flex-direction: column; gap: 5px; font-size: 12px; font-weight: 700; color: var(--muted); min-width: 0; }
+[hidden] { display: none !important; }
+.fld small { font-weight: 600; color: var(--muted); }
 .fld input { border: 1px solid var(--line); background: var(--surface); border-radius: 12px; padding: 10px 12px; font-size: 15px; color: var(--ink); width: 100%; min-width: 0; font-weight: 500; }
 .fld.full { grid-column: 1 / -1; }
 .endrow { display: flex; gap: 10px; align-items: center; }
@@ -1121,6 +1125,7 @@ nav.tabs .tab[aria-current="page"] { color: var(--primary); }
   // Sadece o ay için farklı tutar (ör. elektrik bu ay farklı geldi): db.fxAmt["ay|id"]
   const fxAmtOf = (f, ym) => { const o = (db.fxAmt || {})[ym + '|' + f.id]; return o > 0 ? o : f.amount; };
   function fixedState(f, ym) {
+    if (db.skip && db.skip[ym + '|' + f.id]) return null;
     if (ym < f.start) return null;
     const [Y, M] = ym.split('-').map(Number);
     const p = db.paid[ym + '|' + f.id];
@@ -1454,6 +1459,7 @@ nav.tabs .tab[aria-current="page"] { color: var(--primary); }
       <div class="card-h">${foldH('fx', 'Sabit giderler', `<small class="num">${eur(doneSum)} / ${eur(tot)} düştü</small>`)}${ui.editFx === 'new' ? '' : `<button class="link" data-editfx="new">+ Ekle</button>`}</div>
       ${items.length ? `<div class="task"><div class="segs">${items.map(x => `<i class="${x.st.status === 'paid' || x.st.status === 'auto' ? 'on' : ''}" title="${esc(x.f.name)}"></i>`).join('')}</div><b class="num">${paidN}/${items.length}</b><span>ödendi</span></div>` : ''}
       ${ui.editFx === 'new' ? fxForm(null) : ''}
+      ${(() => { const sk = db.fixed.filter(f => (db.skip || {})[ui.ym + '|' + f.id]); return sk.length ? `<div class="fx-skip">Bu ay kaldırılan: ${sk.map(f => `<button data-fxunskip="${f.id}">${esc(f.name)} ↺</button>`).join('')}</div>` : ''; })()}
       ${isOpen('fx') || ui.editFx ? `${items.length ? `<div class="fx-who num">${PEOPLE().map(p => `<span class="who sm ${p}">${PAYER[p][0]}</span>${esc(PAYER[p])} ${eur(byP(p))}`).join('<span class="sep">·</span>')}</div>` : ''}<div class="fx-list">${items.length ? items.map(fixedRow).join('') : `<div class="empty">Kira, fatura gibi her ay ödediğin giderleri ekle.</div>`}</div>
       ${periodicHint()}` : ''}
     </section>`;
@@ -1799,7 +1805,7 @@ nav.tabs .tab[aria-current="page"] { color: var(--primary); }
       <div class="fld full freq">Sıklık
         <div class="seg" style="--n:3" role="group" aria-label="Sıklık">${[[1, 'Her ay'], [3, '3 ayda bir'], [12, 'Yılda bir']].map(([v, l]) => `<button type="button" data-every="${v}" aria-pressed="${(f.every || 1) === v}">${l}</button>`).join('')}</div>
         <input type="hidden" id="fxEvery" value="${f.every || 1}">
-        <label class="fld" id="fxFirstWrap" ${(f.every || 1) > 1 ? '' : 'hidden'}>Ödeme yapılan bir ay<input type="month" id="fxFirst" value="${f.anchor || ui.ym}"></label>
+        <label class="fld" id="fxFirstWrap" ${(f.every || 1) > 1 ? '' : 'hidden'}>Hangi ayda ödeniyor? <small>(ör. son ödediğin ay)</small><input type="month" id="fxFirst" value="${f.anchor || ui.ym}"></label>
       </div>
       <div class="fld full freq">Ödeme şekli
         <div class="seg" style="--n:2" role="group" aria-label="Ödeme şekli">${[['0', 'Otomatik çekiliyor'], ['1', 'Ben ödüyorum']].map(([v, l]) => `<button type="button" data-mode="${v}" aria-pressed="${(f.manual ? '1' : '0') === v}">${l}</button>`).join('')}</div>
@@ -1816,7 +1822,7 @@ nav.tabs .tab[aria-current="page"] { color: var(--primary); }
       <div class="fld full">Son ödeme
         <div class="endrow"><label class="chkl"><input type="checkbox" id="fxNoEnd" ${f.end ? '' : 'checked'}> Süresiz</label><input type="month" id="fxEnd" value="${f.end || ''}" min="${curYm}" ${f.end ? '' : 'disabled'} aria-label="Son taksit ayı"></div>
       </div>
-      <div class="btns"><button type="submit" class="btn">${n ? 'Ekle' : 'Kaydet'}</button><button type="button" class="btn ghost" data-fxcancel>Vazgeç</button>${!n && f.manual && fixedState(f, ui.ym) ? `<button type="button" class="btn ghost" data-tick="${f.id}" data-ym="${ui.ym}">${fixedState(f, ui.ym).status === 'paid' ? 'Ödenmedi yap' : 'Ödendi'}</button>` : ''}${n ? '' : `<button type="button" class="btn danger" data-fxdel="${f.id}">${fxEndYm(f) >= f.start ? 'Bitir' : 'Sil'}</button>`}</div>
+      <div class="btns"><button type="submit" class="btn">${n ? 'Ekle' : 'Kaydet'}</button><button type="button" class="btn ghost" data-fxcancel>Vazgeç</button>${!n && f.manual && fixedState(f, ui.ym) ? `<button type="button" class="btn ghost" data-tick="${f.id}" data-ym="${ui.ym}">${fixedState(f, ui.ym).status === 'paid' ? 'Ödenmedi yap' : 'Ödendi'}</button>` : ''}${!n && fixedState(f, ui.ym) ? `<button type="button" class="btn ghost" data-fxskip="${f.id}">Bu ay yok</button>` : ''}${n ? '' : `<button type="button" class="btn danger" data-fxdel="${f.id}">${fxEndYm(f) >= f.start ? 'Bitir' : 'Sil'}</button>`}</div>
       ${!n && fxEndYm(f) >= f.start ? `<p class="hint">Tutarı değiştirmek bu aydan itibaren geçerli olur, geçmiş aylar değişmez. Bitir: ${AYLAR[+fxEndYm(f).slice(5) - 1]} ${fxEndYm(f).slice(0, 4)} sonrasında durur.</p>` : ''}
     </form>`;
   }
@@ -1858,7 +1864,7 @@ nav.tabs .tab[aria-current="page"] { color: var(--primary); }
       <div>${days.length ? days.map(d => {
         const g = groups[d]; const net = sum(g, 'in') - sum(g, 'out') - sum(g, 'inv');
         return `<div class="day-h"><span>${dayLabel(d)}</span>${g.length > 1 ? `<span class="num" style="color:var(${net >= 0 ? '--in-ink' : '--ink-2'})">${net >= 0 ? '+' : '−'}${money(Math.abs(net))}</span>` : ''}</div>
-          <div class="day-card">${g.map(t => t.fx || t.fi ? rowHtml(t) : `<div class="sw"><div class="sw-bg">${svg('x')}Sil</div>${rowHtml(t)}</div>`).join('')}</div>`;
+          <div class="day-card">${g.map(t => t.fi ? rowHtml(t) : t.fx ? `<div class="sw" data-skip="${t.id.split('|')[1]}|${t.fx}"><div class="sw-bg">${svg('x')}Bu ay sil</div>${rowHtml(t)}</div>` : `<div class="sw"><div class="sw-bg">${svg('x')}Sil</div>${rowHtml(t)}</div>`).join('')}</div>`;
       }).join('') : `<div class="empty">${q || nf ? 'Bu filtreye uyan kayıt yok.' : 'Bu ay için kayıt yok.'}</div>`}</div>
       <p class="hint" style="text-align:center">Düzenlemek için kayda dokun, silmek için sola kaydır.</p>
     </div>`;
@@ -2425,6 +2431,8 @@ nav.tabs .tab[aria-current="page"] { color: var(--primary); }
       el.parentNode.querySelectorAll('button').forEach(b => b.setAttribute('aria-pressed', b === el));
       $('#fxEvery').value = el.dataset.every; $('#fxFirstWrap').hidden = el.dataset.every === '1'; return;
     }
+    if ((el = T('[data-fxskip]'))) { const k = ui.ym + '|' + el.dataset.fxskip; ui.editFx = null; return withUndo(AYLAR[+ui.ym.slice(5) - 1] + ' için kaldırıldı', () => { db.skip = db.skip || {}; db.skip[k] = true; delete db.paid[k]; }); }
+    if ((el = T('[data-fxunskip]'))) { delete db.skip[ui.ym + '|' + el.dataset.fxunskip]; save(); render(); return toast('Geri getirildi'); }
     if ((el = T('[data-fxdel]'))) { const id = el.dataset.fxdel, f = db.fixed.find(x => x.id === id), e = fxEndYm(f); ui.editFx = null;
       if (e < f.start) return withUndo('Sabit gider silindi', () => { db.fixed = db.fixed.filter(x => x.id !== id); });
       return withUndo(f.name + ' ' + AYLAR[+e.slice(5) - 1] + ' sonunda bitti · geçmiş korunuyor', () => { freezeFixed(f, e); f.end = e; }); }
@@ -2485,8 +2493,9 @@ nav.tabs .tab[aria-current="page"] { color: var(--primary); }
     row.classList.remove('drag');
     if (dx < -row.offsetWidth * 0.35) {
       row.style.transform = 'translateX(-110%)';
-      const id = row.dataset.edit;
-      setTimeout(() => withUndo('Kayıt silindi', () => { db.tx = db.tx.filter(t => t.id !== id); }), 160);
+      const id = row.dataset.edit, sk = row.parentNode.dataset.skip;
+      if (sk) setTimeout(() => withUndo(AYLAR[+sk.slice(5, 7) - 1] + ' için kaldırıldı', () => { db.skip = db.skip || {}; db.skip[sk] = true; delete db.paid[sk]; }), 160);
+      else setTimeout(() => withUndo('Kayıt silindi', () => { db.tx = db.tx.filter(t => t.id !== id); }), 160);
     } else row.style.transform = '';
   };
   view.addEventListener('pointerup', swEnd);
