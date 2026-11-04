@@ -426,6 +426,15 @@ nav.tabs .tab[aria-current="page"] span.pi { background: var(--primary-soft); }
 .tn-list { display: flex; flex-direction: column; gap: 6px; }
 .tn-y { font-size: 12px; font-weight: 800; color: var(--muted); padding: 8px 2px 0; letter-spacing: .04em; }
 .tn-item { display: grid; grid-template-columns: 52px minmax(0, 1fr); gap: 10px; text-align: left; border: 0; background: var(--surface-2); border-radius: 12px; padding: 10px 12px; color: var(--ink); font: inherit; font-size: 14px; }
+.tu-h { font-size: 13.5px; font-weight: 800; margin: 6px 2px -2px; color: var(--ink); } .tu-h small { font-weight: 600; color: var(--muted); font-size: 11.5px; margin-left: 4px; }
+.tu-yh { display: flex; justify-content: space-between; }
+.tin-add { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
+.tr-row.tin-item { width: 100%; background: none; border-left: 0; border-right: 0; border-bottom: 0; text-align: left; font: inherit; font-size: 13px; color: var(--ink); grid-template-columns: 46px 16px minmax(0, 1fr) auto; }
+.tin-amt { color: var(--in-ink, var(--primary-ink)); }
+.tin-kind { display: flex; gap: 6px; } .tin-kind button { flex: 1; border: 0; border-radius: 10px; padding: 8px; font: inherit; font-size: 13.5px; font-weight: 700; background: var(--surface); color: var(--ink-2); box-shadow: inset 0 0 0 1px var(--line); }
+.tin-kind button[aria-pressed="true"] { background: var(--primary); color: #fff; box-shadow: none; }
+.tin-row { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+.tin-form input[type=text] { border: 1px solid var(--line); background: var(--surface); border-radius: 10px; padding: 9px 10px; font: inherit; font-size: 14.5px; color: var(--ink); width: 100%; min-width: 0; }
 .tn-d { font-weight: 800; color: var(--primary-ink); font-size: 13px; } .tn-t { line-height: 1.4; overflow-wrap: anywhere; }
 .lsheet .stats small { display: block; font-size: 11px; color: var(--muted); }
 .hero .krb.alert::after { content: ''; position: absolute; top: 1px; right: 1px; width: 10px; height: 10px; border-radius: 50%; background: #e5484d; border: 2px solid var(--surface); }
@@ -937,6 +946,8 @@ nav.tabs .tab[aria-current="page"] { color: var(--primary); }
   const fmt2 = new Intl.NumberFormat('tr-TR', { style: 'currency', currency: 'EUR', minimumFractionDigits: 2, maximumFractionDigits: 2 });
   const money = v => (Math.abs(v - Math.round(v)) > 0.001 ? fmt2 : fmt).format(v);
   const eur = v => fmt.format(Math.round(v));
+  const fmtTL = new Intl.NumberFormat('tr-TR', { style: 'currency', currency: 'TRY', maximumFractionDigits: 0 });
+  const tl = v => fmtTL.format(Math.round(v));
   const short = v => Math.round(v).toLocaleString('tr-TR');
   const esc = s => String(s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
   const dm = s => { const [, M, D] = s.split('-').map(Number); return D + ' ' + AY_K[M - 1]; };
@@ -1522,7 +1533,7 @@ nav.tabs .tab[aria-current="page"] { color: var(--primary); }
 
   /* ---------- Türkiye (TR) ---------- */
   // T1: TR sayfası; Notlar (tarihli tarihçe, db.trNotes) ve Hesap (Türkiye'ye giden havaleler) sekmeleri
-  const tuUi = { tab: 'not', edit: null, add: false };
+  const tuUi = { tab: 'not', edit: null, add: false, inEdit: null, inAdd: null };
   function openTR() {
     const root = $('#listRoot');
     const draw = keep => {
@@ -1537,11 +1548,30 @@ nav.tabs .tab[aria-current="page"] { color: var(--primary); }
             return hy + (tuUi.edit === n.id ? nForm(n) : `<button class="tn-item" data-tnedit="${n.id}"><span class="tn-d num">${+n.date.slice(8)} ${AY_K[+n.date.slice(5, 7) - 1]}</span><span class="tn-t">${esc(n.text).replace(/\n/g, '<br>')}</span></button>`); }).join('')
             : '<div class="empty">Henüz not yok. "Not ekle" ile ilk notu yaz.</div>'}</div>`;
       } else {
+        // T2: Türkiye'den gelen TL (kira vb., db.trIn) ve Türkiye'ye giden € havaleler; yıllık + toplam
+        const sumY = (arr, y) => arr.filter(t => t.date.slice(0, 4) === y).reduce((a, t) => a + t.amount, 0);
+        const yrsOf = arr => [...new Set(arr.map(t => t.date.slice(0, 4)))];
+        const tin = (db.trIn || []).slice().sort((a, b) => b.date.localeCompare(a.date) || b.ts - a.ts);
         const tr = (db.transfers || []).filter(t => t.dir === 'tr').sort((a, b) => b.date.localeCompare(a.date));
-        const yrs = [...new Set(tr.map(t => t.date.slice(0, 4)))], tot = tr.reduce((a, t) => a + t.amount, 0);
-        body = `<div class="stats"><div><span>Türkiye'ye giden</span><b class="num">${eur(tot)}</b><small>toplam</small></div>${yrs.slice(0, 2).map(y => `<div><span>${y}</span><b class="num">${eur(tr.filter(t => t.date.slice(0, 4) === y).reduce((a, t) => a + t.amount, 0))}</b></div>`).join('')}</div>
-          <div class="tn-list">${tr.length ? tr.map(t => `<div class="lrow tr-row"><span class="ld num">${dm(t.date)}${t.date.slice(0, 4) !== curYm.slice(0, 4) ? ' ' + t.date.slice(2, 4) : ''}</span><span class="tr-ic" style="color:var(--primary-ink)">✈</span><span class="lc">${t.note ? esc(t.note) : 'Havale'}</span><b class="num">${eur(t.amount)}</b></div>`).join('') : '<div class="empty">Türkiye\'ye havale yok. ⇄ Transferler\'den "✈ Türkiye" ile eklenir.</div>'}</div>
-          <p class="hint">Türkiye'den gelen kira ve TL hesabı bir sonraki pakette buraya gelecek.</p>`;
+        const thisY = curYm.slice(0, 4), lastY = String(+thisY - 1);
+        const lastRent = tin.find(t => t.kind === 'kira'), rentThisMonth = tin.some(t => t.kind === 'kira' && t.date.slice(0, 7) === curYm);
+        const iForm = (n, pre) => { const k = n ? n.kind : (pre && pre.kind) || 'kira';
+          return `<form class="tn-form tin-form" id="tinForm" data-id="${n ? n.id : ''}">
+            <div class="tin-kind" role="radiogroup"><button type="button" data-tinkind="kira" aria-pressed="${k === 'kira'}">🏠 Kira</button><button type="button" data-tinkind="diger" aria-pressed="${k !== 'kira'}">₺ Diğer gelir</button></div>
+            <div class="tin-row"><input type="text" inputmode="decimal" id="tinAmt" placeholder="Tutar (TL)" aria-label="Tutar (TL)" value="${n ? short(n.amount) : pre && pre.amount ? short(pre.amount) : ''}"><input type="date" id="tinDate" value="${n ? n.date : todayIso}" aria-label="Tarih"></div>
+            <input type="text" id="tinNote" maxlength="80" placeholder="Not (isteğe bağlı), ör. Ekim kirası" aria-label="Not" value="${n && n.note ? esc(n.note) : ''}">
+            <div class="btns"><button class="btn">${n ? 'Kaydet' : 'Ekle'}</button><button type="button" class="btn ghost" data-tincancel>Vazgeç</button>${n ? `<button type="button" class="btn danger" data-tindel="${n.id}">Sil</button>` : ''}</div></form>`; };
+        const stat3 = (arr, f) => `<div class="stats"><div><span>Toplam</span><b class="num">${f(arr.reduce((a, t) => a + t.amount, 0))}</b><small>${arr.length} kayıt</small></div><div><span>${thisY}</span><b class="num">${f(sumY(arr, thisY))}</b><small>bu yıl</small></div><div><span>${lastY}</span><b class="num">${f(sumY(arr, lastY))}</b><small>geçen yıl</small></div></div>`;
+        const grouped = (arr, f, row) => { let ly = ''; return arr.map(t => { const y = t.date.slice(0, 4), h = y !== ly ? `<div class="tn-y tu-yh"><span>${y}</span><span class="num">${f(sumY(arr, y))}</span></div>` : ''; ly = y; return h + row(t); }).join(''); };
+        const inRow = t => tuUi.inEdit === t.id ? iForm(t) : `<button class="lrow tr-row tin-item" data-tinedit="${t.id}"><span class="ld num">${dm(t.date)}</span><span class="tr-ic">${t.kind === 'kira' ? '🏠' : '₺'}</span><span class="lc">${t.note ? esc(t.note) : t.kind === 'kira' ? 'Kira' : 'Gelir'}</span><b class="num tin-amt">+${tl(t.amount)}</b></button>`;
+        const outRow = t => `<div class="lrow tr-row"><span class="ld num">${dm(t.date)}</span><span class="tr-ic" style="color:var(--primary-ink)">✈</span><span class="lc">${t.note ? esc(t.note) : 'Havale'}</span><b class="num">${eur(t.amount)}</b></div>`;
+        body = `<div class="tu-h">⬇ Türkiye'den gelen <small>TL · kira ve diğer</small></div>
+          ${stat3(tin, tl)}
+          ${tuUi.inAdd ? iForm(null, tuUi.inAdd) : `<div class="tin-add"><button class="btn ghost" data-tinadd>+ Gelir ekle</button>${lastRent && !rentThisMonth ? `<button class="btn-s pri" data-tinrent>🏠 Bu ayın kirası · ${tl(lastRent.amount)}</button>` : ''}</div>`}
+          <div class="tn-list">${tin.length ? grouped(tin, tl, inRow) : '<div class="empty">Henüz gelir yok. Kira gibi Türkiye\'deki gelirleri TL olarak buraya ekle.</div>'}</div>
+          <div class="tu-h">⬆ Türkiye'ye giden <small>€ · ⇄ Transferler'den</small></div>
+          ${stat3(tr, eur)}
+          <div class="tn-list">${tr.length ? grouped(tr, eur, outRow) : '<div class="empty">Türkiye\'ye havale yok. ⇄ Transferler\'den "✈ Türkiye" ile eklenir.</div>'}</div>`;
       }
       root.innerHTML = `<div class="scrim" data-lclose></div>
         <div class="sheet${keep ? '' : ' anim'} lsheet" role="dialog" aria-label="Türkiye">
@@ -1553,15 +1583,30 @@ nav.tabs .tab[aria-current="page"] { color: var(--primary); }
     };
     root.onclick = e => {
       const T = q => e.target.closest(q); let el;
-      if (T('[data-lclose]')) { root.innerHTML = ''; root.onclick = root.onsubmit = null; tuUi.add = false; tuUi.edit = null; return; }
-      if ((el = T('[data-tutab]'))) { tuUi.tab = el.dataset.tutab; tuUi.add = false; tuUi.edit = null; return draw(true); }
+      if (T('[data-lclose]')) { root.innerHTML = ''; root.onclick = root.onsubmit = null; tuUi.add = false; tuUi.edit = null; tuUi.inAdd = tuUi.inEdit = null; return; }
+      if ((el = T('[data-tutab]'))) { tuUi.tab = el.dataset.tutab; tuUi.add = false; tuUi.edit = null; tuUi.inAdd = tuUi.inEdit = null; return draw(true); }
       if (T('[data-tnadd]')) { tuUi.add = true; tuUi.edit = null; draw(true); const t = root.querySelector('#tnText'); if (t) t.focus(); return; }
       if (T('[data-tncancel]')) { tuUi.add = false; tuUi.edit = null; return draw(true); }
       if ((el = T('[data-tnedit]'))) { tuUi.edit = el.dataset.tnedit; tuUi.add = false; return draw(true); }
+      if (T('[data-tinadd]')) { tuUi.inAdd = { kind: 'kira' }; tuUi.inEdit = null; draw(true); const t = root.querySelector('#tinAmt'); if (t) t.focus(); return; }
+      if (T('[data-tinrent]')) { const r = (db.trIn || []).filter(t => t.kind === 'kira').sort((a, b) => b.date.localeCompare(a.date))[0]; tuUi.inAdd = { kind: 'kira', amount: r.amount }; tuUi.inEdit = null; return draw(true); }
+      if ((el = T('[data-tinkind]'))) { root.querySelectorAll('[data-tinkind]').forEach(b => b.setAttribute('aria-pressed', b === el)); return; }
+      if (T('[data-tincancel]')) { tuUi.inAdd = null; tuUi.inEdit = null; return draw(true); }
+      if ((el = T('[data-tinedit]'))) { tuUi.inEdit = el.dataset.tinedit; tuUi.inAdd = null; return draw(true); }
+      if ((el = T('[data-tindel]'))) { const id = el.dataset.tindel, prev = db.trIn.slice(); db.trIn = db.trIn.filter(n => n.id !== id); tuUi.inEdit = null; save(); draw(true); return toast('Gelir silindi', () => { db.trIn = prev; save(); draw(true); }); }
       if ((el = T('[data-tndel]'))) { const id = el.dataset.tndel, prev = db.trNotes.slice(); db.trNotes = db.trNotes.filter(n => n.id !== id); tuUi.edit = null; save(); draw(true); return toast('Not silindi', () => { db.trNotes = prev; save(); draw(true); }); }
     };
     root.onsubmit = e => {
-      e.preventDefault(); if (e.target.id !== 'tnForm') return;
+      e.preventDefault();
+      if (e.target.id === 'tinForm') {
+        const amount = parseAmt(root.querySelector('#tinAmt').value.replace(/₺|TL/gi, '')), date = root.querySelector('#tinDate').value || todayIso, id = e.target.dataset.id;
+        const kind = root.querySelector('[data-tinkind="kira"]').getAttribute('aria-pressed') === 'true' ? 'kira' : 'diger', note = root.querySelector('#tinNote').value.trim();
+        if (!(amount > 0)) return toast('Tutarı yaz (TL)');
+        db.trIn = db.trIn || [];
+        if (id) Object.assign(db.trIn.find(n => n.id === id), { amount, date, kind, note }); else db.trIn.push({ id: 'ti' + Date.now().toString(36) + Math.random().toString(36).slice(2, 5), ts: Date.now(), date, amount, kind, note });
+        tuUi.inAdd = null; tuUi.inEdit = null; save(); draw(true); return toast(id ? 'Gelir kaydedildi' : 'Gelir eklendi · ' + tl(amount));
+      }
+      if (e.target.id !== 'tnForm') return;
       const text = root.querySelector('#tnText').value.trim(), date = root.querySelector('#tnDate').value || todayIso, id = e.target.dataset.id;
       if (!text) return toast('Notu yaz');
       db.trNotes = db.trNotes || [];
