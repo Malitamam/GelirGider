@@ -464,6 +464,8 @@ nav.tabs .tab[aria-current="page"] span.pi { background: var(--primary-soft); }
 .kr-form { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; background: var(--surface-2); border-radius: 16px; padding: 12px; }
 .kr-form .full, .kr-form .btns, #krSimForm .btn { grid-column: 1 / -1; }
 #krSimForm { grid-template-columns: 1fr 1fr 1fr; }
+.kr-mk { display: flex; align-items: center; gap: 8px; font-size: 13.5px; font-weight: 700; color: var(--ink); } .kr-mk input { width: 18px; height: 18px; accent-color: var(--primary); } .kr-mk small { font-weight: 600; color: var(--muted); }
+.kr-form .fld small { display: block; font-size: 11px; }
 .kr-form .btns { display: flex; gap: 8px; } .kr-form .btns .danger { margin-left: auto; }
 .kr-form select { border: 1px solid var(--line); background: var(--surface); border-radius: 12px; padding: 10px 12px; font-size: 15px; color: var(--ink); width: 100%; font-weight: 500; }
 .kr-card { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 4px 10px; text-align: left; border: 0; background: var(--surface-2); border-radius: 16px; padding: 12px 14px; color: var(--ink); width: 100%; }
@@ -1365,7 +1367,7 @@ nav.tabs .tab[aria-current="page"] { color: var(--primary); }
     return items.sort((a, b) => a.due.localeCompare(b.due));
   }
   function sendCard() {
-    if (ui.ym !== curYm) return '';
+    if (ui.ym !== curYm && ui.ym !== actYm()) return '';
     db.sendCalc = db.sendCalc || {};
     const sal = lastSalary(), T = ui.sendFor || (sal && sal.ym);
     if (!T) return '';
@@ -1390,7 +1392,7 @@ nav.tabs .tab[aria-current="page"] { color: var(--primary); }
 
   // C2 Ay sonu bakiyeleri: ayın son 6 günü (maaştan önce) iki hesabın güncel parası elle girilir; db.balances[ay] = { p1, p2, date }
   function balCard() {
-    if (ui.ym !== curYm) return '';
+    if (ui.ym !== curYm && ui.ym !== actYm()) return '';
     db.balances = db.balances || {};
     const [Y, M] = curYm.split('-').map(Number), dim = new Date(Y, M, 0).getDate(), day = +todayIso.slice(8);
     const cur = db.balances[curYm], hid = (db.balHide || {})[curYm];
@@ -1598,13 +1600,15 @@ nav.tabs .tab[aria-current="page"] { color: var(--primary); }
       const gi = mt.filter(t => t.type === 'in').reduce((a, t) => a + t.amount, 0), gd = mt.filter(t => t.type === 'out').reduce((a, t) => a + t.amount, 0);
       if (!gi && !gd) continue;
       const back = plans.filter(x => x.l.fx).reduce((a, x) => a + x.P.rows.filter(r => r.ym === ym).reduce((b, r) => b + r.pay, 0), 0);
-      ms.push({ ym, net: gi - gd + back });
+      const gv = mt.filter(t => t.type === 'inv').reduce((a, t) => a + t.amount, 0), gt = (db.transfers || []).filter(t => t.dir === 'tr' && t.date.slice(0, 7) === ym).reduce((a, t) => a + t.amount, 0);
+      ms.push({ ym, base: gi - gd + back, gv, gt, net: gi - gd + back - gv - gt });
     }
     ui.who = w;
-    const avg = ms.length ? ms.reduce((a, m) => a + m.net, 0) / ms.length : null;
+    const av = k => ms.reduce((a, m) => a + m[k], 0) / ms.length;
+    const avg = ms.length ? av('net') : null, avgBase = ms.length ? av('base') : 0, avgInv = ms.length ? av('gv') : 0, avgTr = ms.length ? av('gt') : 0;
     const cur = plans.reduce((a, x) => { const last = x.P.rows[x.P.rows.length - 1]; return last && last.ym >= curYm ? a + x.P.inst : a; }, 0);
     const cap = avg == null ? null : Math.max(0, avg / 2 - cur);
-    return { de, bk, avg, n: ms.length, cur, cap };
+    return { de, bk, avg, avgBase, avgInv, avgTr, n: ms.length, cur, cap };
   }
 
   function openTR() {
@@ -1674,8 +1678,11 @@ nav.tabs .tab[aria-current="page"] { color: var(--primary); }
             <div class="all"><span>Toplam</span><b class="num">${eur(all)}</b></div></div>
           <div class="kc"><div class="as-mh"><b>Ne kadar kredi çekilebilir?</b><small>Kural: yeni taksit ≤ aylık artanın yarısı − mevcut taksitler</small></div>
             ${Tt.avg == null ? '<p class="hint">Hesap için en az bir aylık gelir/gider kaydı gerekli.</p>' : `
-            <div class="kc-r"><span>Aylık artan (son ${Tt.n} ay ort.)</span><b class="num">${eur(Tt.avg)}</b></div>
-            <div class="kc-r"><span>Yarısı</span><b class="num">${eur(Tt.avg / 2)}</b></div>
+            <div class="kc-r"><span>Gelir − gider (son ${Tt.n} ay ort.)</span><b class="num">${eur(Tt.avgBase)}</b></div>
+            ${Tt.avgInv ? `<div class="kc-r"><span>Yatırım</span><b class="num">−${eur(Tt.avgInv)}</b></div>` : ''}
+            ${Tt.avgTr ? `<div class="kc-r"><span>Türkiye'ye giden</span><b class="num">−${eur(Tt.avgTr)}</b></div>` : ''}
+            <div class="kc-r"><span>Aylık artan</span><b class="num">${eur(Tt.avg)}</b></div>
+            <div class="kc-r"><span>Yarısı</span><b class="num">${eur(Math.max(0, Tt.avg / 2))}</b></div>
             <div class="kc-r"><span>Mevcut kredi taksitleri</span><b class="num">−${eur(Tt.cur)}</b></div>
             <div class="kc-r big"><span>Yeni taksit en fazla</span><b class="num">${eur(Tt.cap)}/ay</b></div>
             ${Tt.cap > 0 ? `<div class="kc-t">${[36, 48, 60].map(n => `<button data-kcsim="${n}"><small>${n} ay</small><b class="num">≈ ${eur(Math.floor(pv(Tt.cap, n) / 500) * 500)}</b></button>`).join('')}</div><p class="hint">Efektif %${String(sim.r).replace('.', ',')} faizle (Simülatör'deki oran). Dokununca Simülatör'de açılır.</p>` : '<p class="hint">Şu an yeni taksit için yer yok.</p>'}`}
@@ -1809,7 +1816,9 @@ nav.tabs .tab[aria-current="page"] { color: var(--primary); }
     return { i, inst, eff: (Math.pow(1 + i, 12) - 1) * 100, rows };
   }
   function loanSt(l, ym) {
+    if (l.paidN && ymDiff(ym, l.first) < l.paidN) return 'paid';
     const f = l.fx && db.fixed.find(x => x.id === l.fx);
+    if (f && ym < f.start) return 'paid';
     if (f) { const st = fixedState(f, ym); if (st) return st.status === 'paid' || st.status === 'auto' ? 'paid' : st.status; }
     if ((l.paid || {})[ym]) return 'paid';
     const [Y, M] = ym.split('-').map(Number), due = ym + '-' + pad(Math.min(l.day || 1, new Date(Y, M, 0).getDate()));
@@ -1823,12 +1832,14 @@ nav.tabs .tab[aria-current="page"] { color: var(--primary); }
     return `<form class="kr-form" id="krForm" data-id="${n ? '' : l.id}">
       <label class="fld full">Ad<input id="krName" maxlength="30" required placeholder="ör. Araba kredisi" value="${esc(l.name)}"></label>
       <label class="fld full">Sabit giderle bağla<select id="krFx"><option value="">Bağlama (✓ burada konur)</option>${fxOpt.map(f => `<option value="${f.id}" ${l.fx === f.id ? 'selected' : ''}>${esc(f.name)} · ${eur(f.amount)}</option>`).join('')}</select></label>
+      <label class="kr-mk full" id="krMkWrap" ${l.fx ? 'hidden' : ''}><input type="checkbox" id="krMk" ${n ? 'checked' : ''}> Taksiti sabit gider olarak da ekle <small>(Özet'te ve kalan hesabında görünsün)</small></label>
       <label class="fld">Kredi tutarı (€)<input id="krAmt" inputmode="decimal" required value="${v(l.amount)}"></label>
       <label class="fld">Vade (ay)<input id="krN" type="number" min="1" max="480" required value="${l.months}"></label>
       <label class="fld">Taksit (€)<input id="krInst" inputmode="decimal" placeholder="boşsa hesaplanır" value="${v(l.inst)}"></label>
       <label class="fld">Efektif faiz (%)<input id="krRate" inputmode="decimal" placeholder="taksit yoksa" value="${v(l.rate)}"></label>
       <label class="fld">İlk taksit ayı<input id="krFirst" type="month" required value="${l.first}"></label>
       <label class="fld">Ödeme günü<input id="krDay" type="number" min="1" max="31" value="${l.day}"></label>
+      <label class="fld full">Şimdiye kadar ödenen taksit (adet)<input id="krPaidN" type="number" min="0" max="480" value="${l.paidN || 0}"><small>Kredi önceden başladıysa, ödenmiş taksitler kırmızı görünmesin</small></label>
       <label class="fld">Ücretsiz erken ödeme (%)<input id="krFree" inputmode="decimal" value="${v(l.freePct)}"></label>
       <label class="fld">Erken kapatma ücreti (%, son yıl yarısı)<input id="krFee" inputmode="decimal" value="${v(l.fee)}"></label>
       <div class="btns"><button class="btn">${n ? 'Ekle' : 'Kaydet'}</button><button type="button" class="btn ghost" data-krcancel>Vazgeç</button>${n ? '' : `<button type="button" class="btn danger" data-krdel="${l.id}">Sil</button>`}</div>
@@ -1941,6 +1952,7 @@ nav.tabs .tab[aria-current="page"] { color: var(--primary); }
     root.oninput = e => { if (e.target.id === 'krAt') { const old = e.target; krUi.at = +old.value; draw(true); const nr = root.querySelector('#krAt'); if (nr) nr.replaceWith(old); } };
     root.onchange = e => {
       if (e.target.id === 'krExtra') { const v = parseAmt(e.target.value); krUi.extra = v > 0 ? v : null; return draw(true); }
+      if (e.target.id === 'krFx') { const w = root.querySelector('#krMkWrap'); if (w) w.hidden = !!e.target.value; }
       if (e.target.id !== 'krFx' || !e.target.value) return;
       const f = db.fixed.find(x => x.id === e.target.value), q = s => root.querySelector(s); if (!f) return;
       if (!q('#krName').value) q('#krName').value = f.name;
@@ -1951,12 +1963,19 @@ nav.tabs .tab[aria-current="page"] { color: var(--primary); }
       e.preventDefault(); const q = s => root.querySelector(s);
       if (e.target.id === 'krSimForm') { const a = parseAmt(q('#ksA').value), r = parseAmt(q('#ksR').value), n = Math.round(+q('#ksN').value); if (!(a > 0) || !(r >= 0) || !(n >= 1)) return toast('Tutar, faiz ve vadeyi yaz'); krUi.sim = { a, r, n }; return draw(true); }
       if (e.target.id !== 'krForm') return;
-      const l = { name: q('#krName').value.trim(), fx: q('#krFx').value, amount: parseAmt(q('#krAmt').value), months: Math.round(+q('#krN').value), inst: parseAmt(q('#krInst').value) || 0, rate: parseAmt(q('#krRate').value) || 0, first: q('#krFirst').value, day: Math.min(31, Math.max(1, Math.round(+q('#krDay').value) || 1)), freePct: parseAmt(q('#krFree').value) || 0, fee: parseAmt(q('#krFee').value) || 0 };
+      const l = { paidN: Math.max(0, Math.round(+q('#krPaidN').value) || 0), name: q('#krName').value.trim(), fx: q('#krFx').value, amount: parseAmt(q('#krAmt').value), months: Math.round(+q('#krN').value), inst: parseAmt(q('#krInst').value) || 0, rate: parseAmt(q('#krRate').value) || 0, first: q('#krFirst').value, day: Math.min(31, Math.max(1, Math.round(+q('#krDay').value) || 1)), freePct: parseAmt(q('#krFree').value) || 0, fee: parseAmt(q('#krFee').value) || 0 };
       if (!l.name || !(l.amount > 0) || !(l.months >= 1) || !l.first) return toast('Ad, tutar, vade ve ilk taksit ayı gerekli');
       if (!l.inst && !l.rate) return toast('Taksit ya da faiz oranından birini yaz');
       db.loans = db.loans || []; const id = e.target.dataset.id;
+      // D4: bağlı olmayan kredi Özet/kalan hesabına girmez; istenirse taksit sabit gider olarak eklenir ve krediye bağlanır
+      let mk = false;
+      if (!l.fx && q('#krMk') && q('#krMk').checked) {
+        const inst = l.inst || Math.round(annuity(l.amount, loanRate(l), l.months) * 100) / 100;
+        const f = { id: 'f' + Date.now(), name: l.name, amount: inst, day: l.day, end: ymAdd(l.first, l.months - 1), every: 1, payer: 'p1', manual: false, start: l.first };
+        db.fixed.push(f); l.fx = f.id; mk = true;
+      }
       if (id) Object.assign(db.loans.find(x => x.id === id), l); else { l.id = 'kr' + Date.now().toString(36) + Math.random().toString(36).slice(2, 6); l.paid = {}; db.loans.push(l); krUi.open = l.id; }
-      krUi.form = null; save(); redraw(); toast(id ? 'Kaydedildi' : 'Kredi eklendi');
+      krUi.form = null; save(); redraw(); toast((id ? 'Kaydedildi' : 'Kredi eklendi') + (mk ? ' · sabit gidere eklendi' : ''));
     };
     draw(false);
   }
