@@ -885,9 +885,21 @@ nav.tabs .tab[aria-current="page"] { color: var(--primary); }
 .sh-kgrid .sh-t .sh-em i { background: var(--surface-2); }
 .sh-kgrid .sh-t.on { background: var(--primary-soft); }
 .sh-yeni { margin-top: 8px; }
-nav.tabs .in { grid-template-columns: 1fr 1fr 1fr 64px 1fr 1fr; padding: 0 4px; }
+nav.tabs .in { grid-template-columns: repeat(5, 1fr); padding: 0 4px; }
 nav.tabs .tab { font-size: 10.5px; }
 nav.tabs .tab span.pi { width: 46px; }
+/* Paket 2 (2026-11-07): + düğmesi Özet'te sağ altta, menünün hemen üstünde sabit */
+.fab { position: fixed; z-index: 21; right: max(16px, calc((100vw - 460px) / 2 + 16px), env(safe-area-inset-right, 0px)); bottom: calc(68px + env(safe-area-inset-bottom, 0px) + 14px); transform: none; }
+.fab:active { transform: scale(.96); }
+.fab[hidden] { display: none; }
+.app:has(#view.ozet) { padding-bottom: calc(160px + env(safe-area-inset-bottom, 0px)); }
+/* Özet kartında alışveriş sepetleri (ay kapatma hizasında), sağ üstte ürün sayısı */
+.hero .shb { position: absolute; z-index: 2; top: 14px; width: 36px; height: 36px; box-shadow: none; background: var(--surface-2); color: var(--ink-2); overflow: visible; }
+.hero .shb.mk { right: 102px; } .hero .shb.on { right: 58px; }
+.hero .shb svg.i { width: 18px; height: 18px; }
+.hero .shb .gl { position: absolute; left: -3px; bottom: -3px; width: 17px; height: 17px; border-radius: 50%; background: var(--inv); color: #fff; display: grid; place-items: center; border: 2px solid var(--surface); }
+.hero .shb .gl svg.i { width: 10px; height: 10px; stroke-width: 2.4; }
+.hero .shb .n { position: absolute; top: -6px; right: -6px; min-width: 18px; height: 18px; padding: 0 4px; border-radius: 9px; background: var(--primary); color: #fff; font-size: 10.5px; font-weight: 800; line-height: 18px; text-align: center; border: 2px solid var(--surface); box-sizing: content-box; }
 </style>
 </head>
 <body>
@@ -908,12 +920,12 @@ nav.tabs .tab span.pi { width: 46px; }
   <main id="view" style="display:flex;flex-direction:column;gap:11px"></main>
 </div>
 
+<button class="fab" id="fab" aria-label="Yeni kayıt ekle" data-ic="plus"></button>
 <nav class="tabs" lang="tr" aria-label="Ana menü">
   <div class="in">
     <button class="tab" data-tab="ozet"><span class="pi" data-ic="home"></span>Özet</button>
     <button class="tab" data-tab="alisveris"><span class="pi" data-ic="cart"></span>Alışveriş</button>
     <button class="tab" data-tab="hareket"><span class="pi" data-ic="list"></span>Hareketler</button>
-    <button class="fab" id="fab" aria-label="Yeni kayıt ekle" data-ic="plus"></button>
     <button class="tab" data-tab="takvim"><span class="pi" data-ic="calendar"></span>Takvim</button>
     <button class="tab" data-tab="analiz"><span class="pi" data-ic="pie"></span>Analiz</button>
   </div>
@@ -949,6 +961,7 @@ nav.tabs .tab span.pi { width: 46px; }
     chevU: '<path d="m6 15 6-6 6 6"/>',
     trend: '<path d="M22 7 13.5 15.5 8.5 10.5 2 17"/><path d="M16 7h6v6"/>',
     repeat: '<path d="m17 2 4 4-4 4"/><path d="M3 11v-1a4 4 0 0 1 4-4h14"/><path d="m7 22-4-4 4-4"/><path d="M21 13v1a4 4 0 0 1-4 4H3"/>',
+    globe: '<circle cx="12" cy="12" r="10"/><path d="M2 12h20"/><path d="M12 2a15 15 0 0 1 0 20 15 15 0 0 1 0-20"/>',
     cart: '<circle cx="8" cy="21" r="1"/><circle cx="19" cy="21" r="1"/><path d="M2 2h2l2.7 12.4a2 2 0 0 0 2 1.6h9.7a2 2 0 0 0 2-1.6L22 7H5.1"/>',
     food: '<path d="M3 2v7a2 2 0 0 0 2 2h4a2 2 0 0 0 2-2V2M7 2v20"/><path d="M21 15V2a5 5 0 0 0-5 5v6a2 2 0 0 0 2 2h3zm0 0v7"/>',
     bus: '<path d="M8 6v6M15 6v6M2 12h19.6"/><path d="M18 18h3s.5-1.7.8-2.8c.1-.4.2-.8.2-1.2s-.1-.8-.2-1.2l-1.4-5C20.1 6.8 19.1 6 18 6H4a2 2 0 0 0-2 2v10h3"/><circle cx="7" cy="18" r="2"/><path d="M9 18h5"/><circle cx="16" cy="18" r="2"/>',
@@ -1357,6 +1370,9 @@ nav.tabs .tab span.pi { width: 46px; }
     const isC = !!db.closed[ui.ym], pwL = ayAcc(mName) + (isC ? ' yeniden aç' : ' kapat');
     html += `<section class="card hero">
       ${isC || ui.ym <= curYm ? `<button class="icon-btn pw ${isC ? 'on' : ''}" data-pw aria-label="${pwL}" title="${pwL}">${svg('power')}</button>` : ''}
+      ${(() => { const m = shBekleyen('market').length, o = shBekleyen('diger').length;
+        return `<button class="icon-btn shb mk" data-shgo="market" aria-label="Market listesi, ${m} ürün" title="Market listesi">${svg('cart')}${m ? `<b class="n num">${m}</b>` : ''}</button>
+      <button class="icon-btn shb on" data-shgo="diger" aria-label="Online ve diğer liste, ${o} ürün" title="Online / Diğer">${svg('cart')}<span class="gl">${svg('globe')}</span>${o ? `<b class="n num">${o}</b>` : ''}</button>`; })()}
       <button class="icon-btn trb" data-transfers aria-label="Transferler" title="Transferler">⇄</button>
       <button class="icon-btn trk" data-trpage aria-label="Türkiye" title="Türkiye">TR</button>
       <button class="icon-btn krb ${loansLate() ? 'alert' : ''}" data-kredi aria-label="Krediler${loansLate() ? ' (ödenmemiş taksit var)' : ''}" title="Krediler">K</button>
@@ -2861,6 +2877,8 @@ Diğer=Çiçek|💐;Hediye|🎁;Kalem|✏️;Defter|📒;Zarf|✉️;Koli bandı
     $('#mNext').disabled = ui.ym >= maxYm;
     $('.month').style.visibility = ui.tab === 'kategori' || ui.tab === 'ayarlar' ? 'hidden' : 'visible';
     $('.month').style.display = ui.tab === 'alisveris' ? 'none' : '';
+    $('#fab').hidden = ui.tab !== 'ozet';
+    view.classList.toggle('ozet', ui.tab === 'ozet');
     $('#hSub').textContent = ui.tab === 'ozet' ? 'Merhaba' : 'Cüzdan';
     $('#hTitle').textContent = ui.tab === 'ozet' ? AYLAR[+ui.ym.slice(5) - 1] + ' özeti' : TITLES[ui.tab];
     ui.tab === 'ayarlar' ? $('#gearBtn').setAttribute('aria-current', 'page') : $('#gearBtn').removeAttribute('aria-current');
@@ -2913,6 +2931,7 @@ Diğer=Çiçek|💐;Hediye|🎁;Kalem|✏️;Defter|📒;Zarf|✉️;Koli bandı
       if (v === 'no') return render();
       return withUndo('Örnek kayıtlar silindi', () => { db = { catV: 4, fxV: 1, inV: 1, planV: 1, privV: 1, people: db.people, cats: JSON.parse(JSON.stringify(DEFAULT_CATS)), tx: [], paid: {}, fixed: [], income: [], got: {}, closed: {}, transfers: db.transfers || [], budget: db.budget, bgV: 1, invBase: db.invBase, shop: db.shop, sample: false }; });
     }
+    if ((el = T('[data-shgo]'))) { shUi.tab = el.dataset.shgo; shUi.add = false; return setTab('alisveris'); }
     if (T('[data-transfers]')) return openTransfers();
     if (T('[data-kredi]')) return openKredi();
     if (T('[data-trpage]')) return openTR();
