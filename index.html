@@ -817,6 +817,77 @@ nav.tabs .tab[aria-current="page"] { color: var(--primary); }
 :root[data-theme="dark"] .scrim { background: rgba(0, 0, 0, .6); }
 :root[data-theme="dark"] .fab { box-shadow: 0 6px 16px rgba(0, 0, 0, .5); }
 @media (max-width: 400px) { .hdr-r { gap: 6px; } .icon-btn { width: 34px; height: 34px; } .month button { width: 28px; height: 28px; } .month span { min-width: 64px; font-size: 13px; } .hello b { font-size: 18px; } }
+/* Alışveriş sekmesi (2026-11-07): sembol sade (zemin yok) + köşe rozeti */
+.sh-em { position: relative; display: inline-flex; font-family: "Noto Color Emoji", "Apple Color Emoji", "Segoe UI Emoji", sans-serif; font-size: 20px; line-height: 1; flex: none; }
+.sh-em i { position: absolute; right: -6px; bottom: -3px; font-style: normal; font-size: .5em; line-height: 1; padding: 1px; border-radius: 50%; background: var(--surface); box-shadow: 0 0 0 1px var(--line); }
+.sh-seg { position: sticky; top: 0; z-index: 3; }
+.sh-ara { padding: 12px; gap: 10px; }
+.sh-in { display: flex; gap: 8px; align-items: center; }
+.sh-in input { flex: 1; min-width: 0; border: 1.5px solid var(--line); background: var(--surface-2); color: var(--ink); border-radius: 14px; padding: 11px 12px; font: 600 15px var(--font); }
+.sh-in input:focus { outline: none; border-color: var(--primary); }
+.sh-in .icon-btn { background: var(--primary); color: #fff; box-shadow: none; flex: none; }
+.sh-oneri { display: flex; flex-wrap: wrap; gap: 6px; }
+.sh-oneri:empty { display: none; }
+.sh-chip { display: inline-flex; align-items: center; gap: 7px; border: 0; background: var(--surface-2); color: var(--ink); border-radius: 14px; padding: 7px 11px 7px 9px; font: 700 13px var(--font); }
+.sh-chip .sh-em { font-size: 17px; }
+.sh-chip .sh-em i { background: var(--surface-2); }
+.sh-chip.on { opacity: .55; }
+.sh-chip .i { width: 14px; height: 14px; color: var(--in-ink); }
+.sh-chip.sm { padding: 6px 10px; font-size: 12px; }
+.sh-chip.sm.on { opacity: 1; background: var(--primary-soft); color: var(--primary-ink); box-shadow: inset 0 0 0 1.5px var(--primary); }
+.sh-qh, .sh-lh { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+.sh-qh b { font-size: 14px; } .sh-qh small, .sh-lh small { color: var(--muted); font-weight: 600; }
+.sh-qh span { display: flex; gap: 2px; }
+.sh-lnk { white-space: nowrap; border: 0; background: none; color: var(--primary-ink); font: 700 13.5px var(--font); padding: 8px; border-radius: 10px; }
+.sh-lnk[aria-pressed="true"] { background: var(--primary-soft); }
+.sh-edit-not { margin: -6px 0 0; font-size: 12px; color: var(--warn); font-weight: 700; }
+.sh-grid { display: grid; grid-template-columns: repeat(8, minmax(0, 1fr)); gap: 4px; }
+/* Sık kullanılanlar: 8'li sıra, 3 sıra görünür, gerisi parmakla kaydırılır */
+.sh-quick { --th: 50px; grid-auto-rows: var(--th); max-height: calc(var(--th) * 3 + 8px); overflow-y: auto; overscroll-behavior: contain; scroll-snap-type: y mandatory; margin-top: -4px; }
+.sh-quick > * { scroll-snap-align: start; }
+.sh-t { position: relative; min-width: 0; height: 50px; border: 0; border-radius: 10px; background: var(--surface); box-shadow: var(--shadow); color: var(--ink); display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px; padding: 0 2px; }
+.sh-t b { font-size: 9px; font-weight: 700; max-width: 100%; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.sh-t.on { background: var(--primary-soft); box-shadow: inset 0 0 0 1.5px var(--primary); }
+.sh-t.on .sh-em i { background: var(--primary-soft); }
+.sh-tick { position: absolute; left: 2px; top: 2px; width: 13px; height: 13px; border-radius: 50%; background: var(--primary); color: #fff; display: grid; place-items: center; }
+.sh-tick .i { width: 9px; height: 9px; stroke-width: 3.5; }
+.sh-t.ed { box-shadow: inset 0 0 0 1.5px var(--warn); }
+.sh-t.ed::after { content: "×"; position: absolute; right: 3px; top: 0; font-size: 12px; font-weight: 800; color: var(--warn); }
+.sh-plus { color: var(--muted); } .sh-plus .i { width: 20px; height: 20px; }
+.sh-list, .sh-od { padding: 12px 14px; gap: 0; }
+.sh-lh { padding-bottom: 6px; } .sh-lh b { font-size: 14px; }
+.sh-row { display: flex; align-items: center; gap: 10px; min-height: 46px; border-top: 1px solid var(--line); user-select: none; -webkit-user-select: none; -webkit-touch-callout: none; transition: background .2s; }
+.sh-row.bas { background: var(--surface-2); }
+.sh-ad { flex: 1; min-width: 0; font-size: 14.5px; font-weight: 700; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.sh-row.al .sh-ad { text-decoration: line-through; color: var(--muted); }
+.sh-row.al .sh-em { opacity: .5; }
+.sh-eski { font-style: normal; font-weight: 800; color: var(--warn); font-size: 15px; padding: 0 4px; }
+.sh-ok { flex: none; width: 44px; height: 44px; margin-right: -8px; border: 0; background: none; display: grid; place-items: center; color: #fff; }
+.sh-ok::before { content: ""; grid-area: 1 / 1; width: 24px; height: 24px; border-radius: 50%; border: 2px solid var(--primary); }
+.sh-ok[aria-pressed="true"]::before { background: var(--in); border-color: var(--in); }
+.sh-ok .i { grid-area: 1 / 1; width: 15px; height: 15px; stroke-width: 3; z-index: 1; }
+.sh-list .hint, .sh-od .hint { margin: 8px 0 0; }
+.sh-list .empty, .sh-od .empty { border-top: 1px solid var(--line); }
+.sh-addbtn { background: var(--primary); color: #fff; box-shadow: none; }
+.sh-odf { display: flex; flex-direction: column; gap: 8px; padding: 4px 0 12px; }
+.sh-odf input { border: 1.5px solid var(--line); background: var(--surface-2); color: var(--ink); border-radius: 14px; padding: 11px 12px; font: 600 15px var(--font); }
+.sh-odf input:focus { outline: none; border-color: var(--primary); }
+.sh-yerler { display: flex; flex-wrap: wrap; gap: 6px; }
+.sh-gh { font-size: 12px; font-weight: 800; color: var(--primary-ink); padding: 10px 0 4px; border-top: 1px solid var(--line); text-transform: none; }
+.sh-gh small { color: var(--muted); font-weight: 600; }
+.sh-gh + .sh-row { border-top: 0; }
+.sheet.sh-kat { max-height: 92vh; overflow-y: auto; }
+.sh-kat h3 small { font-size: 12px; color: var(--muted); font-weight: 600; margin-left: 6px; }
+.sh-kat #shKq { border: 1.5px solid var(--line); background: var(--surface-2); color: var(--ink); border-radius: 14px; padding: 10px 12px; font: 600 15px var(--font); }
+.sh-kg { font-size: 12px; font-weight: 800; color: var(--muted); margin-top: 6px; }
+.sh-kgrid { grid-template-columns: repeat(6, minmax(0, 1fr)); }
+.sh-kgrid .sh-t { box-shadow: none; background: var(--surface-2); height: 56px; }
+.sh-kgrid .sh-t .sh-em i { background: var(--surface-2); }
+.sh-kgrid .sh-t.on { background: var(--primary-soft); }
+.sh-yeni { margin-top: 8px; }
+nav.tabs .in { grid-template-columns: 1fr 1fr 1fr 64px 1fr 1fr; padding: 0 4px; }
+nav.tabs .tab { font-size: 10.5px; }
+nav.tabs .tab span.pi { width: 46px; }
 </style>
 </head>
 <body>
@@ -840,6 +911,7 @@ nav.tabs .tab[aria-current="page"] { color: var(--primary); }
 <nav class="tabs" lang="tr" aria-label="Ana menü">
   <div class="in">
     <button class="tab" data-tab="ozet"><span class="pi" data-ic="home"></span>Özet</button>
+    <button class="tab" data-tab="alisveris"><span class="pi" data-ic="cart"></span>Alışveriş</button>
     <button class="tab" data-tab="hareket"><span class="pi" data-ic="list"></span>Hareketler</button>
     <button class="fab" id="fab" aria-label="Yeni kayıt ekle" data-ic="plus"></button>
     <button class="tab" data-tab="takvim"><span class="pi" data-ic="calendar"></span>Takvim</button>
@@ -2555,19 +2627,248 @@ nav.tabs .tab[aria-current="page"] { color: var(--primary); }
       <p class="hint" style="text-align:center">Cüzdan · bütün kayıtlar sadece bu telefonda saklanır, internete gönderilmez.</p>`;
   }
 
+  /* ---------- Alışveriş (2026-11-07) ----------
+     Market listesi: arama + öneriler, Sık kullanılanlar (8'li ızgara, en çok 50, 3 sıra görünür, kaydırılır),
+     Listeden seç (600 ürünlük katalog), Düzenle. Online/Diğer: + ile elle ekleme, yere göre gruplu liste.
+     Veri: db.shop = { items:[{id, ad, liste:'market'|'online'|'diger', yer, ek, al}], quick:[ad], freq:{sade:{ad,n}} } */
+  const SH_KAT_HAM = `Fırın ve kahvaltı=Ekmek|🍞;Tam buğday ekmeği|🍞|🌾;Tost ekmeği|🍞|🔥;Brötchen|🥖|🥨;Baget|🥖;Simit|🥯;Poğaça|🥐|🧀;Kruvasan|🥐;Lavaş|🫓;Yufka|🫓|📃;Pide|🫓|🧀;Yumurta|🥚;Zeytin|🫒;Siyah zeytin|🫒|⚫;Bal|🍯;Reçel|🫙|🍓;Nutella|🫙|🍫;Tahin|🫙|⚪;Pekmez|🫙|🍇;Fıstık ezmesi|🫙|🥜;Müsli|🥣|🌾;Mısır gevreği|🥣|🌽;Yulaf|🌾;Tereyağı|🧈;Margarin|🧈|🌻;Çavdar ekmeği|🍞|🟤;Kepekli ekmek|🍞|🌰;Siyah ekmek|🍞|⚫;Glutensiz ekmek|🍞|🚫;Hamburger ekmeği|🍔|🍞;Brezel|🥨;Knäckebrot|🍘|🌾;Açma|🥐|🌀;Çörek|🥯|⚫;Pankek karışımı|🥞;Waffle|🧇|🍓;Granola|🥣|🍯;Yulaf ezmesi|🌾|🥣;Zeytin ezmesi|🫒|🫙;Yeşil zeytin|🫒|🟢;Petek bal|🍯|🐝;Organik yumurta|🥚|🌱;Çikolatalı kruvasan|🥐|🍫;Milföy hamuru|🥐|📃;Pizza hamuru|🍕|📃;Tortilla|🫓|🌮
+Peynir ve şarküteri=Peynir|🧀;Beyaz peynir|🧀|⚪;Kaşar|🧀|🟡;Lor|🧀|☁️;Labne|🫙|🧀;Krem peynir|🧀|🥄;Hellim|🧀|🔥;Mozzarella|🧀|🍅;Parmesan|🧀|🍝;Sucuk|🌭|🔥;Salam|🥓|⭕;Pastırma|🥓|🌶️;Jambon|🥓|🥪;Sosis|🌭;Tulum peyniri|🧀|🏔️;Gouda|🧀|🟠;Cheddar|🧀|🍔;Feta|🧀|🫒;Rendelenmiş peynir|🧀|🍕;Dilim peynir|🧀|🥪;Keçi peyniri|🧀|🐐;Hindi füme|🦃|🔥;Tavuk jambon|🍗|🥪;Kavurma|🥩|🫙;Hindi salam|🦃|⭕
+Sebze=Brokoli|🥦;Karnabahar|🥦|⚪;Domates|🍅;Cherry domates|🍅|🤏;Salatalık|🥒;Maydanoz|🌿;Dereotu|🌿|🐟;Nane|🌿|🍃;Fesleğen|🌿|🍅;Roka|🥬|🍃;Marul|🥬;Ispanak|🥬|💪;Lahana|🥬|🥗;Brüksel lahanası|🥬|🤏;Pırasa|🥬|🧅;Kereviz|🥬|🥕;Soğan|🧅;Kırmızı soğan|🧅|🔴;Taze soğan|🧅|🌱;Sarımsak|🧄;Patates|🥔;Tatlı patates|🍠;Biber|🫑;Kapya biber|🫑|🔴;Sivri biber|🌶️|🟢;Acı biber|🌶️;Havuç|🥕;Kabak|🥒|🌼;Patlıcan|🍆;Mantar|🍄;Mısır|🌽;Bezelye|🌱|🟢;Taze fasulye|🌱;Bamya|🌱|⭐;Enginar|🥬|🌸;Zencefil|🌿|🔥;Limon|🍋;Avokado|🥑;Turp|🥕|🔴;Pancar|🍠|🟣;Salkım domates|🍅|🌿;Kurutulmuş domates|🍅|☀️;Çarliston biber|🌶️|🟡;Jalapeno|🌶️|🔥;Sarı biber|🫑|🟡;Yeşil biber|🫑|🟢;Mini salatalık|🥒|🤏;Kıvırcık|🥬|🌀;Göbek marul|🥬|⚪;Mor lahana|🥬|🟣;Semizotu|🥬|🌿;Pazı|🥬|🟢;Tere|🌱|💧;Kişniş|🌿|🌮;Biberiye|🌿|🌲;Taze sarımsak|🧄|🌱;Arpacık soğan|🧅|🤏;Küçük patates|🥔|🤏;Sap kereviz|🥬|🥢;Bebek havuç|🥕|🤏;Balkabağı|🎃;İstiridye mantarı|🍄|🦪;Kahverengi mantar|🍄|🟤;Kuşkonmaz|🌱|⚪;Lahana turşusu|🥬|🫙;Salata karışımı|🥗
+Meyve=Elma|🍎;Yeşil elma|🍏;Muz|🍌;Portakal|🍊;Mandalina|🍊|🤏;Greyfurt|🍊|🔴;Üzüm|🍇;Çilek|🍓;Ahududu|🍓|🔴;Yaban mersini|🫐;Armut|🍐;Karpuz|🍉;Kavun|🍈;Kivi|🥝;Ananas|🍍;Mango|🥭;Şeftali|🍑;Kayısı|🍑|🟠;Erik|🍑|🟣;Kiraz|🍒;Vişne|🍒|🟤;Nar|🍎|💎;İncir|🍈|🟣;Hurma|🌴;Hindistan cevizi|🥥;Misket limonu|🍋|🟢;Ayva|🍐|🟡;Nektarin|🍑|🔴;Böğürtlen|🫐|⚫;Frenk üzümü|🍇|🔴;Yeşil üzüm|🍇|🟢;Kızılcık|🍒|🔴;Trabzon hurması|🍊|🍂;Kuru incir|🍈|☀️;Kuru erik|🍑|⚫;Yeşil erik|🍑|🟢;Kan portakalı|🍊|🟣;Kestane|🌰|🔥
+Süt ürünleri=Süt|🥛;Laktozsuz süt|🥛|🚫;Yulaf sütü|🥛|🌾;Badem sütü|🥛|🌰;Yoğurt|🥣;Süzme yoğurt|🥣|🧀;Meyveli yoğurt|🥣|🍓;Quark|🥣|⚪;Ayran|🥛|🧂;Kefir|🥛|🫧;Krema|🍶;Kaymak|🍶|🍯;Puding|🍮;Sütlaç|🍮|🍚;Yarım yağlı süt|🥛|💧;Tam yağlı süt|🥛|🧈;Uzun ömürlü süt|🥛|📦;Soya sütü|🥛|🫘;Çikolatalı süt|🥛|🍫;Skyr|🥣|🔵;Grek yoğurdu|🥣|🏛️;Laktozsuz yoğurt|🥣|🚫;Kremşanti|🍶|☁️;Ekşi krema|🍶|🥄;Muhallebi|🍮|⚪;Krem karamel|🍮|🍯
+Et, tavuk ve balık=Kırmızı et|🥩;Kıyma|🥩|🌀;Kuşbaşı|🥩|🎲;Biftek|🥩|🔥;Antrikot|🥩|⭐;Pirzola|🍖;Köfte|🧆;Döner eti|🥙;Tavuk|🍗;Tavuk göğsü|🍗|💪;Tavuk but|🍗|🦵;Tavuk kanat|🍗|🕊️;Bütün tavuk|🐔;Hindi|🦃;Balık|🐟;Somon|🐟|🟠;Levrek|🐟|⚪;Çipura|🐟|🟡;Ton balığı|🐟|🔵;Karides|🦐;Kalamar|🦑;Midye|🦪;Dana eti|🥩|🐄;Kuzu eti|🍖|🐑;Ciğer|🥩|🟤;Bonfile|🥩|💎;Kemikli et|🍖|🦴;Kaburga|🍖|🔥;Tavuk ciğeri|🍗|🟤;Tavuk kıyma|🍗|🌀;Hindi göğsü|🦃|💪;Şiş kebap|🍢;Füme somon|🐟|🔥;Uskumru|🐟|🌊;Hamsi|🐟|🤏;Alabalık|🐟|🌈;Morina|🐟|❄️;Balık çubuğu|🐟|🥢;Ahtapot|🐙
+Kuru gıda ve bakliyat=Makarna|🍝;Spagetti|🍝|🍅;Lazanya|🍝|🧀;Erişte|🍜;Noodle|🍜|🥢;Pirinç|🍚;Basmati pirinç|🍚|✨;Bulgur|🌾|🍚;Kuskus|🌾|🔸;Un|🌾|🛍️;Mısır unu|🌽|🌾;İrmik|🌾|🍮;Nişasta|🌾|🥄;Şeker|🍬;Esmer şeker|🍬|🟤;Tuz|🧂;Karabiber|🧂|⚫;Pul biber|🌶️|🧂;Kimyon|🧂|🟤;Kekik|🌿|🍕;Baharat|🧂|🌶️;Mercimek|🫘|🟢;Kırmızı mercimek|🫘|🔴;Nohut|🫘|🟡;Kuru fasulye|🫘;Barbunya|🫘|🟣;Salça|🥫|🔴;Domates salçası|🥫|🍅;Biber salçası|🥫|🌶️;Konserve|🥫;Mısır konservesi|🥫|🌽;Ton balığı konservesi|🥫|🐟;Turşu|🫙|🥒;Kabartma tozu|🧁;Maya|🍞|🫧;Vanilin|🧁|🌼;Penne|🍝|🖊️;Fusilli|🍝|🌀;Tam buğday makarna|🍝|🌾;Şehriye|🍜|🤏;Arpa şehriye|🍚|🌾;Baldo pirinç|🍚|⭐;Sütlaçlık pirinç|🍚|🥛;Esmer pirinç|🍚|🟤;Kinoa|🌾|⚪;Tam buğday unu|🌾|🟤;Köftelik bulgur|🌾|🧆;Galeta unu|🍞|🧂;Pudra şekeri|🍬|☁️;Küp şeker|🍬|🎲;Tatlandırıcı|🍬|🧪;Toz biber|🌶️|🟠;Tarçın|🪵;Zerdeçal|🧂|🟡;Sumak|🧂|🟣;Köri|🍛;Defne yaprağı|🍃;İsot|🌶️|⚫;Kuru nane|🌿|☀️;Susam|🧂|⚪;Çörek otu|🌱|⚫;Chia tohumu|🌱|🔘;Keten tohumu|🌱|🟤;Haşlanmış nohut|🥫|🟡;Kuru fasulye konservesi|🥫|🫘;Doğranmış domates|🥫|🔪;Puding tozu|🍮|🛍️;Kek karışımı|🍰|🛍️
+Yağ ve sos=Yağ|🫗;Zeytinyağı|🫗|🫒;Ayçiçek yağı|🫗|🌻;Sirke|🍶|🍎;Ketçap|🫙|🍅;Mayonez|🫙|🥚;Hardal|🫙|🟡;Soya sosu|🍶|🍣;Nar ekşisi|🍶|💎;Pesto|🫙|🌿;Barbekü sosu|🍶|🔥;Acı sos|🌶️|🍶;Kızartma yağı|🫗|🍟;Hindistan cevizi yağı|🫗|🥥;Balzamik sirke|🍶|🍇;Makarna sosu|🥫|🍝;Sweet chili sos|🌶️|🍯;Salata sosu|🥗|🍶;Sarımsaklı sos|🧄|🍶;Ayvar|🫙|🫑;Acuka|🫙|🌶️
+Kahve ve çay=Kahve|☕;Türk kahvesi|☕|🇹🇷;Filtre kahve|☕|💧;Kahve kapsülü|☕|💊;Espresso|☕|⚡;Çay|🍵;Yeşil çay|🍵|🟢;Bitki çayı|🍵|🌿;Kakao|🍫|🥄;Sıcak çikolata|☕|🍫;Çekirdek kahve|☕|🫘;Granül kahve|☕|🥄;3'ü 1 arada kahve|☕|🛍️;Kafeinsiz kahve|☕|🚫;Kahve kreması|☕|🥛;Kahve filtresi|☕|🔻;Poşet çay|🍵|🏷️;Ihlamur|🍵|🌼;Papatya çayı|🍵|🌸;Adaçayı|🍵|🍃;Kuşburnu|🍵|🔴
+İçecek=İçecek|🍹;Su|💧;Maden suyu|💧|🫧;Soda|🫧;Meyve suyu|🧃;Portakal suyu|🧃|🍊;Kola|🥤;Gazoz|🥤|🫧;Ice tea|🧋;Enerji içeceği|⚡;Limonata|🥤|🍋;Şalgam|🥤|🟣;Bira|🍺;Şarap|🍷;Rakı|🥃|🦁;Viski|🥃;Şekersiz kola|🥤|🚫;Portakallı gazoz|🥤|🍊;Meyveli soda|🫧|🍋;Elma suyu|🧃|🍎;Vişne suyu|🧃|🍒;Smoothie|🧃|🍓;Alkolsüz bira|🍺|🚫;Beyaz şarap|🍷|⚪;Sporcu içeceği|🥤|💪;Damacana su|💧|🛢️;Su (6'lı paket)|💧|📦;Soğuk kahve|🧋|☕
+Atıştırmalık ve tatlı=Kuru yemiş|🥜|🌰;Fındık|🌰;Ceviz|🌰|🧠;Badem|🌰|🔸;Fıstık|🥜;Kaju|🥜|🌙;Ay çekirdeği|🌻;Kuru üzüm|🍇|☀️;Kuru kayısı|🍑|☀️;Cips|🥔|🛍️;Kraker|🍘;Bisküvi|🍪;Kurabiye|🍪|⭐;Gofret|🧇;Çikolata|🍫;Bitter çikolata|🍫|⚫;Şekerleme|🍭;Sakız|🍬|🫧;Lokum|🍬|🌹;Helva|🍯|🥜;Kek|🍰;Pasta|🎂;Dondurma|🍦;Patlamış mısır|🍿;Antep fıstığı|🥜|🟢;Leblebi|🫘|🔥;Kabak çekirdeği|🌻|🎃;Kuru meyve karışımı|🍇|🥜;Tuzlu çubuk|🥨|🧂;Pirinç patlağı|🍘|⚪;Proteinli bar|🍫|💪;Müsli bar|🌾|🍫;Sütlü çikolata|🍫|🥛;Beyaz çikolata|🍫|⚪;Jelibon|🍬|🐻;Baklava|🥧|🍯;Muffin|🧁|🍫;Donut|🍩;Çubuk dondurma|🍦|🍫
+Dondurulmuş ve hazır=Pommes|🍟;Buz|🧊;Pizza|🍕;Dondurulmuş sebze|🥦|❄️;Mantı|🥟;Börek|🥧;Lahmacun|🫓|🥩;Hamburger köftesi|🍔;Nugget|🍗|❄️;Hazır çorba|🍲;Sandviç|🥪;Sushi|🍣;Humus|🫘|🫙;Cacık|🥒|🥣;Haydari|🥣|🌿;Acılı ezme|🌶️|🍅;Sarma|🍃|🍚;Falafel|🧆|🟢;Kroket patates|🥔|❄️;Dondurulmuş çilek|🍓|❄️;Dondurulmuş ıspanak|🥬|❄️;Sigara böreği|🥧|🌀;Gözleme|🫓|🔥;Hazır yemek|🍱;Tarhana|🍲|🟠;Dürüm|🥙|📃;Hot dog|🌭|🍞
+Ev ve temizlik=Tuvalet kâğıdı|🧻;Havlu peçete|🧻|🍽️;Kâğıt mendil|🤧;Peçete|🧻|🍴;Çöp poşeti|🗑️;Buzdolabı poşeti|🛍️;Alüminyum folyo|🥈;Streç film|🎞️;Pişirme kâğıdı|🧻|🔥;Bulaşık tableti|🍽️|💊;Bulaşık deterjanı|🍽️|🧴;Bulaşık makinesi tuzu|🧂|🍽️;Parlatıcı|✨;Makine temizleyici|🫧|⚙️;Çamaşır deterjanı|🧺;Sıvı deterjan|🧺|💧;Yumuşatıcı|🧴|🧸;Leke çıkarıcı|🧴|🎯;Çamaşır suyu|🧴|⚠️;Yüzey temizleyici|🧽|✨;Cam temizleyici|🪟;Banyo temizleyici|🛁;Tuvalet temizleyici|🚽;Kireç çözücü|🧴|🪨;Sünger|🧽;Temizlik bezi|🧽|🟦;Eldiven|🧤;Süpürge torbası|🧹;Pil|🔋;Ampul|💡;Mum|🕯️;Kibrit|🔥;Oda kokusu|🌸|💨;Renkli çamaşır deterjanı|🧺|🎨;Beyaz çamaşır deterjanı|🧺|⚪;Çamaşır kapsülü|🧺|💊;Kireç önleyici|🧺|🪨;Yağ çözücü|🧽|🍳;Fırın temizleyici|🧽|🔥;Lavabo açıcı|🚰;Parke temizleyici|🧹|🪵;Yer temizleyici|🪣;Paspas|🧹|💧;Biyolojik çöp poşeti|🗑️|🌱;Sarı torba|🗑️|🟡;Saklama kabı|🥡;Kilitli poşet|🛍️|🔒;Karton bardak|🥤|📃;Çakmak|🔥|⛽;Böcek ilacı|🦟;Uzatma kablosu|🔌;Şarjlı pil|🔋|♻️;Dikiş ipliği|🧵;Bulaşık fırçası|🧹|🍽️;Tuvalet fırçası|🧹|🚽
+Kişisel bakım=Diş macunu|🪥|🦷;Diş fırçası|🪥;Diş ipi|🦷|🧵;Ağız gargarası|🧴|👄;Şampuan|🧴|💇;Saç kremi|🧴|💆;Saç jölesi|🧴|💈;Sabun|🧼;Sıvı sabun|🧼|💧;Duş jeli|🚿;Deodorant|🧴|💨;Parfüm|🌸|✨;Tıraş bıçağı|🪒;Tıraş köpüğü|🪒|🫧;Krem|🧴;El kremi|🧴|✋;Nemlendirici|🧴|💧;Güneş kremi|☀️;Pamuk|☁️;Kulak çubuğu|👂;Hijyenik ped|🩸;Yara bandı|🩹;Ağrı kesici|💊|🤕;Vitamin|💊|🍊;İlaç|💊;Tırnak makası|✂️;Diş fırçası başlığı|🪥|⚡;Çocuk diş macunu|🪥|🧸;Saç boyası|🧴|🎨;Saç spreyi|🧴|🌬️;Kepek şampuanı|🧴|❄️;Saç tokası|🎀;Tarak|💈;Makyaj temizleyici|🧴|🌙;Pamuk ped|☁️|⭕;Ruj|💄;Oje|💅;Aseton|💅|🧪;Tıraş sonrası losyon|🪒|💧;Tampon|🩸|⭕;Günlük ped|🩸|🌸;Termometre|🌡️;Burun spreyi|👃;Göz damlası|👁️;Öksürük şurubu|💊|🍯;D vitamini|💊|☀️;Magnezyum|💊|💪;Dudak kremi|💋
+Çocuk=Bebek bezi|👶;Islak mendil|🧻|💧;Bebek maması|🍼|🥣;Bebek sütü|🍼|🥛;Biberon|🍼;Emzik|👶|⭕;Meyve püresi|🍼|🍎;Bebek şampuanı|🧴|👶;Pişik kremi|🧴|🍑;Çocuk bisküvisi|🍪|👶;Oyuncak|🧸;Boya kalemi|🖍️;Külot bez|👶|🩲;Bebek losyonu|🧴|🐣;Bebek lapası|🍼|🌾;Çocuk yoğurdu|🥣|🧸;Çocuk sütü|🥛|🧸;Çocuk meyve suyu|🧃|🧸;Silgi|✏️|🧽;Boyama kitabı|📖|🖍️;Yapıştırıcı|🖇️;Balon|🎈;Doğum günü mumu|🎂|🕯️
+Evcil hayvan=Kedi maması|🐱;Köpek maması|🐶;Kedi kumu|🐱|🪣;Ödül maması|🦴;Kedi konservesi|🐱|🥫;Kedi ödül maması|🐱|⭐;Köpek konservesi|🐶|🥫;Köpek kemiği|🦴|🐶;Kuş yemi|🐦
+Diğer=Çiçek|💐;Hediye|🎁;Kalem|✏️;Defter|📒;Zarf|✉️;Koli bandı|📦;Pfand şişe|🍾;Kitap|📚;Dosya|📁;Hediye kâğıdı|🎁|📃;Tebrik kartı|💌;Pul|📮;Yazıcı kâğıdı|📄;Yazıcı kartuşu|🖨️;Şemsiye|☂️;Şarj kablosu|🔌|📱;Bez çanta|👜|🌱;Gazete|📰;Saksı toprağı|🪴|🟤;Saksı bitkisi|🪴;Hediye kartı|💳|🎁`;
+  const SH_KAT = SH_KAT_HAM.split('\n').map(l => { const i = l.indexOf('='); return { grup: l.slice(0, i), urunler: l.slice(i + 1).split(';').map(s => { const [ad, e, r] = s.split('|'); return { ad, e, r: r || '' }; }) }; });
+  const shSade = s => String(s == null ? '' : s).toLocaleLowerCase('tr-TR').trim().replace(/ı/g, 'i').replace(/ş/g, 's').replace(/ç/g, 'c').replace(/ğ/g, 'g').replace(/ö/g, 'o').replace(/ü/g, 'u').replace(/â/g, 'a').replace(/î/g, 'i').replace(/û/g, 'u');
+  const shBuyuk = s => { s = String(s).trim(); return s ? s[0].toLocaleUpperCase('tr-TR') + s.slice(1) : s; };
+  const SH_MAP = new Map(); SH_KAT.forEach(g => g.urunler.forEach(u => { const k = shSade(u.ad); if (!SH_MAP.has(k)) SH_MAP.set(k, Object.assign({ g: g.grup }, u)); }));
+  const SH_TEK = [...SH_MAP.entries()].filter(([k]) => !k.includes(' '));
+  // Sembol: tam ad → katalog; değilse son kelime ("Tam yağlı süt" → süt); değilse son kelimenin başı ("domatesler" → domates)
+  function shSym(ad) {
+    const s = shSade(ad); if (!s) return null;
+    if (SH_MAP.has(s)) return SH_MAP.get(s);
+    const son = s.split(/\s+/).pop();
+    if (SH_MAP.has(son)) return { e: SH_MAP.get(son).e, r: '' };
+    for (const [k, u] of SH_TEK) if (k.length >= 4 && son.startsWith(k)) return { e: u.e, r: '' };
+    return null;
+  }
+  const shEm = (ad, fb) => { const m = shSym(ad); return m ? `<span class="sh-em" aria-hidden="true">${m.e}${m.r ? `<i>${m.r}</i>` : ''}</span>` : `<span class="sh-em" aria-hidden="true">${fb || '🛒'}</span>`; };
+  // Katalogdaki yazım ("sut" → "Süt"), yoksa baş harfi büyük
+  const shAdi = ham => { const m = SH_MAP.get(shSade(ham)); return m ? m.ad : shBuyuk(ham); };
+  const SH_HIZLI = ['Ekmek', 'Süt', 'Yumurta', 'Peynir', 'Domates', 'Salatalık', 'Biber', 'Soğan', 'Patates', 'Maydanoz', 'Brokoli', 'Havuç', 'Limon', 'Elma', 'Muz', 'Portakal', 'Yoğurt', 'Tereyağı', 'Zeytin', 'Kahve', 'Çay', 'Makarna', 'Pirinç', 'Tavuk', 'Kıyma', 'Balık', 'Su', 'İçecek'];
+  const SH_MAX = 50;
+  function SH() {
+    if (!db.shop || !Array.isArray(db.shop.items)) db.shop = { items: [], quick: SH_HIZLI.slice(), freq: {} };
+    if (!Array.isArray(db.shop.quick)) db.shop.quick = SH_HIZLI.slice();
+    db.shop.freq = db.shop.freq || {};
+    return db.shop;
+  }
+  const shUi = { tab: 'market', q: '', edit: false, add: false, addKind: 'online', addYer: '' };
+  const shBekleyen = liste => SH().items.filter(i => !i.al && (liste === 'market' ? i.liste === 'market' : i.liste !== 'market'));
+  const shListede = ad => { const k = shSade(ad); return SH().items.some(i => i.liste === 'market' && !i.al && shSade(i.ad) === k); };
+  // Market listesine ekle; 3. eklemede sık kullanılanlara alınır
+  function shEkle(ham, opt) {
+    opt = opt || {};
+    const ad = shAdi(ham); if (!ad) return false;
+    const S = SH(), liste = opt.liste || 'market', yer0 = (opt.yer || '').trim(), yer = yer0 ? ((S.yerler || []).find(y => shSade(y) === shSade(yer0)) || shBuyuk(yer0)) : '';
+    const k = shSade(ad);
+    if (S.items.some(i => !i.al && i.liste === liste && shSade(i.ad) === k && (liste !== 'diger' || shSade(i.yer) === shSade(yer)))) { toast(ad + ' zaten listede'); return false; }
+    S.items.push({ id: 's' + Date.now().toString(36) + Math.random().toString(36).slice(2, 5), ad, liste, yer: liste === 'diger' ? yer : '', ek: Date.now(), al: false });
+    if (liste === 'diger' && yer) { S.yerler = S.yerler || []; if (!S.yerler.some(y => shSade(y) === shSade(yer))) S.yerler.push(yer); }
+    if (liste === 'market') {
+      const f = S.freq[k] = S.freq[k] || { ad, n: 0 }; f.n++;
+      if (f.n >= 3 && !S.quick.some(q => shSade(q) === k) && S.quick.length < SH_MAX) { S.quick.push(ad); save(); toast(ad + ' sık kullanılanlara eklendi'); return true; }
+    }
+    save(); return true;
+  }
+  // Arama: önce ile başlayanlar, sonra kelime başı, sonra içinde geçenler; eşitlikte sık eklenen önce
+  function shOneri(q, adet) {
+    q = shSade(q); if (!q) return [];
+    const S = SH(), aday = new Map();
+    Object.values(S.freq).forEach(f => aday.set(shSade(f.ad), { ad: f.ad, n: f.n }));
+    S.quick.forEach(a => { const k = shSade(a); if (!aday.has(k)) aday.set(k, { ad: a, n: 0 }); });
+    SH_MAP.forEach(u => { const k = shSade(u.ad); if (!aday.has(k)) aday.set(k, { ad: u.ad, n: 0 }); });
+    const puan = ad => { const s = shSade(ad); if (s === q) return 0; if (s.startsWith(q)) return 1; if (s.split(/\s+/).some(w => w.startsWith(q))) return 2; if (q.length >= 2 && s.includes(q)) return 3; return 9; };
+    return [...aday.values()].map(a => Object.assign({ p: puan(a.ad) }, a)).filter(a => a.p < 9)
+      .sort((a, b) => a.p - b.p || b.n - a.n || a.ad.length - b.ad.length || a.ad.localeCompare(b.ad, 'tr')).slice(0, adet || 12);
+  }
+  const shOneriHtml = () => {
+    if (!shSade(shUi.q)) return '';
+    const o = shOneri(shUi.q, 12);
+    return o.length ? o.map(a => { const v = shListede(a.ad); return `<button class="sh-chip${v ? ' on' : ''}" data-shadd="${esc(a.ad)}" aria-label="${esc(a.ad)}${v ? ' (listede)' : ' listeye ekle'}">${shEm(a.ad)}<span>${esc(a.ad)}</span>${v ? svg('check') : ''}</button>`; }).join('')
+      : `<span class="hint">Katalogda yok. Eklemek için + düğmesine bas.</span>`;
+  };
+  const shTile = (ad, on, cls) => `<button class="sh-t${on ? ' on' : ''}${cls ? ' ' + cls : ''}" data-shq="${esc(ad)}" aria-label="${esc(ad)}${on ? ' (listede)' : ''}">${on ? `<span class="sh-tick">${svg('check')}</span>` : ''}${shEm(ad)}<b>${esc(ad)}</b></button>`;
+  const shRow = i => `<div class="sh-row${i.al ? ' al' : ''}" data-shrow="${i.id}">${shEm(i.ad, i.liste === 'online' ? '📦' : i.liste === 'diger' ? '🛍️' : '🛒')}<span class="sh-ad">${esc(i.ad)}</span>${i.ek && !i.al && Date.now() - i.ek > 7 * 864e5 ? '<em class="sh-eski" title="7 günden uzun süredir listede">!</em>' : ''}<button class="sh-ok" data-shok="${i.id}" aria-label="${esc(i.ad)} ${i.al ? 'alınmadı yap' : 'alındı'}" aria-pressed="${i.al}">${i.al ? svg('check') : ''}</button></div>`;
+  function renderAlisveris() {
+    const S = SH(), mk = shBekleyen('market').length, od = shBekleyen('diger').length;
+    const seg = `<div class="seg sh-seg" style="--n:2"><button data-shtab="market" aria-pressed="${shUi.tab === 'market'}">Market · ${mk}</button><button data-shtab="diger" aria-pressed="${shUi.tab === 'diger'}">Online / Diğer · ${od}</button></div>`;
+    if (shUi.tab === 'market') {
+      const items = S.items.filter(i => i.liste === 'market'), bek = items.filter(i => !i.al), alin = items.filter(i => i.al);
+      return `${seg}
+        <section class="card sh-ara">
+          <form class="sh-in" id="shForm"><input id="shQ" type="search" enterkeyhint="done" autocomplete="off" placeholder="Ara ya da ekle: süt, ekmek…" value="${esc(shUi.q)}" aria-label="Ürün ara"><button class="icon-btn" aria-label="Listeye ekle">${svg('plus')}</button></form>
+          <div class="sh-oneri" id="shOneri">${shOneriHtml()}</div>
+        </section>
+        <div class="sh-qh"><b>Sık kullanılanlar <small>${S.quick.length}/${SH_MAX}</small></b><span><button class="sh-lnk" data-shkat="list">Listeden seç</button><button class="sh-lnk" data-shedit aria-pressed="${shUi.edit}">${shUi.edit ? 'Bitti' : 'Düzenle'}</button></span></div>
+        ${shUi.edit ? '<p class="sh-edit-not">Çıkarmak için dokun. Eklemek için ＋ kutusuna bas.</p>' : ''}
+        <div class="sh-grid sh-quick">${S.quick.map(a => shTile(a, !shUi.edit && shListede(a), shUi.edit ? 'ed' : '')).join('')}${shUi.edit && S.quick.length < SH_MAX ? `<button class="sh-t sh-plus" data-shkat="quick" aria-label="Sık kullanılanlara ekle">${svg('plus')}</button>` : ''}</div>
+        <section class="card sh-list">
+          <div class="sh-lh"><b>Market listesi · ${bek.length} ürün</b>${alin.length ? `<button class="sh-lnk" data-shbitir="market">Alışverişi bitir (${alin.length})</button>` : ''}</div>
+          ${items.length ? bek.concat(alin).map(shRow).join('') : '<div class="empty">Liste boş. Yukarıdan ara ya da sık kullanılanlardan seç.</div>'}
+          ${items.length ? '<p class="hint">Silmek için satıra uzun bas.</p>' : ''}
+        </section>`;
+    }
+    // Online / Diğer: online önce, sonra her yer kendi grubunda, en sonda yeri belli olmayanlar
+    const items = S.items.filter(i => i.liste !== 'market'), alin = items.filter(i => i.al);
+    const gruplar = []; const gEkle = (k, ad, arr) => { if (arr.length) gruplar.push({ k, ad, arr }); };
+    gEkle('online', 'Online', items.filter(i => i.liste === 'online'));
+    const yerler = [...new Set(items.filter(i => i.liste === 'diger' && i.yer).map(i => i.yer))].sort((a, b) => a.localeCompare(b, 'tr'));
+    yerler.forEach(y => gEkle('y:' + y, y, items.filter(i => i.liste === 'diger' && i.yer === y)));
+    gEkle('diger', 'Diğer', items.filter(i => i.liste === 'diger' && !i.yer));
+    const eskiYer = S.yerler || [];
+    return `${seg}
+      <section class="card sh-od">
+        <div class="sh-lh"><b>Online / Diğer · ${od} ürün</b><button class="icon-btn sh-addbtn" data-shnew aria-expanded="${shUi.add}" aria-label="Yeni ekle">${svg(shUi.add ? 'x' : 'plus')}</button></div>
+        ${shUi.add ? `<form class="sh-odf" id="shOdForm">
+          <input id="shOdAd" autocomplete="off" placeholder="Ne alınacak? (ör. Korniş)" aria-label="Ne alınacak">
+          <div class="seg" style="--n:2"><button type="button" data-shkind="online" aria-pressed="${shUi.addKind === 'online'}">Online</button><button type="button" data-shkind="diger" aria-pressed="${shUi.addKind === 'diger'}">Diğer</button></div>
+          ${shUi.addKind === 'diger' ? `<input id="shOdYer" autocomplete="off" placeholder="Nereden? (isteğe bağlı, ör. OBI)" value="${esc(shUi.addYer)}" aria-label="Nereden alınacak">
+          ${eskiYer.length ? `<div class="sh-yerler">${eskiYer.map(y => `<button type="button" class="sh-chip sm${shSade(y) === shSade(shUi.addYer) ? ' on' : ''}" data-shyer="${esc(y)}">${esc(y)}</button>`).join('')}</div>` : ''}` : ''}
+          <button class="btn">Ekle</button>
+        </form>` : ''}
+        ${gruplar.length ? gruplar.map(g => `<div class="sh-gh">${g.k === 'online' ? '🌐 ' : g.k === 'diger' ? '' : '📍 '}${esc(g.ad)} <small>${g.arr.filter(i => !i.al).length}</small></div>${g.arr.filter(i => !i.al).concat(g.arr.filter(i => i.al)).map(shRow).join('')}`).join('')
+          : `<div class="empty">Liste boş. ＋ ile ekle.</div>`}
+        ${alin.length ? `<div class="sh-lh"><span></span><button class="sh-lnk" data-shbitir="diger">Alınanları temizle (${alin.length})</button></div>` : ''}
+        ${items.length ? '<p class="hint">Silmek için satıra uzun bas.</p>' : ''}
+      </section>`;
+  }
+  // Katalog sayfası: mode 'list' = alışveriş listesine ekle/çıkar, 'quick' = sık kullanılanlara ekle/çıkar
+  function openKatalog(mode) {
+    const root = $('#listRoot'); let q = '';
+    const secili = ad => mode === 'quick' ? SH().quick.some(x => shSade(x) === shSade(ad)) : shListede(ad);
+    const body = () => {
+      const k = shSade(q), fit = u => !k || shSade(u.ad).includes(k);
+      const S = SH(), katta = new Set(SH_MAP.keys());
+      const ozel = (mode === 'quick' ? S.quick : Object.values(S.freq).map(f => f.ad)).filter(a => !katta.has(shSade(a)) && fit({ ad: a }));
+      const gs = SH_KAT.map(g => ({ grup: g.grup, u: g.urunler.filter(fit) })).filter(g => g.u.length);
+      if (ozel.length) gs.push({ grup: 'Senin eklediklerin', u: ozel.map(a => ({ ad: a })) });
+      return (gs.length ? gs.map(g => `<div class="sh-kg">${esc(g.grup)}</div><div class="sh-grid sh-kgrid">${g.u.map(u => shTile(u.ad, secili(u.ad))).join('')}</div>`).join('') : '')
+        + (k && !SH_MAP.has(k) ? `<button class="btn ghost sh-yeni" data-shkyeni>＋ "${esc(shBuyuk(q))}" ekle</button>` : '');
+    };
+    const sayac = () => mode === 'quick' ? `${SH().quick.length}/${SH_MAX}` : `${shBekleyen('market').length} ürün listede`;
+    root.innerHTML = `<div class="scrim" data-lclose></div>
+      <div class="sheet anim lsheet sh-kat" role="dialog" aria-label="${mode === 'quick' ? 'Sık kullanılanları seç' : 'Listeden seç'}">
+        <div class="sheet-h"><h3>${mode === 'quick' ? 'Sık kullanılanlar' : 'Listeden seç'} <small id="shKs">${sayac()}</small></h3><button class="icon-btn" data-lclose aria-label="Kapat">${svg('x')}</button></div>
+        <p class="hint">${mode === 'quick' ? 'Sık kullanılanlarda olmasını istediklerine dokun.' : 'Dokunduğun ürün market listesine eklenir, tekrar dokunursan çıkar.'}</p>
+        <input id="shKq" type="search" autocomplete="off" placeholder="Katalogda ara…" aria-label="Katalogda ara">
+        <div id="shKb">${body()}</div>
+      </div>`;
+    const redraw = () => { const sh = root.querySelector('.lsheet'), sc = sh.scrollTop; root.querySelector('#shKb').innerHTML = body(); root.querySelector('#shKs').textContent = sayac(); sh.scrollTop = sc; };
+    root.querySelector('#shKq').oninput = e => { q = e.target.value; redraw(); };
+    const kapat = () => { root.innerHTML = ''; root.onclick = null; if (ui.tab === 'alisveris') render(); };
+    const toggle = ad => {
+      const S = SH(), k = shSade(ad);
+      if (mode === 'quick') {
+        const i = S.quick.findIndex(x => shSade(x) === k);
+        if (i >= 0) S.quick.splice(i, 1); else if (S.quick.length >= SH_MAX) return toast('En çok ' + SH_MAX + ' ürün olabilir'); else S.quick.push(shAdi(ad));
+        save();
+      } else if (shListede(ad)) { S.items = S.items.filter(i => !(i.liste === 'market' && !i.al && shSade(i.ad) === k)); save(); }
+      else shEkle(ad);
+      redraw();
+    };
+    root.onclick = e => {
+      const T = s => e.target.closest(s); let el;
+      if (T('[data-lclose]')) return kapat();
+      if ((el = T('[data-shq]'))) return toggle(el.dataset.shq);
+      if (T('[data-shkyeni]')) { toggle(q); q = ''; root.querySelector('#shKq').value = ''; return redraw(); }
+    };
+  }
+  function shTiklama(e) {
+    if (ui.tab !== 'alisveris') return;
+    const T = s => e.target.closest(s); let el;
+    if (shUzunBasildi) { shUzunBasildi = false; return; }
+    if ((el = T('[data-shtab]'))) { shUi.tab = el.dataset.shtab; shUi.add = false; return render(); }
+    if ((el = T('[data-shadd]'))) { if (shListede(el.dataset.shadd)) return toast(el.dataset.shadd + ' zaten listede'); shEkle(el.dataset.shadd); shUi.q = ''; return render(); }
+    if ((el = T('[data-shq]'))) {
+      const ad = el.dataset.shq, S = SH();
+      if (shUi.edit) { S.quick = S.quick.filter(x => x !== ad); save(); return render(); }
+      if (shListede(ad)) { S.items = S.items.filter(i => !(i.liste === 'market' && !i.al && shSade(i.ad) === shSade(ad))); save(); return render(); }
+      shEkle(ad); return render();
+    }
+    if ((el = T('[data-shkat]'))) return openKatalog(el.dataset.shkat);
+    if (T('[data-shedit]')) { shUi.edit = !shUi.edit; return render(); }
+    if ((el = T('[data-shok]'))) { const it = SH().items.find(i => i.id === el.dataset.shok); if (it) { it.al = !it.al; save(); } return render(); }
+    if ((el = T('[data-shbitir]'))) {
+      const S = SH(), m = el.dataset.shbitir, prev = S.items.slice(), n = S.items.filter(i => i.al && (m === 'market') === (i.liste === 'market')).length;
+      S.items = S.items.filter(i => !(i.al && (m === 'market') === (i.liste === 'market'))); save(); render();
+      return toast(m === 'market' ? 'Alışveriş bitti, ' + n + ' ürün alındı' : n + ' ürün temizlendi', () => { SH().items = prev; save(); render(); });
+    }
+    if (T('[data-shnew]')) { shUi.add = !shUi.add; shUi.addYer = ''; render(); const i = $('#shOdAd'); if (i) i.focus(); return; }
+    if ((el = T('[data-shkind]'))) { const v = $('#shOdAd') ? $('#shOdAd').value : ''; shUi.addKind = el.dataset.shkind; render(); const i = $('#shOdAd'); if (i) { i.value = v; i.focus(); } return; }
+    if ((el = T('[data-shyer]'))) { const v = $('#shOdAd') ? $('#shOdAd').value : ''; shUi.addYer = shSade(shUi.addYer) === shSade(el.dataset.shyer) ? '' : el.dataset.shyer; render(); const i = $('#shOdAd'); if (i) i.value = v; return; }
+  }
+  view.addEventListener('click', shTiklama);
+  view.addEventListener('input', e => {
+    if (e.target.id === 'shQ') { shUi.q = e.target.value; const o = $('#shOneri'); if (o) o.innerHTML = shOneriHtml(); }
+    if (e.target.id === 'shOdYer') shUi.addYer = e.target.value;
+  });
+  view.addEventListener('submit', e => {
+    if (e.target.id === 'shForm') {
+      e.preventDefault(); const q = shUi.q.trim(); if (!q) return;
+      const o = shOneri(q, 1)[0], ad = o && o.p <= 1 && shSade(o.ad) === shSade(q) ? o.ad : q;
+      if (shEkle(ad)) { shUi.q = ''; render(); const i = $('#shQ'); if (i) i.focus(); }
+    }
+    if (e.target.id === 'shOdForm') {
+      e.preventDefault(); const ad = $('#shOdAd').value.trim(); if (!ad) return toast('Ne alınacağını yaz');
+      const yer = shUi.addKind === 'diger' ? ($('#shOdYer') ? $('#shOdYer').value : shUi.addYer) : '';
+      if (shEkle(ad, { liste: shUi.addKind, yer })) { shUi.addYer = yer.trim(); render(); const i = $('#shOdAd'); if (i) i.focus(); }
+    }
+  });
+  // Uzun basma (0,5 sn) = satırı sil (geri alınabilir); kaydırırken iptal
+  let shBasT = null, shBasXY = null, shUzunBasildi = false;
+  view.addEventListener('pointerdown', e => {
+    shUzunBasildi = false;
+    const row = ui.tab === 'alisveris' && e.target.closest('[data-shrow]'); if (!row || e.target.closest('[data-shok]')) return;
+    shBasXY = [e.clientX, e.clientY]; row.classList.add('bas');
+    shBasT = setTimeout(() => {
+      shBasT = null; shUzunBasildi = true; row.classList.remove('bas');
+      const S = SH(), prev = S.items.slice(), it = S.items.find(i => i.id === row.dataset.shrow); if (!it) return;
+      try { navigator.vibrate && navigator.vibrate(20); } catch (er) {}
+      S.items = S.items.filter(i => i !== it); save(); render();
+      toast(it.ad + ' silindi', () => { SH().items = prev; save(); render(); });
+    }, 500);
+  });
+  const shBasIptal = () => { if (shBasT) { clearTimeout(shBasT); shBasT = null; } document.querySelectorAll('.sh-row.bas').forEach(r => r.classList.remove('bas')); };
+  view.addEventListener('pointermove', e => { if (shBasT && shBasXY && Math.hypot(e.clientX - shBasXY[0], e.clientY - shBasXY[1]) > 10) shBasIptal(); });
+  ['pointerup', 'pointercancel', 'pointerleave'].forEach(t => view.addEventListener(t, shBasIptal));
+  view.addEventListener('contextmenu', e => { if (ui.tab === 'alisveris' && e.target.closest('[data-shrow]')) e.preventDefault(); });
+
   /* ---------- Çizim ---------- */
-  const TITLES = { ozet: 'Özet', hareket: 'Hareketler', takvim: 'Takvim', analiz: 'Analiz', kategori: 'Ayarlar', ayarlar: 'Ayarlar' };
+  const TITLES = { ozet: 'Özet', hareket: 'Hareketler', takvim: 'Takvim', analiz: 'Analiz', alisveris: 'Alışveriş', kategori: 'Ayarlar', ayarlar: 'Ayarlar' };
   function render() {
     $('#mLbl').textContent = AY_K[+ui.ym.slice(5) - 1] + ' ' + ui.ym.slice(0, 4);
     $('#mNext').disabled = ui.ym >= maxYm;
     $('.month').style.visibility = ui.tab === 'kategori' || ui.tab === 'ayarlar' ? 'hidden' : 'visible';
+    $('.month').style.display = ui.tab === 'alisveris' ? 'none' : '';
     $('#hSub').textContent = ui.tab === 'ozet' ? 'Merhaba' : 'Cüzdan';
     $('#hTitle').textContent = ui.tab === 'ozet' ? AYLAR[+ui.ym.slice(5) - 1] + ' özeti' : TITLES[ui.tab];
     ui.tab === 'ayarlar' ? $('#gearBtn').setAttribute('aria-current', 'page') : $('#gearBtn').removeAttribute('aria-current');
     document.querySelectorAll('.tab').forEach(b => b.dataset.tab === ui.tab ? b.setAttribute('aria-current', 'page') : b.removeAttribute('aria-current'));
-    const focusQ = document.activeElement && document.activeElement.id === 'qIn';
-    view.innerHTML = ({ ozet: renderOzet, hareket: renderHareket, takvim: renderTakvim, analiz: renderAnaliz, kategori: renderAyarlar, ayarlar: renderAyarlar }[ui.tab] || renderOzet)();
+    const focusQ = document.activeElement && document.activeElement.id === 'qIn', focusSh = document.activeElement && document.activeElement.id === 'shQ';
+    view.innerHTML = ({ ozet: renderOzet, hareket: renderHareket, takvim: renderTakvim, analiz: renderAnaliz, alisveris: renderAlisveris, kategori: renderAyarlar, ayarlar: renderAyarlar }[ui.tab] || renderOzet)();
     if (focusQ) { const q = $('#qIn'); q.focus(); q.setSelectionRange(q.value.length, q.value.length); }
+    if (focusSh) { const q = $('#shQ'); if (q) q.focus(); }
   }
   function setTab(t) { ui.tab = t; ui.editFx = null; ui.editIn = null; ui.editBudget = false; ui.confirmClear = false; try { localStorage.setItem(KEY + '-tab', t); } catch (e) {} render(); window.scrollTo(0, 0); }
 
@@ -2610,7 +2911,7 @@ nav.tabs .tab[aria-current="page"] { color: var(--primary); }
       if (v === 'ask') { ui.confirmClear = true; return render(); }
       ui.confirmClear = false;
       if (v === 'no') return render();
-      return withUndo('Örnek kayıtlar silindi', () => { db = { catV: 4, fxV: 1, inV: 1, planV: 1, privV: 1, people: db.people, cats: JSON.parse(JSON.stringify(DEFAULT_CATS)), tx: [], paid: {}, fixed: [], income: [], got: {}, closed: {}, transfers: db.transfers || [], budget: db.budget, bgV: 1, invBase: db.invBase, sample: false }; });
+      return withUndo('Örnek kayıtlar silindi', () => { db = { catV: 4, fxV: 1, inV: 1, planV: 1, privV: 1, people: db.people, cats: JSON.parse(JSON.stringify(DEFAULT_CATS)), tx: [], paid: {}, fixed: [], income: [], got: {}, closed: {}, transfers: db.transfers || [], budget: db.budget, bgV: 1, invBase: db.invBase, shop: db.shop, sample: false }; });
     }
     if (T('[data-transfers]')) return openTransfers();
     if (T('[data-kredi]')) return openKredi();
@@ -2697,7 +2998,7 @@ nav.tabs .tab[aria-current="page"] { color: var(--primary); }
     if ((el = T('[data-restore]'))) {
       const obj = ui.restore; ui.restore = null;
       if (el.dataset.restore === 'no' || !obj) return render();
-      return withUndo('Yedek yüklendi', () => { db = privacyMig(migratePlan(migrateIncome(migrateFixed(bakeryNextToMarket(addBakery(migrateCats(ensureIncome(obj)))))))); });
+      return withUndo('Yedek yüklendi', () => { const shop = db.shop; db = privacyMig(migratePlan(migrateIncome(migrateFixed(bakeryNextToMarket(addBakery(migrateCats(ensureIncome(obj)))))))); if (!db.shop && shop) db.shop = shop; });
     }
     if ((el = T('[data-leave]'))) { const d = el.dataset.leave; db.leave = db.leave || {}; if (db.leave[d]) delete db.leave[d]; else db.leave[d] = true; save(); return render(); }
     if ((el = T('[data-pickym]'))) { ui.ym = el.dataset.pickym; ui.yearView = false; ui.selDay = null; return render(); }
