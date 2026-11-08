@@ -816,6 +816,7 @@ nav.tabs .tab[aria-current="page"] { color: var(--primary); }
 :root[data-theme="dark"] .who.p2 { background: #3d1b2f; color: #f283bd; }
 :root[data-theme="dark"] .scrim { background: rgba(0, 0, 0, .6); }
 :root[data-theme="dark"] .fab { box-shadow: 0 6px 16px rgba(0, 0, 0, .5); }
+@media (max-width: 440px) { .hdr-r { gap: 6px; } .hdr-r .icon-btn { width: 34px; height: 34px; } .hello b { font-size: 19px; } }
 @media (max-width: 400px) { .hdr-r { gap: 6px; } .icon-btn { width: 34px; height: 34px; } .month button { width: 28px; height: 28px; } .month span { min-width: 64px; font-size: 13px; } .hello b { font-size: 18px; } }
 /* Alışveriş sekmesi (2026-11-07): sembol sade (zemin yok) + köşe rozeti */
 .sh-em { position: relative; display: inline-flex; font-family: "Noto Color Emoji", "Apple Color Emoji", "Segoe UI Emoji", sans-serif; font-size: 20px; line-height: 1; flex: none; }
@@ -980,6 +981,24 @@ nav.tabs .tab span.pi { width: 46px; }
 .sh-row .am-pm { width: 26px; height: 26px; font-size: 16px; margin-left: 0; }
 .sh-kayit { width: 100%; margin-top: 10px; }
 .sh-ad small { display: block; }
+.sh-oto { font-size: 10.5px; font-weight: 600; color: var(--muted); font-style: italic; }
+.ev-btn { position: relative; }
+.ev-btn b { position: absolute; top: -5px; right: -7px; min-width: 18px; height: 18px; padding: 0 4px; border-radius: 9px; background: #e5484d; color: #fff; font-size: 10.5px; font-weight: 800; line-height: 18px; border: 2px solid var(--bg); }
+.ev .am-h h3 { flex: 1; margin-left: 10px; }
+.ev-add { background: var(--primary); color: #fff; }
+.ev-list { padding: 2px 10px; }
+.ev-row { display: flex; align-items: center; gap: 10px; border-top: 1px solid var(--line); }
+.ev-row:first-child { border-top: 0; }
+.ev-ok { flex: none; width: 24px; height: 24px; border-radius: 50%; border: 2px solid var(--primary); background: none; padding: 0; }
+.ev-tap { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 2px; border: 0; background: none; color: var(--ink); text-align: left; padding: 9px 0; font: inherit; }
+.ev-tap b { font-size: 14px; font-weight: 700; }
+.ev-tap small { font-size: 11.5px; color: var(--muted); font-weight: 600; }
+.ev-k { color: var(--ink-2); font-weight: 800; }
+.ev-row.due .ev-k { color: #e5484d; }
+.ev-row.due .ev-ok { border-color: #e5484d; }
+.ev-yok { font-style: italic; }
+.ev-sik { display: flex; gap: 8px; align-items: center; } .ev-sik input { width: 70px; flex: none; text-align: center; } .ev-sik .seg { flex: 1; }
+.ev-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
 .sh-ind { color: var(--in-ink); font-weight: 800; font-style: normal; }
 #shPop .scrim { z-index: 60; } #shPop .sheet { z-index: 61; }
 .sh-sy h3 { display: flex; align-items: center; gap: 8px; }
@@ -1036,6 +1055,7 @@ nav.tabs .tab span.pi { width: 46px; }
   <header class="top">
     <div class="hello"><small id="hSub">Merhaba</small><b id="hTitle">Cüzdan</b></div>
     <div class="hdr-r">
+      <button class="icon-btn ev-btn" id="evBtn" aria-label="Ev işleri" title="Ev işleri" hidden></button>
       <div class="month">
         <button id="mPrev" aria-label="Önceki ay"></button>
         <span id="mLbl" class="num"></span>
@@ -2858,7 +2878,7 @@ Diğer=Çiçek|💐;Hediye|🎁;Kalem|✏️;Defter|📒;Zarf|✉️;Koli bandı
       : `<span class="hint">Katalogda yok. Eklemek için + düğmesine bas.</span>`;
   };
   const shTile = (ad, on, cls) => `<button class="sh-t${on ? ' on' : ''}${cls ? ' ' + cls : ''}" data-shq="${esc(ad)}" aria-label="${esc(ad)}${on ? ' (listede)' : ''}">${on ? `<span class="sh-tick">${svg('check')}</span>` : ''}${shEm(ad)}<b>${esc(ad)}</b></button>`;
-  const shRow = i => `<div class="sh-row${i.al ? ' al' : ''}" data-shrow="${i.id}">${shEm(i.ad, i.liste === 'online' ? '📦' : i.liste === 'diger' ? '🛍️' : '🛒')}<span class="sh-ad">${shAdetL(i)}${esc(i.ad)}</span>${i.ek && !i.al && Date.now() - i.ek > 7 * 864e5 ? '<em class="sh-eski" title="7 günden uzun süredir listede">!</em>' : ''}${i.liste === 'market' ? `${(i.n || 1) > 1 ? `<button class="am-pm" data-shn="-1" data-id="${i.id}" aria-label="${esc(i.ad)} bir azalt">−</button>` : ''}<button class="am-pm" data-shn="1" data-id="${i.id}" aria-label="${esc(i.ad)} bir artır">+</button>` : ''}${i.liste === 'market' ? swBtn(i) : ''}<button class="sh-ok" data-shok="${i.id}" aria-label="${esc(i.ad)} ${i.al ? 'alınmadı yap' : 'alındı'}" aria-pressed="${i.al}">${i.al ? svg('check') : ''}</button></div>`;
+  const shRow = i => `<div class="sh-row${i.al ? ' al' : ''}" data-shrow="${i.id}">${shEm(i.ad, i.liste === 'online' ? '📦' : i.liste === 'diger' ? '🛍️' : '🛒')}<span class="sh-ad">${shAdetL(i)}${esc(i.ad)}${i.oto ? '<small class="sh-oto">Otomatik eklendi · Ev işleri</small>' : ''}</span>${i.ek && !i.al && Date.now() - i.ek > 7 * 864e5 ? '<em class="sh-eski" title="7 günden uzun süredir listede">!</em>' : ''}${i.liste === 'market' ? `${(i.n || 1) > 1 ? `<button class="am-pm" data-shn="-1" data-id="${i.id}" aria-label="${esc(i.ad)} bir azalt">−</button>` : ''}<button class="am-pm" data-shn="1" data-id="${i.id}" aria-label="${esc(i.ad)} bir artır">+</button>` : ''}${i.liste === 'market' ? swBtn(i) : ''}<button class="sh-ok" data-shok="${i.id}" aria-label="${esc(i.ad)} ${i.al ? 'alınmadı yap' : 'alındı'}" aria-pressed="${i.al}">${i.al ? svg('check') : ''}</button></div>`;
   function renderAlisveris() {
     const S = SH(), mk = shBekleyen('market').length, od = shBekleyen('diger').length;
     const seg = `<div class="seg sh-seg" style="--n:2"><button data-shtab="market" aria-pressed="${shUi.tab === 'market'}">Market · ${mk}</button><button data-shtab="diger" aria-pressed="${shUi.tab === 'diger'}">Online / Diğer · ${od}</button></div>`;
@@ -3202,6 +3222,129 @@ Diğer=Çiçek|💐;Hediye|🎁;Kalem|✏️;Defter|📒;Zarf|✉️;Koli bandı
     draw();
   }
 
+  // ---------- Ev işleri: düzenli işler hatırlatıcısı ----------
+  const EV_U = { gun: 'gün', hafta: 'hafta', ay: 'ay' };
+  const evD = s => { const [y, m, d] = s.split('-').map(Number); return new Date(y, m - 1, d); };
+  const evFark = (a, b) => Math.round((evD(a) - evD(b)) / 864e5);
+  const evEkle = (s, n, u) => { const d = evD(s); if (u === 'ay') { const g = d.getDate(); d.setDate(1); d.setMonth(d.getMonth() + n); d.setDate(Math.min(g, new Date(d.getFullYear(), d.getMonth() + 1, 0).getDate())); } else d.setDate(d.getDate() + n * (u === 'hafta' ? 7 : 1)); return iso(d); };
+  const evSonraki = it => it.last ? evEkle(it.last, it.n, it.u) : null;
+  function EV() {
+    if (!db.ev) {
+      const k = (ad, n, u, st) => ({ id: 'e' + Math.random().toString(36).slice(2, 9), ad, n, u, last: null, stok: st || null });
+      db.ev = { items: [
+        k('Nevresimleri değiştir', 2, 'hafta'),
+        k('Çocuk nevresimini değiştir', 2, 'hafta'),
+        k('Kahve makinesi yağ çözme', 3, 'hafta', { urun: 'Yağ çözücü tablet', adet: null, tuk: 1, kay: 'market' }),
+        k('Kahve makinesi mekanizma temizliği', 20, 'gun'),
+        k('Çamaşır makinesi temizliği', 1, 'ay', { urun: 'Çamaşır makinesi temizleyici', adet: 2, tuk: 1, kay: 'market' }),
+        k('Bulaşık makinesi temizliği', 1, 'ay', { urun: 'Bulaşık makinesi temizleyici', adet: 2, tuk: 1, kay: 'market' }),
+        k('Brita filtre yenile', 35, 'gun', { urun: 'Brita filtre', adet: 0, tuk: 2, kay: 'online' })
+      ] };
+      db.ev.items.forEach(evStokKontrol); save();
+    }
+    return db.ev;
+  }
+  // Stok bir sonraki sefere yetmiyorsa alışveriş listesine otomatik ekle
+  function evStokKontrol(it) {
+    const s = it.stok; if (!s || s.adet == null || s.adet >= (s.tuk || 1)) return null;
+    const S = SH(), ad = shAdi(s.urun || it.ad), liste = s.kay === 'online' ? 'online' : 'market';
+    if (!ad || S.items.some(i => !i.al && i.liste === liste && shSade(i.ad) === shSade(ad))) return null;
+    S.items.push({ id: 's' + Date.now().toString(36) + Math.random().toString(36).slice(2, 5), ad, liste, yer: '', ek: Date.now(), al: false, oto: 'ev' });
+    return liste === 'online' ? 'Online' : 'Market';
+  }
+  const evGeciken = () => EV().items.filter(i => i.last && evSonraki(i) <= todayIso).length;
+  const evSira = () => EV().items.slice().sort((a, b) => (a.last ? 1 : 0) - (b.last ? 1 : 0) || (evSonraki(a) || '').localeCompare(evSonraki(b) || '') || a.ad.localeCompare(b.ad, 'tr'));
+  function evTamamla(it, gun) {
+    it.last = gun;
+    if (it.stok && it.stok.adet != null) it.stok.adet = Math.max(0, it.stok.adet - (it.stok.tuk || 1));
+    return evStokKontrol(it);
+  }
+  function openEv() {
+    const root = $('#listRoot');
+    const draw = () => {
+      const old = root.querySelector('.am'), sc = old ? old.scrollTop : 0;
+      const rows = evSira().map(it => {
+        const nx = evSonraki(it), kal = nx ? evFark(nx, todayIso) : null, gec = it.last ? evFark(todayIso, it.last) : null;
+        const kalT = kal == null ? '' : kal > 0 ? kal + ' gün kaldı' : kal === 0 ? 'bugün' : -kal + ' gün geçti';
+        const s = it.stok;
+        return `<div class="ev-row${kal != null && kal <= 0 ? ' due' : ''}"><button class="ev-ok" data-evok="${it.id}" aria-label="${esc(it.ad)} yapıldı"></button>
+          <button class="ev-tap" data-ev="${it.id}"><b>${esc(it.ad)}</b>
+          ${nx ? `<small><span class="ev-k">${kalT}</span> · sonraki ${dm(nx)}</small><small>Son ${dm(it.last)} · ${gec === 0 ? 'bugün' : gec + ' gün önce'} · her ${it.n} ${EV_U[it.u]}${s ? ` · stok ${s.adet == null ? '?' : n2(s.adet)}` : ''}</small>`
+            : `<small>Her ${it.n} ${EV_U[it.u]}${s ? ` · stok ${s.adet == null ? '?' : n2(s.adet)}` : ''}</small><small class="ev-yok">Son yapılma tarihi yok. Dokun ve gir.</small>`}</button></div>`;
+      }).join('');
+      root.innerHTML = `<div class="am ev" role="dialog" aria-label="Ev işleri">
+        <div class="am-h"><button class="icon-btn ev-add" data-evnew aria-label="Yeni kalem ekle">${svg('plus')}</button><h3>${svg('home')} Ev işleri</h3><button class="icon-btn" data-evx aria-label="Kapat">${svg('x')}</button></div>
+        <div class="am-list ev-list">${rows || '<p class="hint">Henüz kalem yok. Sol üstteki + ile ekle.</p>'}</div>
+        <p class="hint">Yuvarlağa dokununca bugün yapıldı sayılır. Geçmiş bir günü girmek için kaleme dokun.</p>
+      </div>`;
+      root.querySelector('.am').scrollTop = sc;
+    };
+    root.onclick = e => {
+      const T = s => e.target.closest(s); let el;
+      if (T('[data-evx]')) { root.innerHTML = ''; root.onclick = null; return render(); }
+      if (T('[data-evnew]')) return openEvForm(null, draw);
+      if ((el = T('[data-ev]'))) { const it = EV().items.find(i => i.id === el.dataset.ev); if (it) openEvForm(it, draw); return; }
+      if ((el = T('[data-evok]'))) {
+        const it = EV().items.find(i => i.id === el.dataset.evok); if (!it) return;
+        const prevEv = JSON.stringify(db.ev), prevSh = SH().items.slice();
+        const lst = evTamamla(it, todayIso); save(); draw();
+        return toast(it.ad + ' yapıldı · sonraki ' + dm(evSonraki(it)) + (lst ? ' · ' + shAdi(it.stok.urun || it.ad) + ' ' + lst + ' listesine eklendi' : ''), () => { db.ev = JSON.parse(prevEv); SH().items = prevSh; save(); draw(); });
+      }
+    };
+    draw();
+  }
+  // Kalem ekle / düzenle
+  function openEvForm(it, after) {
+    const yeni = !it, s0 = it && it.stok;
+    const st = { ad: it ? it.ad : '', n: it ? String(it.n) : '', u: it ? it.u : 'gun', last: it ? it.last || '' : todayIso, stok: !!s0, urun: s0 ? s0.urun || '' : '', adet: s0 && s0.adet != null ? String(s0.adet) : '', tuk: s0 ? String(s0.tuk || 1) : '1', kay: s0 ? s0.kay : 'market' };
+    let root = $('#shPop'); if (!root) { root = document.createElement('div'); root.id = 'shPop'; root.setAttribute('lang', 'tr'); document.body.appendChild(root); }
+    const oku = () => { ['ad', 'n', 'last', 'urun', 'adet', 'tuk'].forEach(k => { const el = root.querySelector('#evf_' + k); if (el) st[k] = el.value; }); };
+    const draw = () => {
+      root.innerHTML = `<div class="scrim" data-efx></div>
+        <form class="sheet ev-f" id="evForm" role="dialog" aria-label="${yeni ? 'Yeni kalem' : 'Kalemi düzenle'}">
+          <div class="sheet-h"><h3>${yeni ? 'Yeni kalem' : 'Kalemi düzenle'}</h3><button type="button" class="icon-btn" data-efx aria-label="Kapat">${svg('x')}</button></div>
+          <label class="fld">Kalem<input id="evf_ad" autocomplete="off" placeholder="Örn. Nevresimleri değiştir" value="${esc(st.ad)}"></label>
+          <div class="fld">Ne sıklıkla?<div class="ev-sik"><input id="evf_n" class="num" inputmode="numeric" placeholder="2" value="${esc(st.n)}" aria-label="Sıklık"><div class="seg" style="--n:3">${Object.keys(EV_U).map(u => `<button type="button" data-efu="${u}" aria-pressed="${st.u === u}">${u === 'gun' ? 'Gün' : u === 'hafta' ? 'Hafta' : 'Ay'}</button>`).join('')}</div></div></div>
+          <label class="fld">En son ne zaman yapıldı?<input id="evf_last" type="date" max="${todayIso}" value="${esc(st.last)}"></label>
+          <div class="fld">Stok ihtiyacı var mı?<div class="seg" style="--n:2"><button type="button" data-efs="0" aria-pressed="${!st.stok}">Hayır</button><button type="button" data-efs="1" aria-pressed="${st.stok}">Evet</button></div></div>
+          ${st.stok ? `<label class="fld">Stok ürünü<input id="evf_urun" autocomplete="off" placeholder="Örn. Brita filtre" value="${esc(st.urun)}"></label>
+            <div class="ev-2"><label class="fld">Elimdeki stok<input id="evf_adet" class="num" inputmode="numeric" placeholder="0" value="${esc(st.adet)}"></label>
+            <label class="fld">Her seferde tüketim<input id="evf_tuk" class="num" inputmode="numeric" value="${esc(st.tuk)}"></label></div>
+            <div class="fld">Nereden temin ediliyor?<div class="seg" style="--n:2"><button type="button" data-efk="market" aria-pressed="${st.kay === 'market'}">Market</button><button type="button" data-efk="online" aria-pressed="${st.kay === 'online'}">Online</button></div><small>Stok bitince bu listeye otomatik eklenir.</small></div>` : ''}
+          <div class="sy-btns">${yeni ? '' : '<button type="button" class="btn ghost" data-efdel>Sil</button>'}<button class="btn">Kaydet</button></div>
+        </form>`;
+    };
+    const kapat = () => { root.innerHTML = ''; root.onclick = root.onsubmit = null; if (after) after(); };
+    root.onclick = e => {
+      const T = s => e.target.closest(s); let el;
+      if (T('[data-efx]')) return kapat();
+      if ((el = T('[data-efu]'))) { oku(); st.u = el.dataset.efu; return draw(); }
+      if ((el = T('[data-efs]'))) { oku(); st.stok = el.dataset.efs === '1'; if (st.stok && !st.urun) st.urun = st.ad; draw(); const u = root.querySelector('#evf_adet'); if (u) u.focus(); return; }
+      if ((el = T('[data-efk]'))) { oku(); st.kay = el.dataset.efk; return draw(); }
+      if (T('[data-efdel]')) { const E = EV(), prev = E.items.slice(); E.items = E.items.filter(i => i !== it); save(); kapat(); return toast(it.ad + ' silindi', () => { EV().items = prev; save(); after && after(); }); }
+    };
+    root.onsubmit = e => {
+      e.preventDefault(); oku();
+      const ad = st.ad.trim(), n = parseInt(st.n, 10);
+      if (!ad) return toast('Kalem adını yaz');
+      if (!(n > 0)) return toast('Sıklığı yaz, örneğin 2');
+      const last = st.last && st.last <= todayIso ? st.last : null;
+      const stok = st.stok ? { urun: st.urun.trim() || ad, adet: st.adet.trim() === '' ? null : Math.max(0, parseInt(st.adet, 10) || 0), tuk: Math.max(1, parseInt(st.tuk, 10) || 1), kay: st.kay } : null;
+      const E = EV(); let lst = null;
+      if (yeni) { const x = { id: 'e' + Date.now().toString(36), ad, n, u: st.u, last, stok }; E.items.push(x); lst = evStokKontrol(x); }
+      else {
+        // Son tarih ileri alındıysa iş o gün yapılmış sayılır ve stoktan düşer
+        const ileri = last && (!it.last || last > it.last);
+        Object.assign(it, { ad, n, u: st.u, stok });
+        if (ileri && it.last) lst = evTamamla(it, last); else { it.last = last; lst = evStokKontrol(it); }
+      }
+      save(); kapat();
+      toast((yeni ? ad + ' eklendi' : ad + ' kaydedildi') + (lst ? ' · ' + stok.urun + ' ' + lst + ' listesine eklendi' : ''));
+    };
+    draw();
+    if (yeni) { const a = root.querySelector('#evf_ad'); if (a) a.focus(); }
+  }
+
   // Kayıtlar: alışverişler ve ürünler (tarih aralığı, ortalama, çetele)
   const kUi = { tab: 'trips', range: '6', from: '', to: '', open: null, cetele: false };
   const AY_U = ['Ocak', 'Şubat', 'Mart', 'Nisan', 'Mayıs', 'Haziran', 'Temmuz', 'Ağustos', 'Eylül', 'Ekim', 'Kasım', 'Aralık'];
@@ -3275,9 +3418,12 @@ Diğer=Çiçek|💐;Hediye|🎁;Kalem|✏️;Defter|📒;Zarf|✉️;Koli bandı
     $('#acBtn').hidden = ui.tab !== 'ozet' || !acN;
     if (acN) $('#acBtn').innerHTML = svg('plus') + `<b class="num">${acN}</b>`;
     $('#kayBtn').hidden = ui.tab !== 'alisveris';
+    $('#evBtn').hidden = ui.tab !== 'ozet';
+    if (ui.tab === 'ozet') { const evN = evGeciken(); $('#evBtn').innerHTML = svg('home') + (evN ? `<b class="num">${evN}!</b>` : ''); $('#evBtn').setAttribute('aria-label', 'Ev işleri' + (evN ? ', ' + evN + ' iş zamanı geldi' : '')); }
     view.classList.toggle('ozet', ui.tab === 'ozet');
     $('#hSub').textContent = ui.tab === 'ozet' ? 'Merhaba' : 'Cüzdan';
     $('#hTitle').textContent = ui.tab === 'ozet' ? AYLAR[+ui.ym.slice(5) - 1] + ' özeti' : TITLES[ui.tab];
+    if (ui.tab === 'ozet' && $('#hTitle').scrollWidth > $('#hTitle').clientWidth + 1) $('#hTitle').textContent = AYLAR[+ui.ym.slice(5) - 1];
     ui.tab === 'ayarlar' ? $('#gearBtn').setAttribute('aria-current', 'page') : $('#gearBtn').removeAttribute('aria-current');
     document.querySelectorAll('.tab').forEach(b => b.dataset.tab === ui.tab ? b.setAttribute('aria-current', 'page') : b.removeAttribute('aria-current'));
     const focusQ = document.activeElement && document.activeElement.id === 'qIn', focusSh = document.activeElement && document.activeElement.id === 'shQ';
@@ -3313,6 +3459,7 @@ Diğer=Çiçek|💐;Hediye|🎁;Kalem|✏️;Defter|📒;Zarf|✉️;Koli bandı
   $('#fab').addEventListener('click', () => openSheet());
   $('#amBtn').innerHTML = svg('cart') + '<span>Alışverişteyim</span>';
   $('#amBtn').addEventListener('click', () => openAlisveristeyim());
+  $('#evBtn').addEventListener('click', () => openEv());
   $('#acBtn').addEventListener('click', () => openAcik());
   $('#kayBtn').innerHTML = svg('doc');
   $('#kayBtn').addEventListener('click', () => openKayitlar());
