@@ -984,7 +984,16 @@ nav.tabs .tab span.pi { width: 46px; }
 .sh-oto { font-size: 10.5px; font-weight: 600; color: var(--muted); font-style: italic; }
 .ev-btn { position: relative; }
 .ev-btn b { position: absolute; top: -5px; right: -7px; min-width: 18px; height: 18px; padding: 0 4px; border-radius: 9px; background: #e5484d; color: #fff; font-size: 10.5px; font-weight: 800; line-height: 18px; border: 2px solid var(--bg); }
-.ev .am-h h3 { flex: 1; margin-left: 10px; }
+.ev .am-h h3 { flex: 1; }
+.ev .am-h h3 .ev-add { margin-left: 6px; width: 34px; height: 34px; }
+.ev .am-h h3 .ev-add svg.i { color: #fff; width: 20px; height: 20px; }
+.ev-tap b { min-width: 0; overflow-wrap: anywhere; }
+.ev-hr { display: flex; gap: 8px; }
+.ev-hr [aria-pressed="true"] { background: var(--primary-soft); color: var(--primary-ink); }
+.ev-cal-g i.on small { position: absolute; top: 0; left: 3px; font-size: 7.5px; line-height: 1; font-weight: 800; }
+.ev-cs { font-size: 12px; line-height: 21px; font-family: "Noto Color Emoji", "Apple Color Emoji", "Segoe UI Emoji", sans-serif; }
+.ev-rp { grid-template-columns: minmax(0, 1fr) 40px 34px 34px 38px; }
+.ev-gh { font-size: 18px; padding: 8px 0 0 4px; font-family: "Noto Color Emoji", "Apple Color Emoji", "Segoe UI Emoji", sans-serif; }
 .ev-add { background: var(--primary); color: #fff; }
 .ev-cal { background: var(--surface); border-radius: 18px; box-shadow: var(--shadow); padding: 8px 10px 10px; }
 .ev-cal-h { display: flex; align-items: center; justify-content: space-between; margin-bottom: 4px; }
@@ -3275,6 +3284,7 @@ Diğer=Çiçek|💐;Hediye|🎁;Kalem|✏️;Defter|📒;Zarf|✉️;Koli bandı
   const evGeciken = () => EV().items.filter(i => i.last && evSonraki(i) <= todayIso).length;
   const evSira = () => EV().items.slice().sort((a, b) => (a.last ? 1 : 0) - (b.last ? 1 : 0) || (evSonraki(a) || '').localeCompare(evSonraki(b) || '') || a.ad.localeCompare(b.ad, 'tr'));
   function evTamamla(it, gun) {
+    const due = evSonraki(it); it.h = (it.h || []).concat([{ d: gun, g: due ? evFark(gun, due) : null }]).slice(-50);
     it.last = gun;
     if (it.stok && it.stok.adet != null) it.stok.adet = Math.max(0, it.stok.adet - (it.stok.tuk || 1));
     return evStokKontrol(it);
@@ -3284,9 +3294,9 @@ Diğer=Çiçek|💐;Hediye|🎁;Kalem|✏️;Defter|📒;Zarf|✉️;Koli bandı
   const evSemOto = ad => { const a = shSade(ad); return /nevresim|carsaf|yatak/.test(a) ? '🛏️' : /camasir/.test(a) ? '🧺' : /bulasik/.test(a) ? '🍽️' : /klima/.test(a) ? '❄️' : /kahve/.test(a) ? '☕' : /brita|filtre|su /.test(a + ' ') ? '💧' : /buzdolab/.test(a) ? '🧊' : /cicek|bitki/.test(a) ? '🪴' : /cop/.test(a) ? '🗑️' : /banyo|tuvalet|dus/.test(a) ? '🚿' : /supur|toz/.test(a) ? '🧹' : /araba|oto/.test(a) ? '🚗' : '🏠'; };
   const evSem = it => it.e || evSemOto(it.ad);
   const evRenk = it => EV_RENK[(it.c || 0) % EV_RENK.length];
-  const evUi = { ym: null };
+  const evUi = { ym: null, rapor: false, sira: 'tarih' };
   function openEv() {
-    const root = $('#listRoot'); evUi.ym = todayIso.slice(0, 7);
+    const root = $('#listRoot'); evUi.ym = todayIso.slice(0, 7); evUi.rapor = false;
     const takvim = items => {
       const [Y, M] = evUi.ym.split('-').map(Number), ilk = new Date(Y, M - 1, 1), son = new Date(Y, M, 0).getDate();
       const bas = evUi.ym + '-01', bit = evUi.ym + '-' + pad(son), gun = {};
@@ -3294,10 +3304,22 @@ Diğer=Çiçek|💐;Hediye|🎁;Kalem|✏️;Defter|📒;Zarf|✉️;Koli bandı
       let h = ''; for (let i = 0; i < (ilk.getDay() + 6) % 7; i++) h += '<i></i>';
       for (let g = 1; g <= son; g++) {
         const d = evUi.ym + '-' + pad(g), w = (new Date(Y, M - 1, g).getDay() + 6) % 7, its = gun[d] || [];
-        h += `<i class="${w > 4 ? 'we' : ''}${d === todayIso ? ' td' : ''}${its.length ? ' on' : ''}"${its.length ? ` style="--c:${evRenk(its[0])}"` : ''} title="${its.map(x => esc(x.ad)).join(', ')}">${g}${its.length > 1 ? `<u>${its.slice(1, 4).map(x => `<s style="background:${evRenk(x)}"></s>`).join('')}</u>` : ''}</i>`;
+        h += `<i class="${w > 4 ? 'we' : ''}${d === todayIso ? ' td' : ''}${its.length ? ' on' : ''}"${its.length ? ` style="--c:${evRenk(its[0])}"` : ''} title="${its.map(x => esc(x.ad)).join(', ')}">${its.length ? `<small>${g}</small><span class="ev-cs">${evSem(its[0])}</span>` : g}${its.length > 1 ? `<u>${its.slice(1, 4).map(x => `<s style="background:${evRenk(x)}"></s>`).join('')}</u>` : ''}</i>`;
       }
       return `<div class="ev-cal"><div class="ev-cal-h"><button data-evm="-1" aria-label="Önceki ay">‹</button><b>${AYLAR[M - 1]} ${Y}</b><button data-evm="1" aria-label="Sonraki ay">›</button></div>
         <div class="ev-cal-g">${['Pt', 'Sa', 'Ça', 'Pe', 'Cu', 'Ct', 'Pz'].map((x, i) => `<em class="${i > 4 ? 'we' : ''}">${x}</em>`).join('')}${h}</div></div>`;
+    };
+    const rapor = items => {
+      const st = it => { const h = (it.h || []).filter(x => x.g != null), nx = evSonraki(it); return { kal: nx ? evFark(nx, todayIso) : null, kez: (it.h || []).length, ort: h.length ? Math.round(h.reduce((a, x) => a + x.g, 0) / h.length) : null, gec: h.filter(x => x.g > 0).length }; };
+      let list = items.map(it => Object.assign({ it }, st(it))), gruplar = null;
+      if (evUi.sira === 'kat') { const m = {}; list.forEach(r => (m[evSem(r.it)] = m[evSem(r.it)] || []).push(r)); gruplar = Object.keys(m).map(k => [k, m[k]]); }
+      if (evUi.sira === 'gec') list = list.filter(r => (r.kal != null && r.kal < 0) || r.gec).sort((a, b) => (a.kal == null ? 1e9 : a.kal) - (b.kal == null ? 1e9 : b.kal) || (b.ort || 0) - (a.ort || 0));
+      const satir = r => `<div class="ev-tr ev-rp${r.kal != null && r.kal <= 0 ? ' due' : ''}" style="--c:${evRenk(r.it)}"><button class="ev-tap" data-ev="${r.it.id}"><span class="ev-sm">${evSem(r.it)}</span><b>${esc(r.it.ad)}</b></button>
+        <span class="ev-n ev-kal">${r.kal == null ? '—' : r.kal}</span><span class="ev-n">${r.kez}</span><span class="ev-n">${r.gec}</span><span class="ev-n">${r.ort == null ? '—' : (r.ort > 0 ? '+' : '') + r.ort}</span></div>`;
+      const th = '<div class="ev-tr ev-rp ev-th"><span></span><span class="ev-n">Kalan</span><span class="ev-n">Kez</span><span class="ev-n">Geç</span><span class="ev-n">Ort.</span></div>';
+      return `<div class="seg" style="--n:3"><button data-evs="tarih" aria-pressed="${evUi.sira === 'tarih'}">Tarih</button><button data-evs="kat" aria-pressed="${evUi.sira === 'kat'}">Kategori</button><button data-evs="gec" aria-pressed="${evUi.sira === 'gec'}">Gecikme</button></div>
+        <div class="ev-tb">${gruplar ? th + gruplar.map(([k, rs]) => `<div class="ev-gh">${k}</div>${rs.map(satir).join('')}`).join('') : list.length ? th + list.map(satir).join('') : '<p class="hint">Gecikmiş iş yok.</p>'}</div>
+        <p class="hint">Kalan: gün. Kez: kaç kez yapıldı. Geç: kaç kez geç yapıldı. Ort.: ortalama kaç gün geç (+) ya da erken (−). Geçmiş bu sürümle tutulmaya başladı.</p>`;
     };
     const draw = () => {
       const old = root.querySelector('.am'), sc = old ? old.scrollTop : 0, items = evSira();
@@ -3310,16 +3332,18 @@ Diğer=Çiçek|💐;Hediye|🎁;Kalem|✏️;Defter|📒;Zarf|✉️;Koli bandı
           <button class="ev-ok" data-evok="${it.id}" aria-label="${esc(it.ad)} yapıldı"></button></div>`;
       }).join('');
       root.innerHTML = `<div class="am ev" role="dialog" aria-label="Ev işleri">
-        <div class="am-h"><button class="icon-btn ev-add" data-evnew aria-label="Yeni kalem ekle">${svg('plus')}</button><h3>${svg('home')} Ev işleri</h3><button class="icon-btn" data-evx aria-label="Kapat">${svg('x')}</button></div>
-        ${takvim(items)}
+        <div class="am-h"><h3>${svg('home')} Ev işleri<button class="icon-btn ev-add" data-evnew aria-label="Yeni kalem ekle">${svg('plus')}</button></h3><span class="ev-hr"><button class="icon-btn" data-evrap aria-pressed="${evUi.rapor}" aria-label="Sıralama ve gecikmeler">${svg('doc')}</button><button class="icon-btn" data-evx aria-label="Kapat">${svg('x')}</button></span></div>
+        ${evUi.rapor ? rapor(items) : `${takvim(items)}
         <div class="ev-tb">${items.length ? `<div class="ev-tr ev-th"><span></span><span class="ev-n">Kalan</span><span class="ev-n">Termin</span><span class="ev-n">Önce</span><span class="ev-n">Stok</span><span></span></div>${rows}` : '<p class="hint">Henüz kalem yok. Sol üstteki + ile ekle.</p>'}</div>
-        <p class="hint">Kalan ve Önce: gün. Yuvarlak: bugün yapıldı. Geçmiş tarih için kaleme dokun.</p>
+        <p class="hint">Kalan ve Önce: gün. Yuvarlak: bugün yapıldı. Geçmiş tarih için kaleme dokun.</p>`}
       </div>`;
       root.querySelector('.am').scrollTop = sc;
     };
     root.onclick = e => {
       const T = s => e.target.closest(s); let el;
       if (T('[data-evx]')) { root.innerHTML = ''; root.onclick = null; return render(); }
+      if (T('[data-evrap]')) { evUi.rapor = !evUi.rapor; return draw(); }
+      if ((el = T('[data-evs]'))) { evUi.sira = el.dataset.evs; return draw(); }
       if ((el = T('[data-evm]'))) { evUi.ym = ymAdd(evUi.ym, +el.dataset.evm); return draw(); }
       if (T('[data-evnew]')) return openEvForm(null, draw);
       if ((el = T('[data-ev]'))) { const it = EV().items.find(i => i.id === el.dataset.ev); if (it) openEvForm(it, draw); return; }
