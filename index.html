@@ -960,11 +960,15 @@ nav.tabs .tab span.pi { width: 46px; }
 .am-fin { background: var(--surface); border-radius: 20px; box-shadow: var(--shadow); padding: 14px; display: flex; flex-direction: column; gap: 8px; }
 .am-fin .btn { display: flex; flex-direction: column; align-items: center; gap: 1px; }
 .am-fin .btn small { font-size: 11px; font-weight: 600; opacity: .8; }
-.sh-sw { flex: none; min-width: 40px; height: 30px; padding: 0 4px; border: 0; background: none; color: var(--ink); border-radius: 9px; font: 700 12.5px var(--font); }
+.sh-sw { flex: none; min-width: 36px; height: 30px; padding: 0 4px; border: 0; background: none; color: var(--ink); border-radius: 9px; font: 700 12.5px var(--font); }
 :root[data-theme="dark"] .sh-sw { color: #fff; }
 .sh-row { touch-action: pan-y; position: relative; background: var(--surface); transition: transform .18s ease; }
 .sh-row.drag { transition: none; }
-.sh-row .am-pm { width: 28px; height: 28px; font-size: 16px; margin-left: 0; }
+.sh-row::after { content: "Sil"; position: absolute; left: 100%; top: 0; bottom: 0; width: 100%; background: #e5484d; color: #fff; display: flex; align-items: center; padding-left: 18px; font: 800 14px var(--font); }
+.sh-row:not(.drag):not(.del)::after { display: none; }
+.sh-list .sh-row { gap: 6px; }
+.sh-kayit { font-size: 14px; white-space: nowrap; }
+.sh-row .am-pm { width: 26px; height: 26px; font-size: 16px; margin-left: 0; }
 .sh-kayit { width: 100%; margin-top: 10px; }
 .sh-ad small { display: block; }
 .sh-ind { color: var(--in-ink); font-weight: 800; font-style: normal; }
@@ -2845,7 +2849,7 @@ Diğer=Çiçek|💐;Hediye|🎁;Kalem|✏️;Defter|📒;Zarf|✉️;Koli bandı
       : `<span class="hint">Katalogda yok. Eklemek için + düğmesine bas.</span>`;
   };
   const shTile = (ad, on, cls) => `<button class="sh-t${on ? ' on' : ''}${cls ? ' ' + cls : ''}" data-shq="${esc(ad)}" aria-label="${esc(ad)}${on ? ' (listede)' : ''}">${on ? `<span class="sh-tick">${svg('check')}</span>` : ''}${shEm(ad)}<b>${esc(ad)}</b></button>`;
-  const shRow = i => `<div class="sh-row${i.al ? ' al' : ''}" data-shrow="${i.id}">${shEm(i.ad, i.liste === 'online' ? '📦' : i.liste === 'diger' ? '🛍️' : '🛒')}<span class="sh-ad">${shAdetL(i)}${esc(i.ad)}</span>${i.ek && !i.al && Date.now() - i.ek > 7 * 864e5 ? '<em class="sh-eski" title="7 günden uzun süredir listede">!</em>' : ''}${i.liste === 'market' && i.al ? `${(i.n || 1) > 1 ? `<button class="am-pm" data-shn="-1" data-id="${i.id}" aria-label="${esc(i.ad)} bir azalt">−</button>` : ''}<button class="am-pm" data-shn="1" data-id="${i.id}" aria-label="${esc(i.ad)} bir artır">+</button>` : ''}${i.liste === 'market' ? swBtn(i) : ''}<button class="sh-ok" data-shok="${i.id}" aria-label="${esc(i.ad)} ${i.al ? 'alınmadı yap' : 'alındı'}" aria-pressed="${i.al}">${i.al ? svg('check') : ''}</button></div>`;
+  const shRow = i => `<div class="sh-row${i.al ? ' al' : ''}" data-shrow="${i.id}">${shEm(i.ad, i.liste === 'online' ? '📦' : i.liste === 'diger' ? '🛍️' : '🛒')}<span class="sh-ad">${shAdetL(i)}${esc(i.ad)}</span>${i.ek && !i.al && Date.now() - i.ek > 7 * 864e5 ? '<em class="sh-eski" title="7 günden uzun süredir listede">!</em>' : ''}${i.liste === 'market' ? `${(i.n || 1) > 1 ? `<button class="am-pm" data-shn="-1" data-id="${i.id}" aria-label="${esc(i.ad)} bir azalt">−</button>` : ''}<button class="am-pm" data-shn="1" data-id="${i.id}" aria-label="${esc(i.ad)} bir artır">+</button>` : ''}${i.liste === 'market' ? swBtn(i) : ''}<button class="sh-ok" data-shok="${i.id}" aria-label="${esc(i.ad)} ${i.al ? 'alınmadı yap' : 'alındı'}" aria-pressed="${i.al}">${i.al ? svg('check') : ''}</button></div>`;
   function renderAlisveris() {
     const S = SH(), mk = shBekleyen('market').length, od = shBekleyen('diger').length;
     const seg = `<div class="seg sh-seg" style="--n:2"><button data-shtab="market" aria-pressed="${shUi.tab === 'market'}">Market · ${mk}</button><button data-shtab="diger" aria-pressed="${shUi.tab === 'diger'}">Online / Diğer · ${od}</button></div>`;
@@ -2862,8 +2866,8 @@ Diğer=Çiçek|💐;Hediye|🎁;Kalem|✏️;Defter|📒;Zarf|✉️;Koli bandı
         <section class="card sh-list">
           <div class="sh-lh"><b>Market listesi · ${bek.length} ürün</b>${items.length ? '<button class="sh-lnk" data-shtemiz>Temizle</button>' : ''}</div>
           ${items.length ? bek.concat(alin).map(shRow).join('') : '<div class="empty">Liste boş. Yukarıdan ara ya da sık kullanılanlardan seç.</div>'}
-          ${alin.length ? `<button class="btn sh-kayit" data-shkayit>Kaydet ve işaretlenenleri sil (${alin.length})</button>` : ''}
-          ${items.length ? '<p class="hint">Silmek için satırı sola kaydır. İşaretleyince + ile adet gir.</p>' : ''}
+          ${alin.length ? `<button class="btn sh-kayit" data-shkayit>Kaydet ve işaretlileri sil (${alin.length})</button>` : ''}
+          ${items.length ? '<p class="hint">Silmek için satırı sola kaydır. Adet için + kullan.</p>' : ''}
         </section>`;
     }
     // Online / Diğer: online önce, sonra her yer kendi grubunda, en sonda yeri belli olmayanlar
@@ -3012,7 +3016,7 @@ Diğer=Çiçek|💐;Hediye|🎁;Kalem|✏️;Defter|📒;Zarf|✉️;Koli bandı
     if (!shSw) return; const { row, dx, on } = shSw; shSw = null; if (!on) return;
     shUzunBasildi = true; row.classList.remove('drag');
     if (dx < -row.offsetWidth * 0.35) {
-      row.style.transform = 'translateX(-110%)';
+      row.classList.add('del'); row.style.transform = 'translateX(-110%)';
       setTimeout(() => { const S = SH(), prev = S.items.slice(), it = S.items.find(i => i.id === row.dataset.shrow); if (!it) return; S.items = S.items.filter(i => i !== it); save(); render(); toast(it.ad + ' silindi', () => { SH().items = prev; save(); render(); }); }, 160);
     } else row.style.transform = '';
   };
