@@ -960,9 +960,9 @@ nav.tabs .tab span.pi { width: 46px; }
 .am-fin { background: var(--surface); border-radius: 20px; box-shadow: var(--shadow); padding: 14px; display: flex; flex-direction: column; gap: 8px; }
 .am-fin .btn { display: flex; flex-direction: column; align-items: center; gap: 1px; }
 .am-fin .btn small { font-size: 11px; font-weight: 600; opacity: .8; }
-.sh-sw { flex: none; width: 38px; height: 38px; border: 0; background: none; color: var(--muted); opacity: .55; display: grid; place-items: center; border-radius: 10px; }
-.sh-sw svg.i { width: 18px; height: 18px; }
-.sh-sw.on { opacity: 1; color: var(--ink-2); }
+.sh-sw { flex: none; min-width: 40px; height: 30px; margin-right: 6px; padding: 0 6px; border: 0; background: none; color: var(--muted); opacity: .6; border-radius: 9px; font: italic 600 12.5px var(--font); }
+.sh-sw.on { opacity: 1; font-style: normal; font-weight: 800; background: var(--ink-2); color: var(--surface); }
+:root[data-theme="dark"] .sh-sw.on { background: #fff; color: #1a1a1a; }
 .sh-ad small { display: block; }
 .sh-ind { color: var(--in-ink); font-weight: 800; font-style: normal; }
 #shPop .scrim { z-index: 60; } #shPop .sheet { z-index: 61; }
@@ -2842,7 +2842,7 @@ Diğer=Çiçek|💐;Hediye|🎁;Kalem|✏️;Defter|📒;Zarf|✉️;Koli bandı
       : `<span class="hint">Katalogda yok. Eklemek için + düğmesine bas.</span>`;
   };
   const shTile = (ad, on, cls) => `<button class="sh-t${on ? ' on' : ''}${cls ? ' ' + cls : ''}" data-shq="${esc(ad)}" aria-label="${esc(ad)}${on ? ' (listede)' : ''}">${on ? `<span class="sh-tick">${svg('check')}</span>` : ''}${shEm(ad)}<b>${esc(ad)}</b></button>`;
-  const shRow = i => `<div class="sh-row${i.al ? ' al' : ''}" data-shrow="${i.id}">${shEm(i.ad, i.liste === 'online' ? '📦' : i.liste === 'diger' ? '🛍️' : '🛒')}<span class="sh-ad">${i.n > 1 ? `<i class="am-x">${i.n}x</i> ` : ''}${esc(i.ad)}${i.liste === 'market' && i.tk ? `<small class="sh-tk">${tkText(i, i.tk)}</small>` : ''}</span>${i.ek && !i.al && Date.now() - i.ek > 7 * 864e5 ? '<em class="sh-eski" title="7 günden uzun süredir listede">!</em>' : ''}${i.liste === 'market' ? swBtn(i) : ''}<button class="sh-ok" data-shok="${i.id}" aria-label="${esc(i.ad)} ${i.al ? 'alınmadı yap' : 'alındı'}" aria-pressed="${i.al}">${i.al ? svg('check') : ''}</button></div>`;
+  const shRow = i => `<div class="sh-row${i.al ? ' al' : ''}" data-shrow="${i.id}">${shEm(i.ad, i.liste === 'online' ? '📦' : i.liste === 'diger' ? '🛍️' : '🛒')}<span class="sh-ad">${shAdetL(i)}${esc(i.ad)}</span>${i.ek && !i.al && Date.now() - i.ek > 7 * 864e5 ? '<em class="sh-eski" title="7 günden uzun süredir listede">!</em>' : ''}${i.liste === 'market' ? swBtn(i) : ''}<button class="sh-ok" data-shok="${i.id}" aria-label="${esc(i.ad)} ${i.al ? 'alınmadı yap' : 'alındı'}" aria-pressed="${i.al}">${i.al ? svg('check') : ''}</button></div>`;
   function renderAlisveris() {
     const S = SH(), mk = shBekleyen('market').length, od = shBekleyen('diger').length;
     const seg = `<div class="seg sh-seg" style="--n:2"><button data-shtab="market" aria-pressed="${shUi.tab === 'market'}">Market · ${mk}</button><button data-shtab="diger" aria-pressed="${shUi.tab === 'diger'}">Online / Diğer · ${od}</button></div>`;
@@ -3023,54 +3023,28 @@ Diğer=Çiçek|💐;Hediye|🎁;Kalem|✏️;Defter|📒;Zarf|✉️;Koli bandı
     return null;
   }
   const tkText = (i, tk) => { const tr = SHX().track[shSade(i.ad)]; if (!tk || !tr) return ''; const u = SH_UNIT[tr.u] || ''; return `${n2(tk.q)} ${u}${tk.p > 0 ? ` · ${money(tk.p)}/${u}` : ''}${tk.d > 0 ? ` <b class="sh-ind">−${money(tk.d)}</b>` : ''}`; };
-  const swBtn = i => { const tr = SHX().track[shSade(i.ad)]; return `<button class="sh-sw${tr ? ' on' : ''}" data-shsw="${i.id}" aria-label="${esc(i.ad)} sayaç" title="Sayaç">${svg('timer')}</button>`; };
-  const shAlinsin = (it, after) => { const tr = SHX().track[shSade(it.ad)]; if (!it.al && tr && !it.tk) { openSayac(it, true, after); return false; } it.al = !it.al; save(); return true; };
+  const swBtn = i => { const tr = SHX().track[shSade(i.ad)]; return `<button class="sh-sw${tr ? ' on' : ''}" data-shsw="${i.id}" aria-label="${esc(i.ad)} birim${tr ? ': ' + SH_UNIT[tr.u] : ''}" title="Birim">Br.</button>`; };
+  const shAdetL = i => { const tr = i.liste === 'market' && SHX().track[shSade(i.ad)], n = i.n || 1; return tr ? `<i class="am-x">${n} ${SH_UNIT[tr.u]}</i> ` : n > 1 ? `<i class="am-x">${n}x</i> ` : ''; };
+  const shAlinsin = it => { it.al = !it.al; save(); return true; };
 
-  // Sayaç penceresi: birim, miktar, birim fiyat, indirim
+  // Birim seçimi: ürün başına bir kez (paket, kg, lt, adet)
   function openSayac(it, fromTick, after) {
-    const S = SHX(), k = shSade(it.ad), tr0 = S.track[k] || { u: 'paket', f: false }, son = shSonFiyat(it.ad);
-    const st = { u: tr0.u, f: tr0.f, q: it.tk ? n2(it.tk.q) : '1', p: it.tk && it.tk.p ? n2(it.tk.p) : son != null ? n2(son) : '', dOn: !!(it.tk && it.tk.d), d: it.tk && it.tk.d ? n2(it.tk.d) : '' };
+    const S = SHX(), k = shSade(it.ad), tr = S.track[k];
     let root = $('#shPop'); if (!root) { root = document.createElement('div'); root.id = 'shPop'; root.setAttribute('lang', 'tr'); document.body.appendChild(root); }
-    const oku = () => { const g = s => root.querySelector(s); if (g('#syQ')) st.q = g('#syQ').value; if (g('#syP')) st.p = g('#syP').value; if (g('#syD')) st.d = g('#syD').value; };
-    const draw = () => {
-      const u = SH_UNIT[st.u];
-      root.innerHTML = `<div class="scrim" data-syx></div>
-        <div class="sheet sh-sy" role="dialog" aria-label="${esc(it.ad)} sayaç">
-          <div class="sheet-h"><h3>${shEm(it.ad)} ${esc(it.ad)}</h3><button class="icon-btn" data-syx aria-label="Kapat">${svg('x')}</button></div>
-          ${fromTick ? '<p class="hint">Bu ürünün sayacı açık. Aldığın miktarı yaz.</p>' : ''}
-          <div class="sy-l">Ne olarak tutulsun?</div>
-          <div class="seg" style="--n:4">${Object.keys(SH_UNIT).map(x => `<button type="button" data-syu="${x}" aria-pressed="${st.u === x}">${x === 'kg' ? 'Kg' : x === 'lt' ? 'Litre' : x === 'adet' ? 'Adet' : 'Paket'}</button>`).join('')}</div>
-          <div class="sy-row"><span class="sy-l">Miktar</span><span class="sy-q"><button type="button" class="icon-btn" data-syq="-1" aria-label="Azalt">−</button><input id="syQ" class="num" inputmode="decimal" value="${esc(st.q)}" aria-label="Miktar"><b>${u}</b><button type="button" class="icon-btn" data-syq="1" aria-label="Artır">+</button></span></div>
-          <button type="button" class="sy-tog" data-syf aria-pressed="${st.f}"><span class="sy-box">${st.f ? svg('check') : ''}</span>Fiyatını da sor</button>
-          ${st.f ? `<div class="sy-row"><span class="sy-l">Birim fiyat</span><span class="sy-q"><input id="syP" class="num" inputmode="decimal" placeholder="0,00" value="${esc(st.p)}" aria-label="Birim fiyat"><b>€/${u}</b><button type="button" class="sy-ind" data-syd aria-pressed="${st.dOn}">İndirim</button></span></div>
-          ${son != null && !(it.tk && it.tk.p) ? `<p class="hint">Son kayıttaki normal fiyat ${money(son)}. Boş bırakırsan bu kullanılır.</p>` : ''}
-          ${st.dOn ? `<div class="sy-row"><span class="sy-l">Birim başı indirim</span><span class="sy-q"><input id="syD" class="num" inputmode="decimal" placeholder="0,00" value="${esc(st.d)}" aria-label="Birim başı indirim"><b>€/${u}</b></span></div>` : ''}` : ''}
-          <div class="sy-btns">${S.track[k] ? '<button type="button" class="btn ghost" data-syoff>Sayacı kapat</button>' : ''}<button type="button" class="btn" data-sysave>${fromTick ? 'Kaydet ve işaretle' : 'Kaydet'}</button></div>
-        </div>`;
-    };
+    root.innerHTML = `<div class="scrim" data-syx></div>
+      <div class="sheet sh-sy" role="dialog" aria-label="${esc(it.ad)} birim">
+        <div class="sheet-h"><h3>${shEm(it.ad)} ${esc(it.ad)}</h3><button class="icon-btn" data-syx aria-label="Kapat">${svg('x')}</button></div>
+        <div class="sy-l">Ne olarak tutulsun?</div>
+        <div class="seg" style="--n:4">${Object.keys(SH_UNIT).map(x => `<button type="button" data-syu="${x}" aria-pressed="${!!tr && tr.u === x}">${x === 'kg' ? 'Kg' : x === 'lt' ? 'Litre' : x === 'adet' ? 'Adet' : 'Paket'}</button>`).join('')}</div>
+        ${tr ? '<button type="button" class="sh-lnk" data-syoff>Birimi kaldır</button>' : ''}
+      </div>`;
     const kapat = () => { root.innerHTML = ''; root.onclick = null; if (after) after(); else if (ui.tab === 'alisveris') render(); };
     root.onclick = e => {
       const T = s => e.target.closest(s); let el;
       if (T('[data-syx]')) return kapat();
-      oku();
-      if ((el = T('[data-syu]'))) { st.u = el.dataset.syu; return draw(); }
-      if ((el = T('[data-syq]'))) { const step = st.u === 'kg' ? .5 : 1; st.q = n2(Math.max(0, (parseAmt(st.q) || 0) + step * +el.dataset.syq)); return draw(); }
-      if (T('[data-syf]')) { st.f = !st.f; return draw(); }
-      if (T('[data-syd]')) { st.dOn = !st.dOn; draw(); const d = root.querySelector('#syD'); if (d) d.focus(); return; }
-      if (T('[data-syoff]')) { delete S.track[k]; delete it.tk; save(); toast(it.ad + ' sayacı kapatıldı'); return kapat(); }
-      if (T('[data-sysave]')) {
-        const q = parseAmt(st.q); if (!(q > 0)) return toast('Miktarı yaz');
-        let p = st.f ? parseAmt(st.p) : 0; if (st.f && !(p > 0)) p = son || 0;
-        const d = st.f && st.dOn ? parseAmt(st.d) || 0 : 0;
-        if (d && p && d >= p) return toast('İndirim birim fiyattan küçük olmalı');
-        S.track[k] = { u: st.u, f: st.f };
-        it.tk = Object.assign({ q }, p > 0 ? { p: Math.round((p - d) * 100) / 100 } : {}, d > 0 ? { d } : {});
-        if (fromTick) it.al = true;
-        save(); return kapat();
-      }
+      if ((el = T('[data-syu]'))) { S.track[k] = { u: el.dataset.syu }; save(); return kapat(); }
+      if (T('[data-syoff]')) { delete S.track[k]; save(); return kapat(); }
     };
-    draw();
-    const q = root.querySelector('#syQ'); if (q && !fromTick) q.select();
   }
 
   // Alışverişteyim ekranı
@@ -3101,7 +3075,7 @@ Diğer=Çiçek|💐;Hediye|🎁;Kalem|✏️;Defter|📒;Zarf|✉️;Koli bandı
       </div>`;
       const am = root.querySelector('.am'); if (keep) am.scrollTop = sc;
     };
-    const amRow = i => { const n = i.n || 1; return `<div class="am-row${i.al ? ' al' : ''}"><button class="am-tap" data-amok="${i.id}" aria-pressed="${i.al}"><span class="am-c">${i.al ? svg('check') : ''}</span>${shEm(i.ad)}<span class="am-ad"><b>${n > 1 ? `<i class="am-x">${n}x</i> ` : ''}${esc(i.ad)}</b>${i.tk ? `<small>${tkText(i, i.tk)}</small>` : ''}</span></button>${n > 1 ? `<button class="am-pm" data-amn="-1" data-id="${i.id}" aria-label="${esc(i.ad)} bir azalt">−</button>` : ''}<button class="am-pm" data-amn="1" data-id="${i.id}" aria-label="${esc(i.ad)} bir artır">+</button></div>`; };
+    const amRow = i => { const n = i.n || 1; return `<div class="am-row${i.al ? ' al' : ''}"><button class="am-tap" data-amok="${i.id}" aria-pressed="${i.al}"><span class="am-c">${i.al ? svg('check') : ''}</span>${shEm(i.ad)}<span class="am-ad"><b>${shAdetL(i)}${esc(i.ad)}</b></span></button>${n > 1 ? `<button class="am-pm" data-amn="-1" data-id="${i.id}" aria-label="${esc(i.ad)} bir azalt">−</button>` : ''}<button class="am-pm" data-amn="1" data-id="${i.id}" aria-label="${esc(i.ad)} bir artır">+</button></div>`; };
     const amOneri = () => { if (!shSade(amUi.q)) return ''; return shOneri(amUi.q, 8).map(a => `<button class="sh-chip" data-amyeni="${esc(a.ad)}">${shEm(a.ad)}<span>${esc(a.ad)}</span></button>`).join(''); };
     // Sonradan eklenen ürün doğrudan alındı olarak gelir
     const yeniAlindi = ad => {
@@ -3117,7 +3091,7 @@ Diğer=Çiçek|💐;Hediye|🎁;Kalem|✏️;Defter|📒;Zarf|✉️;Koli bandı
       const store = S.cur.store, b = BRANDS[store] || {};
       const alin = S.items.filter(i => i.liste === 'market' && i.al);
       const trip = { id: 'a' + Date.now().toString(36), date: todayIso, store: brName(store), cat: b.bak ? bakId() : 'market', amount: null, open: true,
-        items: alin.map(i => { const tr = S.track[shSade(i.ad)], n = i.n || 1; const o = { ad: i.ad }; if (!tr && n > 1) { o.q = n; o.x = true; } if (tr) { const tk = i.tk || { q: n }; o.q = tk.q; o.u = tr.u; let p = tk.p; if (tr.f && !(p > 0)) p = shSonFiyat(i.ad) || 0; if (p > 0) o.p = p; if (tk.d) o.d = tk.d; } return o; }) };
+        items: alin.map(i => { const tr = S.track[shSade(i.ad)], n = i.n || 1; const o = { ad: i.ad }; if (!tr && n > 1) { o.q = n; o.x = true; } if (tr) { const tk = Object.assign({}, i.tk, { q: n }); o.q = tk.q; o.u = tr.u; let p = tk.p; if (tr.f && !(p > 0)) p = shSonFiyat(i.ad) || 0; if (p > 0) o.p = p; if (tk.d) o.d = tk.d; } return o; }) };
       if (b.tm) trip.tm = true;
       S.trips.push(trip);
       S.items = S.items.filter(i => !(i.liste === 'market' && i.al));
