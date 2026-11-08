@@ -993,6 +993,10 @@ nav.tabs .tab span.pi { width: 46px; }
 .ev-cal-g i.on small { position: absolute; top: 0; left: 3px; font-size: 7.5px; line-height: 1; font-weight: 800; }
 .ev-cs { font-size: 12px; line-height: 21px; font-family: "Noto Color Emoji", "Apple Color Emoji", "Segoe UI Emoji", sans-serif; }
 .ev-rp { grid-template-columns: minmax(0, 1fr) 40px 34px 34px 38px; }
+.ev-hs { display: flex; flex-direction: column; gap: 2px; margin: 0 0 6px 6px; padding: 4px 0 4px 10px; border-left: 2px solid var(--c); }
+.ev-hs span { display: flex; justify-content: space-between; font-size: 12.5px; padding: 2px 4px 2px 0; }
+.ev-hs em { font-style: normal; font-weight: 700; color: var(--muted); font-size: 11.5px; } .ev-hs em.gc { color: #e5484d; }
+.ev-hs .sh-lnk { align-self: flex-start; font-size: 12px; padding: 4px 0; }
 .ev-gh { font-size: 18px; padding: 8px 0 0 4px; font-family: "Noto Color Emoji", "Apple Color Emoji", "Segoe UI Emoji", sans-serif; }
 .ev-add { background: var(--primary); color: #fff; }
 .ev-cal { background: var(--surface); border-radius: 18px; box-shadow: var(--shadow); padding: 8px 10px 10px; }
@@ -3294,7 +3298,7 @@ Diğer=Çiçek|💐;Hediye|🎁;Kalem|✏️;Defter|📒;Zarf|✉️;Koli bandı
   const evSemOto = ad => { const a = shSade(ad); return /nevresim|carsaf|yatak/.test(a) ? '🛏️' : /camasir/.test(a) ? '🧺' : /bulasik/.test(a) ? '🍽️' : /klima/.test(a) ? '❄️' : /kahve/.test(a) ? '☕' : /brita|filtre|su /.test(a + ' ') ? '💧' : /buzdolab/.test(a) ? '🧊' : /cicek|bitki/.test(a) ? '🪴' : /cop/.test(a) ? '🗑️' : /banyo|tuvalet|dus/.test(a) ? '🚿' : /supur|toz/.test(a) ? '🧹' : /araba|oto/.test(a) ? '🚗' : '🏠'; };
   const evSem = it => it.e || evSemOto(it.ad);
   const evRenk = it => EV_RENK[(it.c || 0) % EV_RENK.length];
-  const evUi = { ym: null, rapor: false, sira: 'tarih' };
+  const evUi = { ym: null, rapor: false, sira: 'tarih', acik: null };
   function openEv() {
     const root = $('#listRoot'); evUi.ym = todayIso.slice(0, 7); evUi.rapor = false;
     const takvim = items => {
@@ -3314,12 +3318,13 @@ Diğer=Çiçek|💐;Hediye|🎁;Kalem|✏️;Defter|📒;Zarf|✉️;Koli bandı
       let list = items.map(it => Object.assign({ it }, st(it))), gruplar = null;
       if (evUi.sira === 'kat') { const m = {}; list.forEach(r => (m[evSem(r.it)] = m[evSem(r.it)] || []).push(r)); gruplar = Object.keys(m).map(k => [k, m[k]]); }
       if (evUi.sira === 'gec') list = list.filter(r => (r.kal != null && r.kal < 0) || r.gec).sort((a, b) => (a.kal == null ? 1e9 : a.kal) - (b.kal == null ? 1e9 : b.kal) || (b.ort || 0) - (a.ort || 0));
-      const satir = r => `<div class="ev-tr ev-rp${r.kal != null && r.kal <= 0 ? ' due' : ''}" style="--c:${evRenk(r.it)}"><button class="ev-tap" data-ev="${r.it.id}"><span class="ev-sm">${evSem(r.it)}</span><b>${esc(r.it.ad)}</b></button>
-        <span class="ev-n ev-kal">${r.kal == null ? '—' : r.kal}</span><span class="ev-n">${r.kez}</span><span class="ev-n">${r.gec}</span><span class="ev-n">${r.ort == null ? '—' : (r.ort > 0 ? '+' : '') + r.ort}</span></div>`;
+      const gecmis = it => { const h = (it.h || []).slice().reverse(); return `<div class="ev-hs" style="--c:${evRenk(it)}">${h.length ? h.map(x => `<span><b class="num">${x.d.slice(8)}.${x.d.slice(5, 7)}.${x.d.slice(0, 4)}</b><em class="${x.g > 0 ? 'gc' : ''}">${x.g == null ? '' : x.g === 0 ? 'zamanında' : x.g > 0 ? '+' + x.g + ' gün' : x.g + ' gün'}</em></span>`).join('') : '<p class="hint">Henüz kayıt yok.</p>'}<button class="sh-lnk" data-ev="${it.id}">Düzenle</button></div>`; };
+      const satir = r => `<div class="ev-tr ev-rp${r.kal != null && r.kal <= 0 ? ' due' : ''}" style="--c:${evRenk(r.it)}"><button class="ev-tap" data-evh="${r.it.id}" aria-expanded="${evUi.acik === r.it.id}"><span class="ev-sm">${evSem(r.it)}</span><b>${esc(r.it.ad)}</b></button>
+        <span class="ev-n ev-kal">${r.kal == null ? '—' : r.kal}</span><span class="ev-n">${r.kez}</span><span class="ev-n">${r.gec}</span><span class="ev-n">${r.ort == null ? '—' : (r.ort > 0 ? '+' : '') + r.ort}</span></div>${evUi.acik === r.it.id ? gecmis(r.it) : ''}`;
       const th = '<div class="ev-tr ev-rp ev-th"><span></span><span class="ev-n">Kalan</span><span class="ev-n">Kez</span><span class="ev-n">Geç</span><span class="ev-n">Ort.</span></div>';
       return `<div class="seg" style="--n:3"><button data-evs="tarih" aria-pressed="${evUi.sira === 'tarih'}">Tarih</button><button data-evs="kat" aria-pressed="${evUi.sira === 'kat'}">Kategori</button><button data-evs="gec" aria-pressed="${evUi.sira === 'gec'}">Gecikme</button></div>
         <div class="ev-tb">${gruplar ? th + gruplar.map(([k, rs]) => `<div class="ev-gh">${k}</div>${rs.map(satir).join('')}`).join('') : list.length ? th + list.map(satir).join('') : '<p class="hint">Gecikmiş iş yok.</p>'}</div>
-        <p class="hint">Kalan: gün. Kez: kaç kez yapıldı. Geç: kaç kez geç yapıldı. Ort.: ortalama kaç gün geç (+) ya da erken (−). Geçmiş bu sürümle tutulmaya başladı.</p>`;
+        <p class="hint">Kalan: gün. Kez: kaç kez yapıldı. Geç: kaç kez geç yapıldı. Ort.: ortalama kaç gün geç (+) ya da erken (−). Yapıldığı tarihler için kaleme dokun.</p>`;
     };
     const draw = () => {
       const old = root.querySelector('.am'), sc = old ? old.scrollTop : 0, items = evSira();
@@ -3343,6 +3348,7 @@ Diğer=Çiçek|💐;Hediye|🎁;Kalem|✏️;Defter|📒;Zarf|✉️;Koli bandı
       const T = s => e.target.closest(s); let el;
       if (T('[data-evx]')) { root.innerHTML = ''; root.onclick = null; return render(); }
       if (T('[data-evrap]')) { evUi.rapor = !evUi.rapor; return draw(); }
+      if ((el = T('[data-evh]'))) { evUi.acik = evUi.acik === el.dataset.evh ? null : el.dataset.evh; return draw(); }
       if ((el = T('[data-evs]'))) { evUi.sira = el.dataset.evs; return draw(); }
       if ((el = T('[data-evm]'))) { evUi.ym = ymAdd(evUi.ym, +el.dataset.evm); return draw(); }
       if (T('[data-evnew]')) return openEvForm(null, draw);
@@ -3397,12 +3403,18 @@ Diğer=Çiçek|💐;Hediye|🎁;Kalem|✏️;Defter|📒;Zarf|✉️;Koli bandı
       const last = st.last && st.last <= todayIso ? st.last : null;
       const stok = st.stok ? { urun: st.urun.trim() || ad, adet: st.adet.trim() === '' ? null : Math.max(0, parseInt(st.adet, 10) || 0), tuk: Math.max(1, parseInt(st.tuk, 10) || 1), kay: st.kay } : null;
       const E = EV(); let lst = null;
-      if (yeni) { const x = { id: 'e' + Date.now().toString(36), ad, n, u: st.u, last, stok, c: st.c }; if (st.e) x.e = st.e; E.items.push(x); lst = evStokKontrol(x); }
+      if (yeni) { const x = { id: 'e' + Date.now().toString(36), ad, n, u: st.u, last, stok, c: st.c }; if (st.e) x.e = st.e; if (last) x.h = [{ d: last, g: null }]; E.items.push(x); lst = evStokKontrol(x); }
       else {
         // Son tarih ileri alındıysa iş o gün yapılmış sayılır ve stoktan düşer
         const ileri = last && (!it.last || last > it.last);
         Object.assign(it, { ad, n, u: st.u, stok, c: st.c }); if (st.e) it.e = st.e;
-        if (ileri && it.last) lst = evTamamla(it, last); else { it.last = last; lst = evStokKontrol(it); }
+        if (ileri && it.last) lst = evTamamla(it, last);
+        else {
+          const h = it.h || [], son = h[h.length - 1];
+          if (last && !it.last) it.h = h.concat([{ d: last, g: null }]);
+          else if (son && son.d === it.last) { if (last) son.d = last; else h.pop(); }
+          it.last = last; lst = evStokKontrol(it);
+        }
       }
       save(); kapat();
       toast((yeni ? ad + ' eklendi' : ad + ' kaydedildi') + (lst ? ' · ' + stok.urun + ' ' + lst + ' listesine eklendi' : ''));
