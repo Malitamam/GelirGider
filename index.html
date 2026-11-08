@@ -1773,7 +1773,7 @@ body:has(#acBtn:not([hidden])) .app:has(#view.ozet) { padding-bottom: calc(222px
       <div class="card-h">${foldH('fx', 'Sabit giderler', `<small class="num">${eur(doneSum)} / ${eur(tot)} düştü</small>`)}${ui.editFx === 'new' ? '' : `<button class="link" data-editfx="new">+ Ekle</button>`}</div>
       ${items.length ? `<div class="task"><div class="segs">${items.map(x => `<i class="${x.st.status === 'paid' || x.st.status === 'auto' ? 'on' : ''}" title="${esc(x.f.name)}"></i>`).join('')}</div><b class="num">${paidN}/${items.length}</b><span>ödendi</span></div>` : ''}
       ${ui.editFx === 'new' ? fxForm(null) : ''}
-      ${(() => { const sk = db.fixed.filter(f => (db.skip || {})[ui.ym + '|' + f.id]); return sk.length ? `<div class="fx-skip">Bu ay kaldırılan: ${sk.map(f => `<button data-fxunskip="${f.id}">${esc(f.name)} ↺</button>`).join('')}</div>` : ''; })()}
+      ${(() => { const sk = isOpen('fx') || ui.editFx ? db.fixed.filter(f => (db.skip || {})[ui.ym + '|' + f.id]) : []; return sk.length ? `<div class="fx-skip">Bu ay kaldırılan: ${sk.map(f => `<button data-fxunskip="${f.id}">${esc(f.name)} ↺</button>`).join('')}</div>` : ''; })()}
       ${isOpen('fx') || ui.editFx ? `${items.length ? `<div class="fx-who num">${PEOPLE().map(p => `<span class="who sm ${p}">${PAYER[p][0]}</span>${esc(PAYER[p])} ${eur(byP(p))}`).join('<span class="sep">·</span>')}</div>` : ''}<div class="fx-list">${items.length ? items.map(fixedRow).join('') : `<div class="empty">Kira, fatura gibi her ay ödediğin giderleri ekle.</div>`}</div>
       ${periodicHint()}` : ''}
     </section>`;
