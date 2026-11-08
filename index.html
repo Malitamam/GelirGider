@@ -2857,7 +2857,7 @@ Diğer=Çiçek|💐;Hediye|🎁;Kalem|✏️;Defter|📒;Zarf|✉️;Koli bandı
         ${shUi.edit ? '<p class="sh-edit-not">Çıkarmak için dokun. Eklemek için ＋ kutusuna bas.</p>' : ''}
         <div class="sh-grid sh-quick">${S.quick.map(a => shTile(a, !shUi.edit && shListede(a), shUi.edit ? 'ed' : '')).join('')}${shUi.edit && S.quick.length < SH_MAX ? `<button class="sh-t sh-plus" data-shkat="quick" aria-label="Sık kullanılanlara ekle">${svg('plus')}</button>` : ''}</div>
         <section class="card sh-list">
-          <div class="sh-lh"><b>Market listesi · ${bek.length} ürün</b>${alin.length ? `<button class="sh-lnk" data-shbitir="market">Alışverişi bitir (${alin.length})</button>` : ''}</div>
+          <div class="sh-lh"><b>Market listesi · ${bek.length} ürün</b>${items.length ? '<button class="sh-lnk" data-shtemiz>Temizle</button>' : ''}</div>
           ${items.length ? bek.concat(alin).map(shRow).join('') : '<div class="empty">Liste boş. Yukarıdan ara ya da sık kullanılanlardan seç.</div>'}
           ${items.length ? '<p class="hint">Silmek için satıra uzun bas.</p>' : ''}
         </section>`;
@@ -2943,7 +2943,7 @@ Diğer=Çiçek|💐;Hediye|🎁;Kalem|✏️;Defter|📒;Zarf|✉️;Koli bandı
     if (T('[data-shedit]')) { shUi.edit = !shUi.edit; return render(); }
     if ((el = T('[data-shok]'))) { const it = SH().items.find(i => i.id === el.dataset.shok); if (it && shAlinsin(it)) render(); return; }
     if ((el = T('[data-shsw]'))) { const it = SH().items.find(i => i.id === el.dataset.shsw); if (it) openSayac(it, false); return; }
-    if ((el = T('[data-shbitir]')) && el.dataset.shbitir === 'market') { amUi.bitir = true; return openAlisveristeyim(); }
+    if (T('[data-shtemiz]')) { const S = SH(), prev = S.items.slice(), n = S.items.filter(i => i.liste === 'market').length; S.items = S.items.filter(i => i.liste !== 'market'); save(); render(); return toast('Market listesi temizlendi (' + n + ' ürün)', () => { SH().items = prev; save(); render(); }); }
     if ((el = T('[data-shbitir]'))) {
       const S = SH(), m = el.dataset.shbitir, prev = S.items.slice(), n = S.items.filter(i => i.al && (m === 'market') === (i.liste === 'market')).length;
       S.items = S.items.filter(i => !(i.al && (m === 'market') === (i.liste === 'market'))); save(); render();
