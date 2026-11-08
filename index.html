@@ -1009,8 +1009,7 @@ nav.tabs .tab span.pi { width: 46px; }
 .ev-cal-g .we { color: var(--muted); opacity: .7; } .ev-cal-g i.we { background: var(--surface-2); }
 .ev-cal-g i.on { background: var(--c); color: #fff; opacity: 1; }
 .ev-cal-g i.td { box-shadow: inset 0 0 0 2px var(--ink); font-weight: 900; }
-.ev-cal-g u { position: absolute; left: 0; right: 0; bottom: 1px; display: flex; justify-content: center; gap: 2px; }
-.ev-cal-g s { width: 5px; height: 5px; border-radius: 50%; box-shadow: 0 0 0 1px #fff; }
+.ev-cal-g u { position: absolute; top: 0; right: 3px; font-size: 7.5px; line-height: 1; font-weight: 800; text-decoration: none; }
 .ev-tb { background: var(--surface); border-radius: 18px; box-shadow: var(--shadow); padding: 2px 8px; }
 .ev-tr { display: grid; grid-template-columns: minmax(0, 1fr) 38px 44px 34px 30px 30px; align-items: center; gap: 2px; border-top: 1px solid var(--line); min-height: 40px; }
 .ev-tr:first-child, .ev-th + .ev-tr { border-top: 0; }
@@ -3308,7 +3307,7 @@ Diğer=Çiçek|💐;Hediye|🎁;Kalem|✏️;Defter|📒;Zarf|✉️;Koli bandı
       let h = ''; for (let i = 0; i < (ilk.getDay() + 6) % 7; i++) h += '<i></i>';
       for (let g = 1; g <= son; g++) {
         const d = evUi.ym + '-' + pad(g), w = (new Date(Y, M - 1, g).getDay() + 6) % 7, its = gun[d] || [];
-        h += `<i class="${w > 4 ? 'we' : ''}${d === todayIso ? ' td' : ''}${its.length ? ' on' : ''}"${its.length ? ` style="--c:${evRenk(its[0])}"` : ''} title="${its.map(x => esc(x.ad)).join(', ')}">${its.length ? `<small>${g}</small><span class="ev-cs">${evSem(its[0])}</span>` : g}${its.length > 1 ? `<u>${its.slice(1, 4).map(x => `<s style="background:${evRenk(x)}"></s>`).join('')}</u>` : ''}</i>`;
+        h += `<i class="${w > 4 ? 'we' : ''}${d === todayIso ? ' td' : ''}${its.length ? ' on' : ''}"${its.length ? ` style="--c:${its.length > 1 ? `linear-gradient(90deg,${its.map((x, k) => `${evRenk(x)} ${Math.round(k * 100 / its.length)}% ${Math.round((k + 1) * 100 / its.length)}%`).join(',')})` : evRenk(its[0])}"` : ''} title="${its.map(x => esc(x.ad)).join(', ')}">${its.length ? `<small>${g}</small><span class="ev-cs">${evSem(its[0])}</span>` : g}${its.length > 1 ? `<u>${its.length}</u>` : ''}</i>`;
       }
       return `<div class="ev-cal"><div class="ev-cal-h"><button data-evm="-1" aria-label="Önceki ay">‹</button><b>${AYLAR[M - 1]} ${Y}</b><button data-evm="1" aria-label="Sonraki ay">›</button></div>
         <div class="ev-cal-g">${['Pt', 'Sa', 'Ça', 'Pe', 'Cu', 'Ct', 'Pz'].map((x, i) => `<em class="${i > 4 ? 'we' : ''}">${x}</em>`).join('')}${h}</div></div>`;
