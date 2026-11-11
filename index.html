@@ -951,6 +951,8 @@ body:has(#acBtn:not([hidden])) .app:has(#view.ozet) { padding-bottom: calc(222px
 .am-elle { display: flex; gap: 8px; }
 .am-elle input { flex: 1; min-width: 0; border: 1.5px solid var(--line); background: var(--surface); color: var(--ink); border-radius: 14px; padding: 10px 12px; font: 600 15px var(--font); }
 .am-st { display: inline-flex; align-items: center; gap: 8px; align-self: flex-start; width: auto !important; margin-left: 0 !important; border: 0; background: var(--surface); color: var(--ink); border-radius: 99px; padding: 4px 12px 4px 4px; box-shadow: var(--shadow); font: 700 14px var(--font); }
+.am-str { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+.am-indt { display: inline-flex; align-items: center; gap: 4px; color: var(--in-ink); font-size: 15px; font-weight: 800; } .am-indt svg.i { width: 15px; height: 15px; stroke-width: 2.4; }
 .am-st .br { width: 30px; height: 30px; font-size: 7.5px !important; }
 .am-st .br.dm { font-size: 11px !important; }
 .am-st small { color: var(--primary-ink); font-weight: 700; font-size: 12px; }
@@ -1110,6 +1112,10 @@ body:has(#acBtn:not([hidden])) .app:has(#view.ozet) { padding-bottom: calc(222px
 .kt-i { display: grid; grid-template-columns: 22px 1fr auto; column-gap: 6px; align-items: center; font-size: 13px; font-weight: 600; padding: 3px 0; }
 .kt-i small { grid-column: 2; color: var(--muted); font-size: 11.5px; } .kt-i > b { grid-row: 1; grid-column: 3; font-size: 13px; } .kt-i em { grid-column: 3; text-align: right; font-size: 11.5px; }
 .kt-i .sh-em { font-size: 16px; grid-row: span 2; }
+.kt-edb { float: right; font-size: 12.5px; margin: -2px 0 2px; }
+.kt-e { display: flex; align-items: center; gap: 8px; min-height: 38px; font-size: 13px; font-weight: 600; border-top: 1px solid var(--line); }
+.kt-e:first-child { border-top: 0; } .kt-e .kt-en { flex: 1; min-width: 0; text-align: left; } .kt-e small { color: var(--muted); font-size: 11.5px; } .kt-e .sh-em { font-size: 16px; } .kt-e em { font-style: normal; font-size: 12px; }
+.kt-eb { display: flex; align-items: center; justify-content: space-between; padding-top: 8px; } .kt-eb .btn.sm { padding: 6px 16px; font-size: 13px; min-height: 0; width: auto; }
 .kt-k { margin: 6px 0 0; font-size: 12.5px; font-weight: 700; }
 .kt-ct { align-self: flex-start; margin: 4px 0; }
 .kp { display: grid; grid-template-columns: 20px minmax(0, max-content) 1fr auto auto; column-gap: 8px; align-items: center; border-top: 1px solid var(--line); padding: 5px 0; }
@@ -3214,22 +3220,23 @@ Diğer=Çiçek|💐;Hediye|🎁;Kalem|✏️;Defter|📒;Zarf|✉️;Koli bandı
   // İndirim: ürün başı kaç € daha ucuza alındı (isteğe bağlı); kayıtta adetle çarpılır
   // İndirim penceresi (üstte): hazır tutar düğmeleri (en çok 14, ✎ ile ayarlanır), dokununca kaydedilir; Başka alanı isteğe bağlı
   const IND_MAX = 14;
-  function indSor(it, after, toplam) {
+  function indSor(it, after, toplam, f) {
+    f = f || 'ind';
     let root = $('#shPop'); if (!root) { root = document.createElement('div'); root.id = 'shPop'; root.setAttribute('lang', 'tr'); document.body.appendChild(root); }
     const S = SH(), key = toplam ? 'indHzOd' : 'indHz';
     const HZ = () => S[key] || (toplam ? [1, 2, 3, 5, 10, 15, 20, 30, 50] : [0.1, 0.2, 0.3, 0.5, 1, 1.5, 2, 3, 5]);
     let duz = false;
     const draw = () => { const hz = HZ();
       root.innerHTML = `<div class="scrim" data-idx></div><form class="sheet ind-pop" id="idF" role="dialog" aria-label="İndirim">
-        <div class="ip-h">${shEm(it.ad)}<b>${esc(it.ad)}</b>${it.ind && !duz ? '<button type="button" class="sh-lnk" data-iddel>Kaldır</button>' : ''}<button type="button" class="icon-btn" data-idx aria-label="Kapat">${svg('x')}</button></div>
+        <div class="ip-h">${shEm(it.ad)}<b>${esc(it.ad)}</b>${it[f] && !duz ? '<button type="button" class="sh-lnk" data-iddel>Kaldır</button>' : ''}<button type="button" class="icon-btn" data-idx aria-label="Kapat">${svg('x')}</button></div>
         <div class="ip-lr"><small class="ip-l">${duz ? `Hazır tutarlar (en çok ${IND_MAX}, boş bırakılan silinir)` : toplam ? 'Bu üründe toplam indirim (€)' : 'Ürün başı indirim (€)'}</small>${duz ? '' : '<button type="button" class="ip-ed" data-hzed aria-label="Hazır tutarları ayarla">✎</button>'}</div>
         ${duz ? `<div class="ip-c ip-e">${Array.from({ length: IND_MAX }, (_, k) => `<input class="num" data-hz inputmode="decimal" autocomplete="off" value="${hz[k] != null ? n2(hz[k]) : ''}" aria-label="Hazır tutar ${k + 1}">`).join('')}</div>
           <div class="ip-in"><button type="button" class="btn ghost" data-hzvaz>Vazgeç</button><button type="button" class="btn" data-hzok>Bitti</button></div>`
-        : `<div class="ip-c ip-r">${hz.map(v => `<button type="button" class="sh-chip${it.ind === v ? ' on' : ''}" data-idv="${v}">${n2(v)}</button>`).join('')}</div>
-          <div class="ip-in"><label class="sp-amt"><span>Başka</span><b>€</b><input id="idAmt" inputmode="decimal" autocomplete="off" placeholder="0" value="${it.ind && !hz.includes(it.ind) ? n2(it.ind) : ''}" aria-label="Başka tutar"></label><button class="btn">Kaydet</button></div>`}
+        : `<div class="ip-c ip-r">${hz.map(v => `<button type="button" class="sh-chip${it[f] === v ? ' on' : ''}" data-idv="${v}">${n2(v)}</button>`).join('')}</div>
+          <div class="ip-in"><label class="sp-amt"><span>Başka</span><b>€</b><input id="idAmt" inputmode="decimal" autocomplete="off" placeholder="0" value="${it[f] && !hz.includes(it[f]) ? n2(it[f]) : ''}" aria-label="Başka tutar"></label><button class="btn">Kaydet</button></div>`}
       </form>`; };
     const kapat = () => { root.innerHTML = ''; root.onclick = root.onsubmit = null; after && after(); };
-    const yaz = v => { if (v > 0) it.ind = Math.round(v * 100) / 100; else delete it.ind; save(); kapat(); };
+    const yaz = v => { if (v > 0) it[f] = Math.round(v * 100) / 100; else delete it[f]; save(); kapat(); };
     root.onclick = e => { const T = s => e.target.closest(s); let el;
       if (T('[data-idx]')) { root.innerHTML = ''; root.onclick = root.onsubmit = null; return; }
       if (T('[data-iddel]')) return yaz(0);
@@ -3256,7 +3263,7 @@ Diğer=Çiçek|💐;Hediye|🎁;Kalem|✏️;Defter|📒;Zarf|✉️;Koli bandı
         ${secim ? `<div class="am-l">Hangi marketteyim?</div>
           <div class="am-br">${BR_AM.map(n => `<button class="am-b" data-amst="${n}" aria-pressed="${store === n}">${brandI(n)}<span>${brName(n)}${n === 'Bäckerei' && ekmekVar() ? ' 🍞' : ''}</span></button>`).join('')}<button class="am-b" data-amelle aria-pressed="${!!store && !BRANDS[store]}"><i class="br" style="--bg:var(--surface-2);--fg:var(--ink-2);font-size:18px"><span>…</span></i><span>Başka</span></button></div>
           ${amUi.elle ? `<form class="am-elle" id="amElle"><input id="amElleIn" autocomplete="off" placeholder="Market ya da yer adı" value="${store && !BRANDS[store] ? esc(store) : ''}" aria-label="Market adı"><button class="btn">Tamam</button></form>` : ''}`
-          : `<button class="am-st" data-amchg>${brandI(store)}<b>${esc(brName(store))}</b><small>değiştir</small></button>`}
+          : `<div class="am-str"><button class="am-st" data-amchg>${brandI(store)}<b>${esc(brName(store))}</b><small>değiştir</small></button>${(v => v > 0 ? `<b class="am-indt num">${svg('tag')}+${money(v)}</b>` : '')(items.reduce((x, i) => x + (i.ind || 0) * (i.n || 1), 0))}</div>`}
         <div class="am-sum">${items.length ? `<b>${alin.length} / ${items.length}</b> alındı · ürüne dokun: aldım` : 'Market listesi boş.'}</div>
         <div class="am-list">${bek.map(amRow).join('')}</div>
         ${amUi.add ? `<form class="sh-in am-add" id="amAddF"><input id="amQ" type="search" autocomplete="off" placeholder="Ara ya da yaz: çikolata…" value="${esc(amUi.q)}" aria-label="Ürün ara"><button class="icon-btn" aria-label="Ekle">${svg('plus')}</button></form><div class="sh-oneri" id="amOneri">${amOneri()}</div>`
@@ -3598,7 +3605,7 @@ Diğer=Çiçek|💐;Hediye|🎁;Kalem|✏️;Defter|📒;Zarf|✉️;Koli bandı
   }
 
   // Kayıtlar: alışverişler ve ürünler (tarih aralığı, ortalama, çetele)
-  const kUi = { kanal: 'market', tab: 'trips', range: '6', from: '', to: '', open: null, cetele: false };
+  const kUi = { ked: null, kanal: 'market', tab: 'trips', range: '6', from: '', to: '', open: null, cetele: false };
   const AY_U = ['Ocak', 'Şubat', 'Mart', 'Nisan', 'Mayıs', 'Haziran', 'Temmuz', 'Ağustos', 'Eylül', 'Ekim', 'Kasım', 'Aralık'];
   const uzunTarih = s => { const [Y, M, D] = s.split('-').map(Number); return D + ' ' + AY_U[M - 1] + ' ' + Y; };
   const cetele = n => { n = Math.round(n); if (n <= 0) return ''; let h = ''; const g = Math.floor(n / 5), r = n % 5;
@@ -3623,7 +3630,9 @@ Diğer=Çiçek|💐;Hediye|🎁;Kalem|✏️;Defter|📒;Zarf|✉️;Koli bandı
       if (kUi.tab === 'trips') {
         const tripH = t => { const op = kUi.open === t.id, ti = t.items.reduce((y, i) => y + (i.d || 0) * (i.q || 1), 0);
           return `<button class="kt" data-kopen="${t.id}" aria-expanded="${op}">${brandI(t.store === 'dm' ? 'DM' : t.store)}<b>${esc(t.store)}</b><span class="num">${ti ? `<em class="sh-ind k-ind">+${money(ti)}</em>` : ''}${t.amount != null ? money(t.amount) : t.liste ? `<em class="kt-ls">${t.items.length} ürün</em>` : '<em>açık</em>'}</span><small>${uzunTarih(t.date)}</small></button>
-            ${op ? `<div class="kt-d">${t.items.map(i => `<div class="kt-i">${shEm(i.ad)}<span>${esc(i.ad)}</span><small>${i.q ? (i.x ? n2(i.q) + 'x' : `${n2(i.q)} ${SH_UNIT[i.u] || ''}`) : ''}${i.p ? ` · ${money(i.p)}/${SH_UNIT[i.u] || ''}` : ''}</small>${i.p && i.q ? `<b class="num">${money(i.p * i.q)}</b>` : '<b></b>'}${i.d ? `<em class="sh-ind">−${money(i.d * (i.q || 1))}</em>` : ''}</div>`).join('') || '<p class="hint">Ürün yok.</p>'}
+            ${op && kUi.ked === t.id ? `<div class="kt-d kt-ed">${t.items.map((i, k) => `<div class="kt-e">${shEm(i.ad)}<span class="kt-en">${esc(i.ad)}${i.q ? ` <small>${i.x ? n2(i.q) + 'x' : n2(i.q) + ' ' + (SH_UNIT[i.u] || '')}</small>` : ''}</span>${i.d ? `<em class="sh-ind">−${money(i.d)}${(i.q || 1) > 1 ? ' × ' + n2(i.q) : ''}</em>` : ''}<button class="am-pm am-tg${i.d ? ' on' : ''}" data-ktind="${k}" aria-label="${esc(i.ad)} indirim">${svg('tag')}</button></div>`).join('') || '<p class="hint">Ürün yok.</p>'}
+              <div class="kt-eb">${ti ? `<b class="sh-ind">+${money(ti)}</b>` : '<span></span>'}<button class="btn sm" data-kted="">Bitti</button></div></div>`
+            : op ? `<div class="kt-d">${t.items.length ? `<button class="sh-lnk kt-edb" data-kted="${t.id}">Düzenle</button>` : ''}${t.items.map(i => `<div class="kt-i">${shEm(i.ad)}<span>${esc(i.ad)}</span><small>${i.q ? (i.x ? n2(i.q) + 'x' : `${n2(i.q)} ${SH_UNIT[i.u] || ''}`) : ''}${i.p ? ` · ${money(i.p)}/${SH_UNIT[i.u] || ''}` : ''}</small>${i.p && i.q ? `<b class="num">${money(i.p * i.q)}</b>` : '<b></b>'}${i.d ? `<em class="sh-ind">−${money(i.d * (i.q || 1))}</em>` : ''}</div>`).join('') || '<p class="hint">Ürün yok.</p>'}
               ${ti ? `<p class="kt-k">İndirimle kazanç: <b class="sh-ind">${money(ti)}</b></p>` : ''}</div>` : ''}`; };
         body = (trips.length ? trips.map(tripH).join('') : (od ? '<div class="empty">Bu aralıkta online / diğer alışveriş yok. Online / Diğer listesinde tik atıp 🧾 düğmesiyle gidere ekleyince burada görünür.</div>' : '<div class="empty">Bu aralıkta alışveriş kaydı yok. Alışverişteyim ekranında "Alışverişi bitir" deyince burada görünür.</div>'))
           + (listeK.length ? `<div class="k-lsh">Liste kayıtları · ${listeK.length}</div>` + listeK.map(tripH).join('') : '');
@@ -3653,7 +3662,9 @@ Diğer=Çiçek|💐;Hediye|🎁;Kalem|✏️;Defter|📒;Zarf|✉️;Koli bandı
       if ((el = T('[data-ktab]'))) { kUi.tab = el.dataset.ktab; return draw(); }
       if ((el = T('[data-kkan]'))) { kUi.kanal = el.dataset.kkan; kUi.open = null; return draw(); }
       if ((el = T('[data-krng]'))) { kUi.range = el.dataset.krng; return draw(true); }
-      if ((el = T('[data-kopen]'))) { kUi.open = kUi.open === el.dataset.kopen ? null : el.dataset.kopen; return draw(true); }
+      if ((el = T('[data-kted]'))) { kUi.ked = el.dataset.kted || null; return draw(true); }
+      if ((el = T('[data-ktind]'))) { const t = S.trips.find(x => x.id === kUi.ked), it = t && t.items[+el.dataset.ktind]; if (it) indSor(it, () => { if (it.d && !it.q && t.kanal === 'od') { it.q = 1; it.x = true; } draw(true); }, t.kanal === 'od', 'd'); return; }
+      if ((el = T('[data-kopen]'))) { if (kUi.ked && kUi.ked !== el.dataset.kopen) kUi.ked = null; kUi.open = kUi.open === el.dataset.kopen ? null : el.dataset.kopen; return draw(true); }
       if (T('[data-kcet]')) { kUi.cetele = !kUi.cetele; return draw(true); }
     };
     root.onchange = e => { if (e.target.id === 'kFrom') { kUi.from = e.target.value; draw(true); } if (e.target.id === 'kTo') { kUi.to = e.target.value; draw(true); } };
