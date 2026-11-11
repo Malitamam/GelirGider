@@ -1058,7 +1058,10 @@ body:has(#acBtn:not([hidden])) .app:has(#view.ozet) { padding-bottom: calc(222px
 .ip-c { display: grid; grid-template-columns: repeat(auto-fill, minmax(38px, 1fr)); gap: 5px; }
 .ip-c .sh-chip { justify-content: center; padding: 5px 0; min-height: 0; font-size: 12.5px; font-weight: 800; font-variant-numeric: tabular-nums; border-radius: 9px; }
 .ip-c .sh-chip.on { background: var(--in); color: #fff; opacity: 1; border-color: var(--in); }
-.ip-c .ip-ed { color: var(--muted); background: none; border: 1px dashed var(--line); }
+.ip-lr { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+.ip-ed { border: 0; background: none; color: var(--ink-2); font-size: 16px; line-height: 1; padding: 2px 4px; }
+.ip-r { display: flex; gap: 4px; overflow-x: auto; scrollbar-width: none; } .ip-r::-webkit-scrollbar { display: none; }
+.ip-r .sh-chip { flex: 1 1 0; min-width: 27px; padding: 5px 0; font-size: 12px; }
 .ip-e input { width: 100%; min-width: 0; height: 28px; border: 1px solid var(--line); border-radius: 8px; background: var(--surface-2); color: var(--ink); text-align: center; font: 800 12.5px var(--font); padding: 0; outline: none; }
 .ip-in { display: flex; gap: 6px; align-items: center; } .ip-in .sp-amt { flex: 1; min-width: 0; padding: 0 10px; font-size: 12px; border-radius: 10px; } .ip-in .sp-amt input { width: 60px; padding: 6px 0; font-size: 14px; }
 .ip-in .btn { padding: 7px 14px; font-size: 13px; min-height: 0; border-radius: 10px; } .ip-e + .ip-in .btn { flex: 1; }
@@ -3214,15 +3217,15 @@ Diğer=Çiçek|💐;Hediye|🎁;Kalem|✏️;Defter|📒;Zarf|✉️;Koli bandı
   function indSor(it, after, toplam) {
     let root = $('#shPop'); if (!root) { root = document.createElement('div'); root.id = 'shPop'; root.setAttribute('lang', 'tr'); document.body.appendChild(root); }
     const S = SH(), key = toplam ? 'indHzOd' : 'indHz';
-    const HZ = () => S[key] || (toplam ? [1, 2, 3, 5, 10, 15, 20, 30, 50] : [0.5, 1, 1.5, 2, 3, 4, 5, 6, 10]);
+    const HZ = () => S[key] || (toplam ? [1, 2, 3, 5, 10, 15, 20, 30, 50] : [0.1, 0.2, 0.3, 0.5, 1, 1.5, 2, 3, 5]);
     let duz = false;
     const draw = () => { const hz = HZ();
       root.innerHTML = `<div class="scrim" data-idx></div><form class="sheet ind-pop" id="idF" role="dialog" aria-label="İndirim">
         <div class="ip-h">${shEm(it.ad)}<b>${esc(it.ad)}</b>${it.ind && !duz ? '<button type="button" class="sh-lnk" data-iddel>Kaldır</button>' : ''}<button type="button" class="icon-btn" data-idx aria-label="Kapat">${svg('x')}</button></div>
-        <small class="ip-l">${duz ? `Hazır tutarlar (en çok ${IND_MAX}, boş bırakılan silinir)` : toplam ? 'Bu üründe toplam indirim (€)' : 'Ürün başı indirim (€)'}</small>
+        <div class="ip-lr"><small class="ip-l">${duz ? `Hazır tutarlar (en çok ${IND_MAX}, boş bırakılan silinir)` : toplam ? 'Bu üründe toplam indirim (€)' : 'Ürün başı indirim (€)'}</small>${duz ? '' : '<button type="button" class="ip-ed" data-hzed aria-label="Hazır tutarları ayarla">✎</button>'}</div>
         ${duz ? `<div class="ip-c ip-e">${Array.from({ length: IND_MAX }, (_, k) => `<input class="num" data-hz inputmode="decimal" autocomplete="off" value="${hz[k] != null ? n2(hz[k]) : ''}" aria-label="Hazır tutar ${k + 1}">`).join('')}</div>
           <div class="ip-in"><button type="button" class="btn ghost" data-hzvaz>Vazgeç</button><button type="button" class="btn" data-hzok>Bitti</button></div>`
-        : `<div class="ip-c">${hz.map(v => `<button type="button" class="sh-chip${it.ind === v ? ' on' : ''}" data-idv="${v}">${n2(v)}</button>`).join('')}<button type="button" class="sh-chip ip-ed" data-hzed aria-label="Hazır tutarları ayarla">✎</button></div>
+        : `<div class="ip-c ip-r">${hz.map(v => `<button type="button" class="sh-chip${it.ind === v ? ' on' : ''}" data-idv="${v}">${n2(v)}</button>`).join('')}</div>
           <div class="ip-in"><label class="sp-amt"><span>Başka</span><b>€</b><input id="idAmt" inputmode="decimal" autocomplete="off" placeholder="0" value="${it.ind && !hz.includes(it.ind) ? n2(it.ind) : ''}" aria-label="Başka tutar"></label><button class="btn">Kaydet</button></div>`}
       </form>`; };
     const kapat = () => { root.innerHTML = ''; root.onclick = root.onsubmit = null; after && after(); };
