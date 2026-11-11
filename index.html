@@ -1051,13 +1051,8 @@ body:has(#acBtn:not([hidden])) .app:has(#view.ozet) { padding-bottom: calc(222px
 .ev-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
 .sh-ind { color: var(--in-ink); font-weight: 800; font-style: normal; }
 #shPop .scrim { z-index: 60; } #shPop .sheet { z-index: 61; }
-.sheet.ind-pop { top: calc(env(safe-area-inset-top, 0px) + 8px); bottom: auto; left: 8px; right: 8px; border-radius: 20px; padding: 12px 14px; gap: 8px; }
-.ip-h { display: flex; align-items: center; gap: 8px; } .ip-h b { flex: 1; min-width: 0; font-size: 15px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; } .ip-h .sh-em { font-size: 20px; }
-.ip-h .icon-btn { width: 34px; height: 34px; box-shadow: none; background: var(--surface-2); }
-.ip-c .sh-chip.on { background: var(--in); color: #fff; opacity: 1; border-color: var(--in); }
-.ip-l { font-size: 12px; font-weight: 700; color: var(--muted); }
-.ip-c { display: grid; grid-template-columns: repeat(5, 1fr); gap: 6px; } .ip-c .sh-chip { justify-content: center; padding: 8px 0; font-weight: 800; font-variant-numeric: tabular-nums; }
-.ip-in { display: flex; gap: 8px; align-items: center; } .ip-in .sp-amt { flex: 1; min-width: 0; } .ip-in .sp-amt input { width: 70px; } .ip-in .btn { padding: 10px 16px; }
+.ind-ok svg.i { width: 15px; height: 15px; color: var(--in-ink); stroke-width: 2.6; }
+.ind-in { flex: none; width: 64px; height: 30px; margin-left: 4px; border: 1.5px solid var(--in); border-radius: 9px; background: var(--surface); color: var(--in-ink); font: 800 14px var(--font); text-align: center; padding: 0 4px; outline: none; }
 .sh-sy h3 { display: flex; align-items: center; gap: 8px; }
 .sy-l { font-size: 12.5px; font-weight: 800; color: var(--ink-2); }
 .sy-row { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
@@ -2950,7 +2945,7 @@ Diğer=Çiçek|💐;Hediye|🎁;Kalem|✏️;Defter|📒;Zarf|✉️;Koli bandı
       : `<span class="hint">Katalogda yok. Eklemek için + düğmesine bas.</span>`;
   };
   const shTile = (ad, on, cls) => `<button class="sh-t${on ? ' on' : ''}${cls ? ' ' + cls : ''}" data-shq="${esc(ad)}" aria-label="${esc(ad)}${on ? ' (listede)' : ''}">${on ? `<span class="sh-tick">${svg('check')}</span>` : ''}${shEm(ad)}<b>${esc(ad)}</b></button>`;
-  const shRow = i => `<div class="sh-row${i.al ? ' al' : ''}" data-shrow="${i.id}">${shEm(i.ad, i.liste === 'online' ? '📦' : i.liste === 'diger' ? '🛍️' : '🛒')}<span class="sh-ad">${shAdetL(i)}${esc(i.ad)}${i.oto ? '<small class="sh-oto">Otomatik eklendi · Ev işleri</small>' : ''}${i.liste !== 'market' && i.ind > 0 ? `<small class="sh-ind">−${money(i.ind)}</small>` : ''}</span>${i.ek && !i.al && Date.now() - i.ek > 7 * 864e5 ? '<em class="sh-eski" title="7 günden uzun süredir listede">!</em>' : ''}${i.liste === 'market' ? `${(i.n || 1) > 1 ? `<button class="am-pm" data-shn="-1" data-id="${i.id}" aria-label="${esc(i.ad)} bir azalt">−</button>` : ''}<button class="am-pm" data-shn="1" data-id="${i.id}" aria-label="${esc(i.ad)} bir artır">+</button>` : ''}${i.liste === 'market' ? swBtn(i) : `<button class="am-pm am-tg${i.ind > 0 ? ' on' : ''}" data-shind="${i.id}" aria-label="${esc(i.ad)} indirim">${svg('tag')}</button>`}<button class="sh-ok" data-shok="${i.id}" aria-label="${esc(i.ad)} ${i.al ? 'alınmadı yap' : 'alındı'}" aria-pressed="${i.al}">${i.al ? svg('check') : ''}</button></div>`;
+  const shRow = i => `<div class="sh-row${i.al ? ' al' : ''}" data-shrow="${i.id}">${shEm(i.ad, i.liste === 'online' ? '📦' : i.liste === 'diger' ? '🛍️' : '🛒')}<span class="sh-ad">${shAdetL(i)}${esc(i.ad)}${i.oto ? '<small class="sh-oto">Otomatik eklendi · Ev işleri</small>' : ''}${i.liste !== 'market' && i.ind > 0 ? `<small class="sh-ind">−${money(i.ind)}</small>` : ''}</span>${i.ek && !i.al && Date.now() - i.ek > 7 * 864e5 ? '<em class="sh-eski" title="7 günden uzun süredir listede">!</em>' : ''}${i.liste === 'market' ? `${(i.n || 1) > 1 ? `<button class="am-pm" data-shn="-1" data-id="${i.id}" aria-label="${esc(i.ad)} bir azalt">−</button>` : ''}<button class="am-pm" data-shn="1" data-id="${i.id}" aria-label="${esc(i.ad)} bir artır">+</button>` : ''}${i.liste === 'market' ? swBtn(i) : indTag(i, 'data-shind')}<button class="sh-ok" data-shok="${i.id}" aria-label="${esc(i.ad)} ${i.al ? 'alınmadı yap' : 'alındı'}" aria-pressed="${i.al}">${i.al ? svg('check') : ''}</button></div>`;
   // İndirim göstergesi: kayıtlı alışverişlerdeki ürün başı indirim × adet (bu ay ve toplam)
   const tripInd = t => t.items.reduce((y, i) => y + (i.d || 0) * (i.q || 1), 0);
   const indGosterge = od => { const tr = (SH().trips || []).filter(t => (t.kanal === 'od') === !!od), top = tr.reduce((x, t) => x + tripInd(t), 0); if (!(top > 0)) return '';
@@ -3055,7 +3050,7 @@ Diğer=Çiçek|💐;Hediye|🎁;Kalem|✏️;Defter|📒;Zarf|✉️;Koli bandı
     }
     if ((el = T('[data-shkat]'))) return openKatalog(el.dataset.shkat);
     if (T('[data-shedit]')) { shUi.edit = !shUi.edit; return render(); }
-    if ((el = T('[data-shind]'))) { const it = SH().items.find(i => i.id === el.dataset.shind); if (it) indSor(it, () => render(), true); return; }
+    if ((el = T('[data-shind]'))) { const it = SH().items.find(i => i.id === el.dataset.shind); if (it) indAc(it, () => render()); return; }
     if ((el = T('[data-shok]'))) { const it = SH().items.find(i => i.id === el.dataset.shok); if (it && shAlinsin(it)) render(); return; }
     if ((el = T('[data-shsw]'))) { const it = SH().items.find(i => i.id === el.dataset.shsw); if (it) openSayac(it, false); return; }
     if ((el = T('[data-shn]'))) { const it = SH().items.find(i => i.id === el.dataset.id); if (it) { it.n = Math.max(1, (it.n || 1) + +el.dataset.shn); if (it.n === 1) delete it.n; save(); render(); } return; }
@@ -3205,23 +3200,20 @@ Diğer=Çiçek|💐;Hediye|🎁;Kalem|✏️;Defter|📒;Zarf|✉️;Koli bandı
   }
 
   // İndirim: ürün başı kaç € daha ucuza alındı (isteğe bağlı); kayıtta adetle çarpılır
-  function indSor(it, after, toplam) {
-    // Klavyesiz: hızlı tutar düğmeleri; dokununca kaydedilir. Başka tutar için alan var ama kendiliğinden açılmaz. Pencere üstte durur
-    let root = $('#shPop'); if (!root) { root = document.createElement('div'); root.id = 'shPop'; root.setAttribute('lang', 'tr'); document.body.appendChild(root); }
-    const HZ = toplam ? [1, 2, 3, 5, 10, 15, 20, 30, 50] : [0.5, 1, 1.5, 2, 3, 4, 5, 6, 10];
-    root.innerHTML = `<div class="scrim" data-idx></div><form class="sheet ind-pop" id="idF" role="dialog" aria-label="İndirim">
-      <div class="ip-h">${shEm(it.ad)}<b>${esc(it.ad)}</b>${it.ind ? '<button type="button" class="sh-lnk" data-iddel>Kaldır</button>' : ''}<button type="button" class="icon-btn" data-idx aria-label="Kapat">${svg('x')}</button></div>
-      <small class="ip-l">${toplam ? 'Bu üründe toplam indirim' : 'Ürün başı indirim'}</small>
-      <div class="ip-c">${HZ.map(v => `<button type="button" class="sh-chip${it.ind === v ? ' on' : ''}" data-idv="${v}">${money(v)}</button>`).join('')}</div>
-      <div class="ip-in"><label class="sp-amt"><span>Başka</span><b>€</b><input id="idAmt" inputmode="decimal" autocomplete="off" placeholder="0" value="${it.ind && !HZ.includes(it.ind) ? n2(it.ind) : ''}" aria-label="Başka tutar"></label><button class="btn">Kaydet</button></div></form>`;
-    const kapat = () => { root.innerHTML = ''; root.onclick = root.onsubmit = null; after && after(); };
-    const yaz = v => { if (v > 0) it.ind = Math.round(v * 100) / 100; else delete it.ind; save(); kapat(); };
-    root.onclick = e => { const T = s => e.target.closest(s); let el;
-      if (T('[data-idx]')) { root.innerHTML = ''; root.onclick = root.onsubmit = null; return; }
-      if (T('[data-iddel]')) return yaz(0);
-      if ((el = T('[data-idv]'))) return yaz(+el.dataset.idv); };
-    root.onsubmit = e => { e.preventDefault(); const v = parseAmt(root.querySelector('#idAmt').value); if (!(v > 0)) return toast('Bir tutar seç ya da yaz'); yaz(v); };
+  // İndirim: 🏷️'ye dokununca yerinde küçük tutar kutusu açılır (sayı klavyesi); Enter ya da dışarı dokununca kaydedilir, boşsa silinir
+  let indEd = null;
+  const indTag = (i, attr) => indEd && indEd.id === i.id
+    ? `<input class="ind-in num" data-indin="${i.id}" inputmode="decimal" enterkeyhint="done" autocomplete="off" placeholder="€" value="${i.ind ? n2(i.ind) : ''}" aria-label="${esc(i.ad)} indirim tutarı"><button class="am-pm ind-ok" data-indok aria-label="Tamam">${svg('check')}</button>`
+    : `<button class="am-pm am-tg${i.ind > 0 ? ' on' : ''}" ${attr}="${i.id}" aria-label="${esc(i.ad)} indirim">${svg('tag')}</button>`;
+  function indAc(it, after) { indEd = { id: it.id, after }; after(); const i = document.querySelector(`[data-indin="${it.id}"]`); if (i) { i.focus(); i.select(); } }
+  function indBitir(inp) {
+    if (!indEd) return; const { id, after } = indEd; indEd = null;
+    const it = SH().items.find(i => i.id === id);
+    if (it) { const v = parseAmt(inp.value); if (v > 0) it.ind = Math.round(v * 100) / 100; else delete it.ind; save(); }
+    after();
   }
+  document.addEventListener('keydown', e => { if (e.target.classList && e.target.classList.contains('ind-in') && e.key === 'Enter') { e.preventDefault(); e.target.blur(); } });
+  document.addEventListener('focusout', e => { if (e.target.classList && e.target.classList.contains('ind-in')) indBitir(e.target); });
 
   // Alışverişteyim ekranı
   const amUi = { add: false, q: '', bitir: false, elle: false };
@@ -3251,7 +3243,7 @@ Diğer=Çiçek|💐;Hediye|🎁;Kalem|✏️;Defter|📒;Zarf|✉️;Koli bandı
       </div>`;
       const am = root.querySelector('.am'); if (keep) am.scrollTop = sc;
     };
-    const amRow = i => { const n = i.n || 1; return `<div class="am-row${i.al ? ' al' : ''}"><button class="am-tap" data-amok="${i.id}" aria-pressed="${i.al}"><span class="am-c">${i.al ? svg('check') : ''}</span>${shEm(i.ad)}<span class="am-ad"><b>${shAdetL(i)}${esc(i.ad)}</b>${i.sig ? `<small class="am-sig">${money(i.sig)}</small>` : ''}${i.ind > 0 ? `<small class="sh-ind">−${money(i.ind)}${(i.n || 1) > 1 ? ' × ' + i.n : ''}</small>` : ''}</span></button>${n > 1 ? `<button class="am-pm" data-amn="-1" data-id="${i.id}" aria-label="${esc(i.ad)} bir azalt">−</button>` : ''}<button class="am-pm" data-amn="1" data-id="${i.id}" aria-label="${esc(i.ad)} bir artır">+</button><button class="am-pm am-tg${i.ind > 0 ? ' on' : ''}" data-amind="${i.id}" aria-label="${esc(i.ad)} indirim">${svg('tag')}</button></div>`; };
+    const amRow = i => { const n = i.n || 1; return `<div class="am-row${i.al ? ' al' : ''}"><button class="am-tap" data-amok="${i.id}" aria-pressed="${i.al}"><span class="am-c">${i.al ? svg('check') : ''}</span>${shEm(i.ad)}<span class="am-ad"><b>${shAdetL(i)}${esc(i.ad)}</b>${i.sig ? `<small class="am-sig">${money(i.sig)}</small>` : ''}${i.ind > 0 ? `<small class="sh-ind">−${money(i.ind)}${(i.n || 1) > 1 ? ' × ' + i.n : ''}</small>` : ''}</span></button>${n > 1 ? `<button class="am-pm" data-amn="-1" data-id="${i.id}" aria-label="${esc(i.ad)} bir azalt">−</button>` : ''}<button class="am-pm" data-amn="1" data-id="${i.id}" aria-label="${esc(i.ad)} bir artır">+</button>${indTag(i, 'data-amind')}</div>`; };
     const amOneri = () => { if (!shSade(amUi.q)) return ''; return shOneri(amUi.q, 8).map(a => `<button class="sh-chip" data-amyeni="${esc(a.ad)}">${shEm(a.ad)}<span>${esc(a.ad)}</span></button>`).join(''); };
     // Sonradan eklenen ürün doğrudan alındı olarak gelir
     const yeniAlindi = ad => {
@@ -3284,7 +3276,7 @@ Diğer=Çiçek|💐;Hediye|🎁;Kalem|✏️;Defter|📒;Zarf|✉️;Koli bandı
       if (T('[data-amelle]')) { amUi.elle = !amUi.elle; draw(true); const i = root.querySelector('#amElleIn'); if (i) i.focus(); return; }
       if (T('[data-amchg]')) { amUi.secim = true; return draw(true); }
       if ((el = T('[data-amok]'))) { const it = S.items.find(i => i.id === el.dataset.amok); if (!it) return; if (!it.al && shSigaraMi(it.ad)) return sigaraSor(it, () => draw(true)); it.al = !it.al; if (!it.al) delete it.sig; save(); draw(true); return; }
-      if ((el = T('[data-amind]'))) { const it = S.items.find(i => i.id === el.dataset.amind); if (it) indSor(it, () => draw(true)); return; }
+      if ((el = T('[data-amind]'))) { const it = S.items.find(i => i.id === el.dataset.amind); if (it) indAc(it, () => draw(true)); return; }
       if ((el = T('[data-amn]'))) { const it = S.items.find(i => i.id === el.dataset.id); if (it) { it.n = Math.max(1, (it.n || 1) + +el.dataset.amn); if (it.n === 1) delete it.n; save(); draw(true); } return; }
       if (T('[data-amadd]')) { amUi.add = true; draw(true); const i = root.querySelector('#amQ'); if (i) i.focus(); return; }
       if ((el = T('[data-amyeni]'))) return yeniAlindi(el.dataset.amyeni);
