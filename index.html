@@ -2943,10 +2943,10 @@ Diğer=Çiçek|💐;Hediye|🎁;Kalem|✏️;Defter|📒;Zarf|✉️;Koli bandı
       : `<span class="hint">Katalogda yok. Eklemek için + düğmesine bas.</span>`;
   };
   const shTile = (ad, on, cls) => `<button class="sh-t${on ? ' on' : ''}${cls ? ' ' + cls : ''}" data-shq="${esc(ad)}" aria-label="${esc(ad)}${on ? ' (listede)' : ''}">${on ? `<span class="sh-tick">${svg('check')}</span>` : ''}${shEm(ad)}<b>${esc(ad)}</b></button>`;
-  const shRow = i => `<div class="sh-row${i.al ? ' al' : ''}" data-shrow="${i.id}">${shEm(i.ad, i.liste === 'online' ? '📦' : i.liste === 'diger' ? '🛍️' : '🛒')}<span class="sh-ad">${shAdetL(i)}${esc(i.ad)}${i.oto ? '<small class="sh-oto">Otomatik eklendi · Ev işleri</small>' : ''}</span>${i.ek && !i.al && Date.now() - i.ek > 7 * 864e5 ? '<em class="sh-eski" title="7 günden uzun süredir listede">!</em>' : ''}${i.liste === 'market' ? `${(i.n || 1) > 1 ? `<button class="am-pm" data-shn="-1" data-id="${i.id}" aria-label="${esc(i.ad)} bir azalt">−</button>` : ''}<button class="am-pm" data-shn="1" data-id="${i.id}" aria-label="${esc(i.ad)} bir artır">+</button>` : ''}${i.liste === 'market' ? swBtn(i) : ''}<button class="sh-ok" data-shok="${i.id}" aria-label="${esc(i.ad)} ${i.al ? 'alınmadı yap' : 'alındı'}" aria-pressed="${i.al}">${i.al ? svg('check') : ''}</button></div>`;
+  const shRow = i => `<div class="sh-row${i.al ? ' al' : ''}" data-shrow="${i.id}">${shEm(i.ad, i.liste === 'online' ? '📦' : i.liste === 'diger' ? '🛍️' : '🛒')}<span class="sh-ad">${shAdetL(i)}${esc(i.ad)}${i.oto ? '<small class="sh-oto">Otomatik eklendi · Ev işleri</small>' : ''}${i.liste !== 'market' && i.ind > 0 ? `<small class="sh-ind">−${money(i.ind)}</small>` : ''}</span>${i.ek && !i.al && Date.now() - i.ek > 7 * 864e5 ? '<em class="sh-eski" title="7 günden uzun süredir listede">!</em>' : ''}${i.liste === 'market' ? `${(i.n || 1) > 1 ? `<button class="am-pm" data-shn="-1" data-id="${i.id}" aria-label="${esc(i.ad)} bir azalt">−</button>` : ''}<button class="am-pm" data-shn="1" data-id="${i.id}" aria-label="${esc(i.ad)} bir artır">+</button>` : ''}${i.liste === 'market' ? swBtn(i) : `<button class="am-pm am-tg${i.ind > 0 ? ' on' : ''}" data-shind="${i.id}" aria-label="${esc(i.ad)} indirim">${svg('tag')}</button>`}<button class="sh-ok" data-shok="${i.id}" aria-label="${esc(i.ad)} ${i.al ? 'alınmadı yap' : 'alındı'}" aria-pressed="${i.al}">${i.al ? svg('check') : ''}</button></div>`;
   // İndirim göstergesi: kayıtlı alışverişlerdeki ürün başı indirim × adet (bu ay ve toplam)
   const tripInd = t => t.items.reduce((y, i) => y + (i.d || 0) * (i.q || 1), 0);
-  const indGosterge = () => { const tr = (SH().trips || []).filter(t => t.kanal !== 'od'), top = tr.reduce((x, t) => x + tripInd(t), 0); if (!(top > 0)) return '';
+  const indGosterge = od => { const tr = (SH().trips || []).filter(t => (t.kanal === 'od') === !!od), top = tr.reduce((x, t) => x + tripInd(t), 0); if (!(top > 0)) return '';
     const ay = tr.filter(t => ymOf(t.date) === curYm).reduce((x, t) => x + tripInd(t), 0);
     return `<section class="card ind-g"><span class="ind-i">${svg('tag')}</span><b>İndirim kazancı</b><span><small>Bu ay</small><b class="num">${money(ay)}</b></span><span><small>Toplam</small><b class="num">${money(top)}</b></span></section>`; };
   function renderAlisveris() {
@@ -2979,7 +2979,7 @@ Diğer=Çiçek|💐;Hediye|🎁;Kalem|✏️;Defter|📒;Zarf|✉️;Koli bandı
     const eskiYer = S.yerler || [];
     return `${seg}
       <section class="card sh-od">
-        <div class="sh-lh"><b>Online / Diğer · ${od} ürün</b><button class="icon-btn sh-addbtn" data-shnew aria-expanded="${shUi.add}" aria-label="Yeni ekle">${svg(shUi.add ? 'x' : 'plus')}</button></div>
+        <div class="sh-lh"><b>Online / Diğer · ${od} ürün${(v => v > 0 ? ` <em class="sh-ind">+${money(v)}</em>` : '')(items.reduce((x, i) => x + (i.ind || 0), 0))}</b><button class="icon-btn sh-addbtn" data-shnew aria-expanded="${shUi.add}" aria-label="Yeni ekle">${svg(shUi.add ? 'x' : 'plus')}</button></div>
         ${shUi.add ? `<form class="sh-odf" id="shOdForm">
           <input id="shOdAd" autocomplete="off" placeholder="Ne alınacak? (ör. Korniş)" value="${esc(shUi.draft || '')}" aria-label="Ne alınacak">
           <div class="seg" style="--n:2"><button type="button" data-shkind="online" aria-pressed="${shUi.addKind === 'online'}">Online</button><button type="button" data-shkind="diger" aria-pressed="${shUi.addKind === 'diger'}">Diğer</button></div>
@@ -2991,7 +2991,7 @@ Diğer=Çiçek|💐;Hediye|🎁;Kalem|✏️;Defter|📒;Zarf|✉️;Koli bandı
           : `<div class="empty">Liste boş. ＋ ile ekle.</div>`}
         ${alin.length ? `<div class="sh-lh"><span></span><button class="sh-lnk" data-shbitir="diger">Alınanları temizle (${alin.length})</button></div>` : ''}
         ${items.length ? '<p class="hint">Silmek için satıra uzun bas.</p>' : ''}
-      </section>`;
+      </section>${indGosterge(true)}`;
   }
   // Katalog sayfası: mode 'list' = alışveriş listesine ekle/çıkar, 'quick' = sık kullanılanlara ekle/çıkar
   function openKatalog(mode) {
@@ -3048,6 +3048,7 @@ Diğer=Çiçek|💐;Hediye|🎁;Kalem|✏️;Defter|📒;Zarf|✉️;Koli bandı
     }
     if ((el = T('[data-shkat]'))) return openKatalog(el.dataset.shkat);
     if (T('[data-shedit]')) { shUi.edit = !shUi.edit; return render(); }
+    if ((el = T('[data-shind]'))) { const it = SH().items.find(i => i.id === el.dataset.shind); if (it) indSor(it, () => render(), true); return; }
     if ((el = T('[data-shok]'))) { const it = SH().items.find(i => i.id === el.dataset.shok); if (it && shAlinsin(it)) render(); return; }
     if ((el = T('[data-shsw]'))) { const it = SH().items.find(i => i.id === el.dataset.shsw); if (it) openSayac(it, false); return; }
     if ((el = T('[data-shn]'))) { const it = SH().items.find(i => i.id === el.dataset.id); if (it) { it.n = Math.max(1, (it.n || 1) + +el.dataset.shn); if (it.n === 1) delete it.n; save(); render(); } return; }
@@ -3197,11 +3198,11 @@ Diğer=Çiçek|💐;Hediye|🎁;Kalem|✏️;Defter|📒;Zarf|✉️;Koli bandı
   }
 
   // İndirim: ürün başı kaç € daha ucuza alındı (isteğe bağlı); kayıtta adetle çarpılır
-  function indSor(it, after) {
+  function indSor(it, after, toplam) {
     let root = $('#shPop'); if (!root) { root = document.createElement('div'); root.id = 'shPop'; root.setAttribute('lang', 'tr'); document.body.appendChild(root); }
     root.innerHTML = `<div class="scrim" data-idx></div><form class="sheet" id="idF" role="dialog" aria-label="İndirim">
       <div class="sheet-h"><h3>${shEm(it.ad)} ${esc(it.ad)}</h3><button type="button" class="icon-btn" data-idx aria-label="Kapat">${svg('x')}</button></div>
-      <label class="fld">Ürün başı kaç € indirim?<input id="idAmt" class="num" inputmode="decimal" autocomplete="off" placeholder="0,00" value="${it.ind ? n2(it.ind) : ''}"></label>
+      <label class="fld">${toplam ? 'Bu üründe toplam kaç € indirim aldın?' : 'Ürün başı kaç € indirim?'}<input id="idAmt" class="num" inputmode="decimal" autocomplete="off" placeholder="0,00" value="${it.ind ? n2(it.ind) : ''}"></label>
       <div class="sy-btns">${it.ind ? '<button type="button" class="btn ghost" data-iddel>Kaldır</button>' : ''}<button class="btn">Kaydet</button></div></form>`;
     const kapat = () => { root.innerHTML = ''; root.onclick = root.onsubmit = null; after && after(); };
     root.onclick = e => { if (e.target.closest('[data-idx]')) { root.innerHTML = ''; root.onclick = root.onsubmit = null; return; } if (e.target.closest('[data-iddel]')) { delete it.ind; save(); kapat(); } };
@@ -3293,7 +3294,7 @@ Diğer=Çiçek|💐;Hediye|🎁;Kalem|✏️;Defter|📒;Zarf|✉️;Koli bandı
     const yerler = [...new Set(alin.map(i => i.liste === 'online' ? 'Online' : i.yer || ''))], yer = yerler.length === 1 ? yerler[0] : '';
     openSheet({ type: 'out', pre: { cat: 'ev', note: yer }, onSave: (amt, txId) => {
       const tx = db.tx.find(t => t.id === txId) || {};
-      S.trips.push({ id: 'o' + Date.now().toString(36), date: tx.date || todayIso, store: tx.note || yer || 'Diğer', kanal: 'od', amount: amt, open: false, txId, items: alin.map(i => ({ ad: i.ad })) });
+      S.trips.push({ id: 'o' + Date.now().toString(36), date: tx.date || todayIso, store: tx.note || yer || 'Diğer', kanal: 'od', amount: amt, open: false, txId, items: alin.map(i => i.ind > 0 ? { ad: i.ad, q: 1, x: true, d: i.ind } : { ad: i.ad }) });
       const ids = new Set(alin.map(i => i.id)); S.items = S.items.filter(i => !ids.has(i.id)); save();
     } });
   }
