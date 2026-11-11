@@ -928,6 +928,10 @@ nav.tabs .tab span.pi { width: 46px; }
 .am-btn { right: max(16px, calc((100vw - 460px) / 2 + 16px), env(safe-area-inset-right, 0px)); height: 64px; padding: 0 14px; border-radius: 20px; background: var(--primary); color: #fff; flex-direction: column; gap: 3px; font: 800 11.5px var(--font); box-shadow: 0 6px 18px rgba(255, 90, 0, .4); }
 .am-btn svg.i { width: 26px; height: 26px; stroke-width: 2.4; color: #fff; }
 :root[data-theme="dark"] .am-btn { box-shadow: 0 6px 16px rgba(0, 0, 0, .5); }
+.ft-btn { right: max(16px, calc((100vw - 460px) / 2 + 16px), env(safe-area-inset-right, 0px)); bottom: calc(68px + env(safe-area-inset-bottom, 0px) + 14px + 64px + 10px); width: 52px; height: 52px; margin-right: 6px; border-radius: 16px; background: #ffb020; color: #3d2600; }
+.ft-btn svg.i { width: 24px; height: 24px; stroke-width: 2.4; }
+.ft-btn b { position: absolute; top: -6px; right: -6px; min-width: 20px; height: 20px; padding: 0 5px; border-radius: 10px; background: var(--ink); color: var(--bg, #fff); font-size: 11.5px; display: grid; place-items: center; }
+.k-kan { margin-bottom: 2px; }
 .app:has(#view.alisveris) { padding-bottom: calc(176px + env(safe-area-inset-bottom, 0px)); }
 body:has(#acBtn:not([hidden])) .app:has(#view.ozet) { padding-bottom: calc(222px + env(safe-area-inset-bottom, 0px)); }
 .ac-btn { right: max(20px, calc((100vw - 460px) / 2 + 20px), env(safe-area-inset-right, 0px)); bottom: calc(68px + env(safe-area-inset-bottom, 0px) + 82px); width: 50px; height: 50px; border-radius: 50%; background: #ffb020; color: #3d2600; box-shadow: 0 4px 14px rgba(255, 160, 0, .45); }
@@ -1119,6 +1123,7 @@ body:has(#acBtn:not([hidden])) .app:has(#view.ozet) { padding-bottom: calc(222px
 
 <button class="fab" id="fab" aria-label="Yeni kayıt ekle" data-ic="plus"></button>
 <button class="fab2 am-btn" id="amBtn" aria-label="Alışverişteyim" hidden></button>
+<button class="fab2 ft-btn" id="ftBtn" aria-label="Alınanları gidere ekle" title="Gidere ekle" hidden></button>
 <button class="fab2 ac-btn" id="acBtn" aria-label="Açık alışveriş kayıtları" hidden></button>
 <nav class="tabs" lang="tr" aria-label="Ana menü">
   <div class="in">
@@ -3252,6 +3257,18 @@ Diğer=Çiçek|💐;Hediye|🎁;Kalem|✏️;Defter|📒;Zarf|✉️;Koli bandı
     draw();
   }
 
+  // Online / Diğer: tiklenen ürünler yer yer gider olarak kaydedilir; ürünler Kayıtlar > Online / Diğer'de görünür
+  function odFatura() {
+    const S = SHX(), alin = S.items.filter(i => i.al && i.liste !== 'market'); if (!alin.length) return;
+    // Tek yerden alındıysa açıklama o yer; farklı yerlerse boş kalır. Kategori varsayılan Ev, değiştirilebilir
+    const yerler = [...new Set(alin.map(i => i.liste === 'online' ? 'Online' : i.yer || ''))], yer = yerler.length === 1 ? yerler[0] : '';
+    openSheet({ type: 'out', pre: { cat: 'ev', note: yer }, onSave: (amt, txId) => {
+      const tx = db.tx.find(t => t.id === txId) || {};
+      S.trips.push({ id: 'o' + Date.now().toString(36), date: tx.date || todayIso, store: tx.note || yer || 'Diğer', kanal: 'od', amount: amt, open: false, txId, items: alin.map(i => ({ ad: i.ad })) });
+      const ids = new Set(alin.map(i => i.id)); S.items = S.items.filter(i => !ids.has(i.id)); save();
+    } });
+  }
+
   // Açık kayıtlar: fiş toplamını (ve varsa sigara payını) yazıp kapat; tutar girmeden düzenlenebilir
   const acUi = { edit: null, q: '', val: {} };
   function openAcik() {
@@ -3519,7 +3536,7 @@ Diğer=Çiçek|💐;Hediye|🎁;Kalem|✏️;Defter|📒;Zarf|✉️;Koli bandı
   }
 
   // Kayıtlar: alışverişler ve ürünler (tarih aralığı, ortalama, çetele)
-  const kUi = { tab: 'trips', range: '6', from: '', to: '', open: null, cetele: false };
+  const kUi = { kanal: 'market', tab: 'trips', range: '6', from: '', to: '', open: null, cetele: false };
   const AY_U = ['Ocak', 'Şubat', 'Mart', 'Nisan', 'Mayıs', 'Haziran', 'Temmuz', 'Ağustos', 'Eylül', 'Ekim', 'Kasım', 'Aralık'];
   const uzunTarih = s => { const [Y, M, D] = s.split('-').map(Number); return D + ' ' + AY_U[M - 1] + ' ' + Y; };
   const cetele = n => { n = Math.round(n); if (n <= 0) return ''; let h = ''; const g = Math.floor(n / 5), r = n % 5;
@@ -3536,7 +3553,7 @@ Diğer=Çiçek|💐;Hediye|🎁;Kalem|✏️;Defter|📒;Zarf|✉️;Koli bandı
     };
     const draw = keep => {
       const old = root.querySelector('.am'), sc = old ? old.scrollTop : 0;
-      const [f, to] = aralik(), tumu = S.trips.filter(t => t.date >= f && t.date <= to).sort((a, b) => b.date.localeCompare(a.date) || b.id.localeCompare(a.id)), trips = tumu.filter(t => !t.liste), listeK = tumu.filter(t => t.liste);
+      const od = kUi.kanal === 'od', [f, to] = aralik(), tumu = S.trips.filter(t => t.date >= f && t.date <= to && (t.kanal === 'od') === od).sort((a, b) => b.date.localeCompare(a.date) || b.id.localeCompare(a.id)), trips = tumu.filter(t => !t.liste), listeK = tumu.filter(t => t.liste);
       const harc = trips.reduce((x, t) => x + (t.amount || 0), 0), ind = trips.reduce((x, t) => x + t.items.reduce((y, i) => y + (i.d || 0) * (i.q || 1), 0), 0);
       const ilk = trips.length ? trips[trips.length - 1].date : todayIso, bas = f > '0001' ? (f > ilk ? f : ilk) : ilk;
       const ay = Math.max(1, (new Date(to) - new Date(bas)) / 864e5 / 30.44);
@@ -3546,7 +3563,7 @@ Diğer=Çiçek|💐;Hediye|🎁;Kalem|✏️;Defter|📒;Zarf|✉️;Koli bandı
           return `<button class="kt" data-kopen="${t.id}" aria-expanded="${op}">${brandI(t.store === 'dm' ? 'DM' : t.store)}<b>${esc(t.store)}</b><span class="num">${t.amount != null ? money(t.amount) : t.liste ? `<em class="kt-ls">${t.items.length} ürün</em>` : '<em>açık</em>'}</span><small>${uzunTarih(t.date)}</small></button>
             ${op ? `<div class="kt-d">${t.items.map(i => `<div class="kt-i">${shEm(i.ad)}<span>${esc(i.ad)}</span><small>${i.q ? (i.x ? n2(i.q) + 'x' : `${n2(i.q)} ${SH_UNIT[i.u] || ''}`) : ''}${i.p ? ` · ${money(i.p)}/${SH_UNIT[i.u] || ''}` : ''}</small>${i.p && i.q ? `<b class="num">${money(i.p * i.q)}</b>` : '<b></b>'}${i.d ? `<em class="sh-ind">−${money(i.d * (i.q || 1))}</em>` : ''}</div>`).join('') || '<p class="hint">Ürün yok.</p>'}
               ${ti ? `<p class="kt-k">İndirimle kazanç: <b class="sh-ind">${money(ti)}</b></p>` : ''}</div>` : ''}`; };
-        body = (trips.length ? trips.map(tripH).join('') : '<div class="empty">Bu aralıkta alışveriş kaydı yok. Alışverişteyim ekranında "Alışverişi bitir" deyince burada görünür.</div>')
+        body = (trips.length ? trips.map(tripH).join('') : (od ? '<div class="empty">Bu aralıkta online / diğer alışveriş yok. Online / Diğer listesinde tik atıp 🧾 düğmesiyle gidere ekleyince burada görünür.</div>' : '<div class="empty">Bu aralıkta alışveriş kaydı yok. Alışverişteyim ekranında "Alışverişi bitir" deyince burada görünür.</div>'))
           + (listeK.length ? `<div class="k-lsh">Liste kayıtları · ${listeK.length}</div>` + listeK.map(tripH).join('') : '');
       } else {
         const m = {};
@@ -3560,6 +3577,7 @@ Diğer=Çiçek|💐;Hediye|🎁;Kalem|✏️;Defter|📒;Zarf|✉️;Koli bandı
       root.innerHTML = `<div class="am" role="dialog" aria-label="Alışveriş kayıtları">
         <div class="am-h"><h3>${svg('doc')} Kayıtlar</h3><button class="icon-btn" data-kx aria-label="Kapat">${svg('x')}</button></div>
         <div class="seg" style="--n:2"><button data-ktab="trips" aria-pressed="${kUi.tab === 'trips'}">Alışverişler</button><button data-ktab="urun" aria-pressed="${kUi.tab === 'urun'}">Ürünler</button></div>
+        <div class="seg k-kan" style="--n:2"><button data-kkan="market" aria-pressed="${!od}">Market</button><button data-kkan="od" aria-pressed="${od}">Online / Diğer</button></div>
         <div class="k-rng">${[['ay', 'Bu ay'], ['3', '3 ay'], ['6', '6 ay'], ['12', '1 yıl'], ['all', 'Tümü'], ['ozel', 'Tarih']].map(([v, l]) => `<button class="sh-chip sm${kUi.range === v ? ' on' : ''}" data-krng="${v}">${l}</button>`).join('')}</div>
         ${kUi.range === 'ozel' ? `<div class="k-dt"><input type="date" id="kFrom" value="${kUi.from}" aria-label="Başlangıç"><span>–</span><input type="date" id="kTo" value="${kUi.to || todayIso}" aria-label="Bitiş"></div>` : ''}
         <div class="k-sum"><span>${trips.length} alışveriş</span><span>Harcama <b class="num">${money(harc)}</b></span>${ind ? `<span>İndirim <b class="num sh-ind">${money(ind)}</b></span>` : ''}</div>
@@ -3571,6 +3589,7 @@ Diğer=Çiçek|💐;Hediye|🎁;Kalem|✏️;Defter|📒;Zarf|✉️;Koli bandı
       const T = s => e.target.closest(s); let el;
       if (T('[data-kx]')) { root.innerHTML = ''; root.onclick = root.onchange = null; return; }
       if ((el = T('[data-ktab]'))) { kUi.tab = el.dataset.ktab; return draw(); }
+      if ((el = T('[data-kkan]'))) { kUi.kanal = el.dataset.kkan; kUi.open = null; return draw(); }
       if ((el = T('[data-krng]'))) { kUi.range = el.dataset.krng; return draw(true); }
       if ((el = T('[data-kopen]'))) { kUi.open = kUi.open === el.dataset.kopen ? null : el.dataset.kopen; return draw(true); }
       if (T('[data-kcet]')) { kUi.cetele = !kUi.cetele; return draw(true); }
@@ -3588,6 +3607,8 @@ Diğer=Çiçek|💐;Hediye|🎁;Kalem|✏️;Defter|📒;Zarf|✉️;Koli bandı
     $('.month').style.display = ui.tab === 'alisveris' ? 'none' : '';
     $('#fab').hidden = ui.tab !== 'ozet';
     $('#amBtn').hidden = ui.tab !== 'alisveris';
+    const ftN = ui.tab === 'alisveris' && shUi.tab === 'diger' ? SH().items.filter(i => i.al && i.liste !== 'market').length : 0;
+    $('#ftBtn').hidden = !ftN; if (ftN) $('#ftBtn').innerHTML = svg('doc') + `<b class="num">${ftN}</b>`;
     const acN = SHX().trips.filter(t => t.open).length;
     $('#acBtn').hidden = ui.tab !== 'ozet' || !acN;
     if (acN) $('#acBtn').innerHTML = svg('plus') + `<b class="num">${acN}</b>`;
@@ -3645,6 +3666,7 @@ Diğer=Çiçek|💐;Hediye|🎁;Kalem|✏️;Defter|📒;Zarf|✉️;Koli bandı
   $('#fab').addEventListener('click', () => openSheet());
   $('#amBtn').innerHTML = svg('cart') + '<span>Alışverişteyim</span>';
   $('#amBtn').addEventListener('click', () => openAlisveristeyim());
+  $('#ftBtn').addEventListener('click', () => odFatura());
   $('#evBtn').addEventListener('click', () => openEv());
   $('#acBtn').addEventListener('click', () => openAcik());
   $('#kayBtn').innerHTML = svg('doc');
