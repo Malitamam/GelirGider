@@ -3058,7 +3058,7 @@ Diğer=Çiçek|💐;Hediye|🎁;Kalem|✏️;Defter|📒;Zarf|✉️;Koli bandı
     if (ui.tab !== 'alisveris') return;
     const T = s => e.target.closest(s); let el;
     if (shUzunBasildi) { shUzunBasildi = false; return; }
-    if ((el = T('[data-shtab]'))) { shUi.tab = el.dataset.shtab; shUi.add = false; return render(); }
+    if ((el = T('[data-shtab]'))) { shUi.tab = el.dataset.shtab; shUi.add = false; try { localStorage.setItem(KEY + '-shtab', shUi.tab); } catch (e) {} return render(); }
     if ((el = T('[data-shadd]'))) { if (shListede(el.dataset.shadd)) return toast(el.dataset.shadd + ' zaten listede'); shEkle(el.dataset.shadd); shUi.q = ''; return render(); }
     if ((el = T('[data-shq]'))) {
       const ad = el.dataset.shq, S = SH();
@@ -3253,6 +3253,7 @@ Diğer=Çiçek|💐;Hediye|🎁;Kalem|✏️;Defter|📒;Zarf|✉️;Koli bandı
   const amUi = { add: false, q: '', bitir: false, elle: false };
   function openAlisveristeyim() {
     const S = SHX(), root = $('#listRoot');
+    try { localStorage.setItem(KEY + '-ov', 'am'); } catch (e) {}
     const ekmekVar = () => S.items.some(i => i.liste === 'market' && !i.al && ['🍞', '🥖', '🥐', '🥨', '🥯', '🫓'].includes((shSym(i.ad) || {}).e));
     const draw = keep => {
       const old = root.querySelector('.am'), sc = old ? old.scrollTop : 0;
@@ -3288,7 +3289,7 @@ Diğer=Çiçek|💐;Hediye|🎁;Kalem|✏️;Defter|📒;Zarf|✉️;Koli bandı
       amUi.q = '';
       it.al = true; save(); draw(true);
     };
-    const kapat = () => { root.innerHTML = ''; root.onclick = root.oninput = root.onsubmit = null; amUi.add = amUi.bitir = amUi.elle = amUi.secim = false; render(); };
+    const kapat = () => { root.innerHTML = ''; root.onclick = root.oninput = root.onsubmit = null; amUi.add = amUi.bitir = amUi.elle = amUi.secim = false; try { localStorage.removeItem(KEY + '-ov'); } catch (e) {} render(); };
     function bitir(tur) {
       const store = S.cur.store, b = BRANDS[store] || {};
       const alin = S.items.filter(i => i.liste === 'market' && i.al);
@@ -3701,7 +3702,7 @@ Diğer=Çiçek|💐;Hediye|🎁;Kalem|✏️;Defter|📒;Zarf|✉️;Koli bandı
   }
   function setTab(t) {
     if (t === 'alisveris' && ui.tab !== 'alisveris') { if (shUi.force) { shUi.tab = shUi.force; shUi.force = null; } else if (!(shUi.tab === 'diger' && shUi.add && ((shUi.draft || '').trim() || (shUi.addYer || '').trim()))) { shUi.tab = 'market'; shUi.add = false; } }
-    ui.tab = t; ui.editFx = null; ui.editIn = null; ui.editBudget = false; ui.confirmClear = false; try { localStorage.setItem(KEY + '-tab', t); } catch (e) {} render(); window.scrollTo(0, 0); }
+    ui.tab = t; ui.editFx = null; ui.editIn = null; ui.editBudget = false; ui.confirmClear = false; try { localStorage.setItem(KEY + '-tab', t); localStorage.setItem(KEY + '-shtab', shUi.tab); } catch (e) {} render(); window.scrollTo(0, 0); }
 
   let toastT;
   function toast(msg, undo) {
@@ -4452,7 +4453,10 @@ Diğer=Çiçek|💐;Hediye|🎁;Kalem|✏️;Defter|📒;Zarf|✉️;Koli bandı
   // Telefon yer açmak için kayıtları silmesin diye kalıcı depolama istenir
   try { if (navigator.storage && navigator.storage.persist) navigator.storage.persist().catch(() => {}); } catch (e) {}
   ui.ym = actYm();
+  // Kaldığın yerden devam: son sekme, Alışveriş'in alt sekmesi ve açık Alışverişteyim ekranı geri gelir
+  try { const t0 = localStorage.getItem(KEY + '-tab'); if (t0 && TITLES[t0]) ui.tab = t0; const s0 = localStorage.getItem(KEY + '-shtab'); if (s0 === 'market' || s0 === 'diger') shUi.tab = s0; } catch (e) {}
   render();
+  try { if (ui.tab === 'alisveris' && localStorage.getItem(KEY + '-ov') === 'am') openAlisveristeyim(); } catch (e) {}
 })();
 </script>
 <style>#instBar[hidden] { display: none !important; }</style>
