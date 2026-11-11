@@ -1051,6 +1051,13 @@ body:has(#acBtn:not([hidden])) .app:has(#view.ozet) { padding-bottom: calc(222px
 .ev-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
 .sh-ind { color: var(--in-ink); font-weight: 800; font-style: normal; }
 #shPop .scrim { z-index: 60; } #shPop .sheet { z-index: 61; }
+.sheet.ind-pop { top: calc(env(safe-area-inset-top, 0px) + 8px); bottom: auto; left: 8px; right: 8px; border-radius: 20px; padding: 12px 14px; gap: 8px; }
+.ip-h { display: flex; align-items: center; gap: 8px; } .ip-h b { flex: 1; min-width: 0; font-size: 15px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; } .ip-h .sh-em { font-size: 20px; }
+.ip-h .icon-btn { width: 34px; height: 34px; box-shadow: none; background: var(--surface-2); }
+.ip-c .sh-chip.on { background: var(--in); color: #fff; opacity: 1; border-color: var(--in); }
+.ip-l { font-size: 12px; font-weight: 700; color: var(--muted); }
+.ip-c { display: grid; grid-template-columns: repeat(5, 1fr); gap: 6px; } .ip-c .sh-chip { justify-content: center; padding: 8px 0; font-weight: 800; font-variant-numeric: tabular-nums; }
+.ip-in { display: flex; gap: 8px; align-items: center; } .ip-in .sp-amt { flex: 1; min-width: 0; } .ip-in .sp-amt input { width: 70px; } .ip-in .btn { padding: 10px 16px; }
 .sh-sy h3 { display: flex; align-items: center; gap: 8px; }
 .sy-l { font-size: 12.5px; font-weight: 800; color: var(--ink-2); }
 .sy-row { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
@@ -3199,15 +3206,21 @@ Diğer=Çiçek|💐;Hediye|🎁;Kalem|✏️;Defter|📒;Zarf|✉️;Koli bandı
 
   // İndirim: ürün başı kaç € daha ucuza alındı (isteğe bağlı); kayıtta adetle çarpılır
   function indSor(it, after, toplam) {
+    // Klavyesiz: hızlı tutar düğmeleri; dokununca kaydedilir. Başka tutar için alan var ama kendiliğinden açılmaz. Pencere üstte durur
     let root = $('#shPop'); if (!root) { root = document.createElement('div'); root.id = 'shPop'; root.setAttribute('lang', 'tr'); document.body.appendChild(root); }
-    root.innerHTML = `<div class="scrim" data-idx></div><form class="sheet" id="idF" role="dialog" aria-label="İndirim">
-      <div class="sheet-h"><h3>${shEm(it.ad)} ${esc(it.ad)}</h3><button type="button" class="icon-btn" data-idx aria-label="Kapat">${svg('x')}</button></div>
-      <label class="fld">${toplam ? 'Bu üründe toplam kaç € indirim aldın?' : 'Ürün başı kaç € indirim?'}<input id="idAmt" class="num" inputmode="decimal" autocomplete="off" placeholder="0,00" value="${it.ind ? n2(it.ind) : ''}"></label>
-      <div class="sy-btns">${it.ind ? '<button type="button" class="btn ghost" data-iddel>Kaldır</button>' : ''}<button class="btn">Kaydet</button></div></form>`;
+    const HZ = toplam ? [1, 2, 3, 5, 10, 15, 20, 30, 50] : [0.5, 1, 1.5, 2, 3, 4, 5, 6, 10];
+    root.innerHTML = `<div class="scrim" data-idx></div><form class="sheet ind-pop" id="idF" role="dialog" aria-label="İndirim">
+      <div class="ip-h">${shEm(it.ad)}<b>${esc(it.ad)}</b>${it.ind ? '<button type="button" class="sh-lnk" data-iddel>Kaldır</button>' : ''}<button type="button" class="icon-btn" data-idx aria-label="Kapat">${svg('x')}</button></div>
+      <small class="ip-l">${toplam ? 'Bu üründe toplam indirim' : 'Ürün başı indirim'}</small>
+      <div class="ip-c">${HZ.map(v => `<button type="button" class="sh-chip${it.ind === v ? ' on' : ''}" data-idv="${v}">${money(v)}</button>`).join('')}</div>
+      <div class="ip-in"><label class="sp-amt"><span>Başka</span><b>€</b><input id="idAmt" inputmode="decimal" autocomplete="off" placeholder="0" value="${it.ind && !HZ.includes(it.ind) ? n2(it.ind) : ''}" aria-label="Başka tutar"></label><button class="btn">Kaydet</button></div></form>`;
     const kapat = () => { root.innerHTML = ''; root.onclick = root.onsubmit = null; after && after(); };
-    root.onclick = e => { if (e.target.closest('[data-idx]')) { root.innerHTML = ''; root.onclick = root.onsubmit = null; return; } if (e.target.closest('[data-iddel]')) { delete it.ind; save(); kapat(); } };
-    root.onsubmit = e => { e.preventDefault(); const v = parseAmt(root.querySelector('#idAmt').value); if (v > 0) it.ind = Math.round(v * 100) / 100; else delete it.ind; save(); kapat(); };
-    const i = root.querySelector('#idAmt'); if (i) i.focus();
+    const yaz = v => { if (v > 0) it.ind = Math.round(v * 100) / 100; else delete it.ind; save(); kapat(); };
+    root.onclick = e => { const T = s => e.target.closest(s); let el;
+      if (T('[data-idx]')) { root.innerHTML = ''; root.onclick = root.onsubmit = null; return; }
+      if (T('[data-iddel]')) return yaz(0);
+      if ((el = T('[data-idv]'))) return yaz(+el.dataset.idv); };
+    root.onsubmit = e => { e.preventDefault(); const v = parseAmt(root.querySelector('#idAmt').value); if (!(v > 0)) return toast('Bir tutar seç ya da yaz'); yaz(v); };
   }
 
   // Alışverişteyim ekranı
