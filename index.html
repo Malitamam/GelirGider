@@ -173,6 +173,10 @@ header.top { display: flex; align-items: center; justify-content: space-between;
 .got-form input { width: 90px; border: 1px solid var(--line); border-radius: 10px; padding: 7px 9px; font: inherit; font-weight: 700; background: var(--surface); color: var(--ink); }
 .got-form button { border: 0; background: var(--in); color: #fff; font-weight: 700; border-radius: 10px; padding: 8px 12px; }
 .got-form button.gnx { background: var(--surface-2); color: var(--ink-2); font-weight: 600; padding: 8px 10px; white-space: nowrap; }
+.got-off { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; padding: 6px 0 10px 30px; font-size: 13px; color: var(--ink-2); }
+.got-off span { flex: 1 0 100%; }
+.got-off button { border: 0; background: var(--surface-2); color: var(--ink-2); font-weight: 600; border-radius: 10px; padding: 8px 12px; min-height: 36px; }
+.got-off button.pri { background: var(--in); color: #fff; font-weight: 700; }
 .got-form button.gnx[aria-pressed="true"] { background: var(--primary-soft); color: var(--primary-ink); }
 .fx-day { font-weight: 700; font-size: 14.5px; color: var(--ink-2); text-align: right; }
 .fx-row .fx-main { display: flex; flex-direction: row; align-items: center; gap: 6px; min-width: 0; }
@@ -1476,7 +1480,7 @@ body:has(#acBtn:not([hidden])) .app:has(#view.ozet) { padding-bottom: calc(222px
   }
   const save = () => { try { localStorage.setItem(KEY, JSON.stringify(db)); } catch (e) {} };
 
-  const ui = { who: 'all', lastPayer: 'p1', per: '6', from: ymAdd(curYm, -11), acat: 'all', restore: null, tab: 'ozet', ym: curYm, filter: 'all', q: '', aType: 'out', kType: 'out', editFx: null, editIn: null, gotAsk: null, closing: false, closeDt: '', editBudget: false, selDay: null, confirmClear: false, acats: [], yearView: false, fOpen: false, mOpen: false, fCats: [], fWho: [], fNoFx: false, xMonths: [], last: {} };
+  const ui = { who: 'all', lastPayer: 'p1', per: '6', from: ymAdd(curYm, -11), acat: 'all', restore: null, tab: 'ozet', ym: curYm, filter: 'all', q: '', aType: 'out', kType: 'out', editFx: null, editIn: null, gotAsk: null, gotOff: null, closing: false, closeDt: '', editBudget: false, selDay: null, confirmClear: false, acats: [], yearView: false, fOpen: false, mOpen: false, fCats: [], fWho: [], fNoFx: false, xMonths: [], last: {} };
   // (2026-11-08) Uygulama her açılışta Özet'te açılır
 
   const catOf = (type, id) => db.cats[type].find(c => c.id === id) || { name: 'Silinmiş kategori', ic: 'dots', color: GRAY };
@@ -2365,15 +2369,21 @@ body:has(#acBtn:not([hidden])) .app:has(#view.ozet) { padding-bottom: calc(222px
     return `<section class="card" id="incomeCard">
       <div class="card-h">${foldH('in', 'Sabit gelirler', `<small class="num">${eur(gotSum)} / ${eur(tot)} geldi · ${mName} geliri</small>`)}${ui.editIn === 'new' ? '' : `<button class="link" data-editin="new">+ Ekle</button>`}</div>
       ${ui.editIn === 'new' ? inForm(null) : ''}
-      ${isOpen('in') || ui.editIn || ui.gotAsk ? `<div class="fx-list">${items.length ? items.map(f => {
+      ${isOpen('in') || ui.editIn || ui.gotAsk || ui.gotOff ? `<div class="fx-list">${items.length ? items.map(f => {
         const x = g(f), amt = x ? x.amount : expIn(f, ui.ym);
         return `<div class="fx-row inrow ${x ? 'done' : ''}">
           <button class="chk sm" data-got="${f.id}" aria-pressed="${!!x}" aria-label="${esc(f.name)} geldi">${svg('check')}</button>
           <button class="fx-main" data-editin="${f.id}" aria-label="${esc(f.name)} düzenle"><span class="who ${payerOf(f)}">${PAYER[payerOf(f)][0]}</span><b>${esc(f.name)}</b></button>
           <b class="fx-amt num" style="color:${x ? 'var(--in-ink)' : 'var(--muted)'}">${amt ? money(amt) : '—'}</b>
-        </div>${ui.gotAsk === f.id ? `<form class="got-form" id="gotForm" data-id="${f.id}"><span>Gelen tutar</span><input id="gotAmt" class="num" inputmode="decimal" placeholder="€" value="${expIn(f, ui.ym) ? String(expIn(f, ui.ym)).replace('.', ',') : ''}">${f.cat === 'maas' ? `<button type="button" class="gnx" data-gotnx aria-pressed="${!!ui.gotNx}">→ ${ayaDat(ymAdd(ui.ym, 1))}</button>` : ''}<button>Onayla</button></form>` : ''}${ui.editIn === f.id ? inForm(f) : ''}`;
+        </div>${ui.gotAsk === f.id ? `<form class="got-form" id="gotForm" data-id="${f.id}"><span>Gelen tutar</span><input id="gotAmt" class="num" inputmode="decimal" placeholder="€" value="${expIn(f, ui.ym) ? String(expIn(f, ui.ym)).replace('.', ',') : ''}">${f.cat === 'maas' ? `<button type="button" class="gnx" data-gotnx aria-pressed="${!!ui.gotNx}">→ ${ayaDat(ymAdd(ui.ym, 1))}</button>` : ''}<button>Onayla</button></form>` : ''}${ui.gotOff === f.id ? gotOffRow(f) : ''}${ui.editIn === f.id ? inForm(f) : ''}`;
       }).join('') : `<div class="empty">Maaş gibi her ay gelen gelirlerini ekle.</div>`}</div>` : ''}
     </section>`;
+  }
+  // İşaretli gelire dokununca hemen silinmez: önce sorulur. Maaş gününde (20'si ve sonrası) asıl seçenek sonraki ayın maaşını girmektir
+  function gotOffRow(f) {
+    const mN = AYLAR[+ui.ym.slice(5) - 1], nx = ymAdd(ui.ym, 1);
+    const yeni = f.cat === 'maas' && ui.ym === curYm && +todayIso.slice(8) >= 20 && !db.got[nx + '|' + f.id] && !linkedIn(f, nx).length;
+    return `<div class="got-off"><span>${mN} için işaretli.</span>${yeni ? `<button class="pri" data-gotnew="${f.id}">${AYLAR[+nx.slice(5) - 1]} maaşı geldi</button>` : ''}<button data-gotdel="${f.id}">İşareti kaldır</button><button data-gotno>Vazgeç</button></div>`;
   }
   function inForm(f) {
     const n = !f, cats = db.cats.in;
@@ -3789,8 +3799,8 @@ Diğer=Çiçek|💐;Hediye|🎁;Kalem|✏️;Defter|📒;Zarf|✉️;Koli bandı
 
   /* ---------- Olaylar ---------- */
   document.querySelectorAll('.tab').forEach(b => b.addEventListener('click', () => setTab(b.dataset.tab)));
-  $('#mPrev').addEventListener('click', () => { ui.ym = ymAdd(ui.ym, -1); ui.editFx = ui.editIn = null; render(); });
-  $('#mNext').addEventListener('click', () => { if (ui.ym < maxYm) { ui.ym = ymAdd(ui.ym, 1); ui.editFx = ui.editIn = null; render(); } });
+  $('#mPrev').addEventListener('click', () => { ui.ym = ymAdd(ui.ym, -1); ui.editFx = ui.editIn = ui.gotOff = null; render(); });
+  $('#mNext').addEventListener('click', () => { if (ui.ym < maxYm) { ui.ym = ymAdd(ui.ym, 1); ui.editFx = ui.editIn = ui.gotOff = null; render(); } });
   $('#fab').addEventListener('click', () => openSheet());
   $('#amBtn').innerHTML = svg('cart') + '<span>Alışverişteyim</span>';
   $('#amBtn').addEventListener('click', () => openAlisveristeyim());
@@ -3848,12 +3858,15 @@ Diğer=Çiçek|💐;Hediye|🎁;Kalem|✏️;Defter|📒;Zarf|✉️;Koli bandı
     if ((el = T('[data-got]'))) {
       const f = db.income.find(x => x.id === el.dataset.got), key = ui.ym + '|' + f.id;
       if (linkedIn(f, ui.ym).length) return toast(f.name + ' Hareketler\'de kayıtlı, oradan değiştir');
-      if (db.got[key]) { delete db.got[key]; save(); render(); return toast(f.name + ': işaret kaldırıldı'); }
-      ui.gotAsk = ui.gotAsk === f.id ? null : f.id;
+      if (db.got[key]) { ui.gotOff = ui.gotOff === f.id ? null : f.id; ui.gotAsk = null; return render(); }
+      ui.gotOff = null; ui.gotAsk = ui.gotAsk === f.id ? null : f.id;
       // Elle girişteki kural: ayın 20'si ve sonrasında gelen maaş sonraki ayın geliridir
       ui.gotNx = f.cat === 'maas' && ui.ym === curYm && +todayIso.slice(8) >= 20 && !db.got[ymAdd(ui.ym, 1) + '|' + f.id];
       render(); const a = $('#gotAmt'); if (a) { a.focus(); a.select(); } return;
     }
+    if ((el = T('[data-gotnew]'))) { const f = db.income.find(x => x.id === el.dataset.gotnew); ui.gotOff = null; ui.gotAsk = f.id; ui.gotNx = true; render(); const a = $('#gotAmt'); if (a) { a.value = String(expIn(f, ymAdd(ui.ym, 1)) || '').replace('.', ','); a.focus(); a.select(); } return; }
+    if ((el = T('[data-gotdel]'))) { const f = db.income.find(x => x.id === el.dataset.gotdel), key = ui.ym + '|' + f.id; ui.gotOff = null; return withUndo(f.name + ': ' + AYLAR[+ui.ym.slice(5) - 1] + ' işareti kaldırıldı', () => { delete db.got[key]; }); }
+    if (T('[data-gotno]')) { ui.gotOff = null; return render(); }
     if (T('[data-gotnx]')) { ui.gotNx = !ui.gotNx; const a = $('#gotAmt'), v = a && a.value; render(); const b = $('#gotAmt'); if (b && v != null) b.value = v; return; }
     if ((el = T('[data-editin]'))) { ui.editIn = ui.editIn === el.dataset.editin ? null : el.dataset.editin; ui.editFx = null; render(); return; }
     if (T('[data-incancel]')) { ui.editIn = null; return render(); }
