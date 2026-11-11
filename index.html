@@ -768,6 +768,11 @@ nav.tabs .tab[aria-current="page"] { color: var(--primary); }
 .sc-x { border: 0; background: var(--surface-2); width: 28px; height: 28px; border-radius: 50%; display: grid; place-items: center; color: var(--muted); } .sc-x svg.i { width: 14px; height: 14px; }
 .sc-f { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 8px; align-items: end; }
 .sc-note { color: var(--muted); font-size: 12px; }
+.bal-ck { display: flex; flex-direction: column; gap: 3px; background: var(--surface-2); border-radius: 14px; padding: 10px 12px; margin-top: 8px; }
+.bal-ckh { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 2px; } .bal-ckh b { font-size: 13.5px; } .bal-ckh small { color: var(--muted); font-size: 11.5px; }
+.bal-ckr { display: flex; justify-content: space-between; font-weight: 800; font-size: 14.5px; color: var(--ink); border-top: 1px solid var(--line); padding-top: 5px; margin-top: 2px; }
+.bal-ckr.ok { color: var(--in-ink); justify-content: flex-start; }
+.bal-ck .btn { margin-top: 6px; }
 .sc-res { background: var(--in-soft, #dcfce7); border-radius: 14px; padding: 10px 14px; display: flex; flex-direction: column; }
 .sc-res.neg { background: var(--surface-2); } .sc-res.neg b { color: var(--ink); }
 .sc-res span { font-size: 12.5px; color: var(--ink-2); font-weight: 600; } .sc-res b { font-size: 26px; font-weight: 800; color: var(--in-ink); } .sc-res small { color: var(--ink-2); font-size: 12px; }
@@ -1700,7 +1705,8 @@ body:has(#acBtn:not([hidden])) .app:has(#view.ozet) { padding-bottom: calc(222px
     const keep = db.keep == null ? 1500 : db.keep, items = sendItems(T), fx = items.reduce((a, x) => a + x.amount, 0), mN = AYLAR[+T.slice(5) - 1];
     const head = `<div class="sc-h"><b>💶 ${sal && !ui.sendFor ? 'Maaşın geldi' : 'Ne kadar göndermeliyim?'}</b><button class="sc-x" data-sendhide="${T}" aria-label="Kapat">${svg('x')}</button></div>`;
     if (!c || ui.sendEdit) return `<section class="card sendc">${head}
-      <form id="sendForm" data-ym="${T}" class="sc-f"><label class="fld">Hesabında şu an ne kadar var? (€)<input id="sendBal" inputmode="decimal" required placeholder="ör. 4950" value="${c ? String(c.bal).replace('.', ',') : ''}"></label><button class="btn">Hesapla</button></form>
+      ${(() => { const pf = !c ? sendFromBal() : null, v = c ? c.bal : pf ? pf.bal : null;
+        return `<form id="sendForm" data-ym="${T}" class="sc-f"><label class="fld">Hesabında şu an ne kadar var? (€)<input id="sendBal" inputmode="decimal" required placeholder="ör. 4950" value="${v != null ? String(v).replace('.', ',') : ''}"></label><button class="btn">Hesapla</button></form>${pf ? `<small class="sc-note">Ay sonu bakiyen ${money(pf.p1)} + maaş ${money(pf.sal)} olarak dolduruldu. Doğruysa Hesapla'ya bas.</small>` : ''}`; })()}
       <small class="sc-note">${mN} için: kesin gidenler ${money(fx)} + harcama payı ${money(keep)} ayrılır, kalanı eşine gönderilir.</small></section>`;
     const send = c.bal - fx - keep;
     return `<section class="card sendc">${head}
@@ -1715,6 +1721,52 @@ body:has(#acBtn:not([hidden])) .app:has(#view.ozet) { padding-bottom: calc(222px
   }
 
   // C2 Ay sonu bakiyeleri: ayın son 6 günü (maaştan önce) iki hesabın güncel parası elle girilir; db.balances[ay] = { p1, p2, date }
+  // E1: maaş günü bakiye iki kez sorulmasın. Son 7 gündeki maaş ile ay sonu bakiyesi / maaş kartı bakiyesi birbirinden türetilir
+  const daysAgo = n => { const d = new Date(today); d.setDate(d.getDate() - n); return iso(d); };
+  function balFromSend() {
+    const sal = lastSalary(); if (!sal) return null;
+    const c = Object.values(db.sendCalc || {}).filter(x => x && x.bal != null && x.date >= sal.date && x.date >= daysAgo(6)).sort((a, b) => b.date.localeCompare(a.date))[0];
+    return c ? { p1: Math.round((c.bal - sal.amount) * 100) / 100, bal: c.bal, sal: sal.amount } : null;
+  }
+  function sendFromBal() {
+    const sal = lastSalary(); if (!sal) return null;
+    const b = Object.values(db.balances || {}).filter(x => x && x.p1 != null && x.date && x.date <= sal.date && x.date >= daysAgo(10)).sort((a, b) => b.date.localeCompare(a.date))[0];
+    return b ? { bal: Math.round((+b.p1 + sal.amount) * 100) / 100, p1: +b.p1, sal: sal.amount } : null;
+  }
+  // F1: ay sonu bakiyesi kayıtlarla kıyaslanır. Beklenen = önceki bakiye + gelir − gider − yatırım − Türkiye'ye giden (iki bakiye tarihi arası).
+  // Eşler arası transferler toplamda birbirini götürür. Fark kayıt dışı harcama olarak tek kayıtla eklenebilir.
+  function balCheck(ym) {
+    const bals = db.balances || {}, cur = bals[ym], prev = bals[ymAdd(ym, -1)], ppl = PEOPLE();
+    if (!cur || !prev || !cur.date || !prev.date || cur.date <= prev.date) return null;
+    if (!ppl.every(p => cur[p] != null && prev[p] != null)) return { need: true };
+    const tot = b => ppl.reduce((a, p) => a + (+b[p] || 0), 0), w = ui.who; ui.who = 'all';
+    const seen = new Set(), win = [];
+    for (let m = ymAdd(ymOf(prev.date), -1); m <= ymAdd(ymOf(cur.date), 1); m = ymAdd(m, 1))
+      monthTx(m).forEach(t => { if (seen.has(t.id) || !t.date || t.date <= prev.date || t.date > cur.date) return; seen.add(t.id); win.push(t); });
+    ui.who = w;
+    const inn = sum(win, 'in'), out = sum(win, 'out'), inv = sum(win, 'inv');
+    const tr = (db.transfers || []).filter(t => t.dir === 'tr' && t.date > prev.date && t.date <= cur.date).reduce((a, t) => a + t.amount, 0);
+    const exp = tot(prev) + inn - out - inv - tr, real = tot(cur);
+    return { prevTot: tot(prev), inn, out, inv, tr, exp, real, gap: Math.round((exp - real) * 100) / 100, from: prev.date, to: cur.date };
+  }
+  function balCheckHtml(ym) {
+    const c = balCheck(ym); if (!c) return '';
+    if (c.need) return '<p class="hint">Kayıtlarla karşılaştırmak için bu ay ve geçen ay iki hesabın da bakiyesi girilmeli.</p>';
+    const ok = Math.abs(c.gap) < 20;
+    return `<div class="bal-ck ${ok ? 'ok' : ''}">
+      <div class="bal-ckh"><b>Kayıtlarla karşılaştırma</b><small>${dm(c.from)} → ${dm(c.to)}</small></div>
+      <div class="kc-r"><span>Geçen ay bakiye</span><b class="num">${money(c.prevTot)}</b></div>
+      <div class="kc-r"><span>+ Gelir</span><b class="num">${money(c.inn)}</b></div>
+      <div class="kc-r"><span>− Gider</span><b class="num">${money(c.out)}</b></div>
+      ${c.inv ? `<div class="kc-r"><span>− Yatırım</span><b class="num">${money(c.inv)}</b></div>` : ''}
+      ${c.tr ? `<div class="kc-r"><span>− Türkiye'ye giden</span><b class="num">${money(c.tr)}</b></div>` : ''}
+      <div class="kc-r big"><span>Olması gereken</span><b class="num">${money(c.exp)}</b></div>
+      <div class="kc-r"><span>Hesaplarda olan</span><b class="num">${money(c.real)}</b></div>
+      ${ok ? `<div class="bal-ckr ok">✓ Kayıtlarla uyumlu</div>`
+        : c.gap > 0 ? `<div class="bal-ckr"><span>Kayıt dışı harcama</span><b class="num">${money(c.gap)}</b></div><button class="btn" data-balghost="${ym}">Kayıt dışı harcama olarak ekle</button>`
+        : `<div class="bal-ckr"><span>Kayıtlardan fazla para var</span><b class="num">${money(-c.gap)}</b></div><small class="sc-note">Girilmemiş bir gelir ya da iade olabilir.</small>`}
+    </div>`;
+  }
   function balCard() {
     if (ui.ym !== curYm && ui.ym !== actYm()) return '';
     db.balances = db.balances || {};
@@ -1726,8 +1778,10 @@ body:has(#acBtn:not([hidden])) .app:has(#view.ozet) { padding-bottom: calc(222px
     const form = !cur || ui.balEdit;
     return `<section class="card balc">
       <div class="sc-h"><b>🏦 Ay sonu bakiyeleri · ${AYLAR[M - 1]}</b><button class="sc-x" data-balhide aria-label="Kapat">${svg('x')}</button></div>
-      ${form ? `<form id="balForm" class="bal-f">${ppl.map(p => `<label class="fld"><span><span class="who sm ${p}">${esc(PAYER[p][0])}</span>${esc(PAYER[p])} hesabı (€)</span><input id="bal_${p}" inputmode="decimal" value="${cur && cur[p] != null ? String(cur[p]).replace('.', ',') : ''}" placeholder="0"></label>`).join('')}<button class="btn">Kaydet</button></form>
-        <small class="sc-note">Maaş gelmeden önce bankadaki güncel tutarları yaz.</small>` : ''}
+      ${form ? (() => { const pf = !cur ? balFromSend() : null;
+        return `<form id="balForm" class="bal-f">${ppl.map(p => { const v = cur && cur[p] != null ? cur[p] : pf && p === 'p1' ? pf.p1 : null; return `<label class="fld"><span><span class="who sm ${p}">${esc(PAYER[p][0])}</span>${esc(PAYER[p])} hesabı (€)</span><input id="bal_${p}" inputmode="decimal" value="${v != null ? String(v).replace('.', ',') : ''}" placeholder="0"></label>`; }).join('')}<button class="btn">Kaydet</button></form>
+        <small class="sc-note">${pf ? `${esc(PAYER.p1)} hesabı, maaş kartına yazdığın ${money(pf.bal)} − maaş ${money(pf.sal)} olarak dolduruldu.` : 'Maaş gelmeden önce bankadaki güncel tutarları yaz.'}</small>`; })() : ''}
+      ${!form ? balCheckHtml(curYm) : ''}
       ${hist.length ? `<div class="bal-tab" style="--bn:${ppl.length + 2}"><div class="h"><span>Ay</span>${ppl.map(p => `<span>${esc(PAYER[p])}</span>`).join('')}<span>Toplam</span><span>Fark</span></div>
         ${hist.map((ym, k) => { const b = db.balances[ym], prev = db.balances[ymAdd(ym, -1)], d = prev ? tot(b) - tot(prev) : null;
           return `<div><span>${AY_K[+ym.slice(5) - 1]} ${ym.slice(2, 4)}</span>${ppl.map(p => `<span class="num">${b[p] != null ? short(b[p]) : '–'}</span>`).join('')}<span class="num"><b>${short(tot(b))}</b></span><span class="num ${d > 0 ? 'up' : ''}">${d == null ? '–' : (d >= 0 ? '+' : '−') + short(Math.abs(d))}</span></div>`; }).join('')}</div>
@@ -3770,6 +3824,13 @@ Diğer=Çiçek|💐;Hediye|🎁;Kalem|✏️;Defter|📒;Zarf|✉️;Koli bandı
     if (T('[data-trpage]')) return openTR();
     if ((el = T('[data-sendhide]'))) { const k = el.dataset.sendhide; db.sendCalc = db.sendCalc || {}; db.sendCalc[k] = Object.assign(db.sendCalc[k] || {}, { hide: true }); ui.sendFor = null; ui.sendEdit = false; save(); return render(); }
     if (T('[data-balhide]')) { db.balHide = db.balHide || {}; if (!ui.balOpen) db.balHide[curYm] = true; ui.balOpen = false; ui.balEdit = false; save(); return render(); }
+    if ((el = T('[data-balghost]'))) {
+      const ym = el.dataset.balghost, c = balCheck(ym); if (!c || c.need || !(c.gap > 0)) return;
+      return withUndo('Kayıt dışı harcama eklendi · ' + money(c.gap), () => {
+        if (!db.cats.out.some(x => x.id === 'kayitdisi')) db.cats.out.push({ id: 'kayitdisi', name: 'Kayıt dışı', ic: 'dots', color: GRAY });
+        const ts = Date.now(); db.tx.push({ id: 't' + ts, ts, type: 'out', cat: 'kayitdisi', amount: c.gap, date: c.to, note: 'Kayıt dışı harcama', payer: 'p1' });
+      });
+    }
     if (T('[data-baledit]')) { ui.balEdit = true; render(); const i = $('#balForm input'); if (i) i.focus(); return; }
     if (T('[data-sendedit]')) { ui.sendEdit = true; render(); const b = $('#sendBal'); if (b) b.focus(); return; }
     if ((el = T('[data-sendok]'))) {
@@ -3960,7 +4021,7 @@ Diğer=Çiçek|💐;Hediye|🎁;Kalem|✏️;Defter|📒;Zarf|✉️;Koli bandı
       const b = { date: todayIso }; let any = false;
       PEOPLE().forEach(p => { const el = $('#bal_' + p); const raw = el ? el.value.trim() : ''; if (raw === '') return; const v = parseAmt(raw); if (isFinite(v)) { b[p] = v; any = true; } });
       if (!any) return toast('En az bir hesabın tutarını yaz');
-      db.balances = db.balances || {}; const prev = db.balances[ymAdd(curYm, -1)]; db.balances[curYm] = b; ui.balEdit = false; save(); render();
+      db.balances = db.balances || {}; const prev = db.balances[ymAdd(curYm, -1)]; db.balances[curYm] = b; ui.balEdit = false; ui.balOpen = true; save(); render();
       const tot = x => PEOPLE().reduce((a, p) => a + (+x[p] || 0), 0);
       return toast('Kaydedildi · toplam ' + money(tot(b)) + (prev ? ' (' + (tot(b) >= tot(prev) ? '+' : '−') + money(Math.abs(tot(b) - tot(prev))) + ')' : ''));
     }
